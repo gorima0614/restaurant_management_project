@@ -1,0 +1,74 @@
+# orders/models.py
+
+from django.db import models
+
+class Order(models.Model):
+    product = models.CharField(max_length=255)
+    quantity = models.PositiveIntegerField()
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.product} x {self.quantity}"
+
+
+# orders/serializers.py
+
+from rest_framework import serializers
+from .models import Order
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'product', 'quantity', 'total_price']
+
+
+# orders/views.py
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Order
+from .serializers import OrderSerializer
+from django.shortcuts import get_object_or_404
+
+class OrderAPIView(APIView):
+
+    def get(self, request):
+        orders = Order.objects.all()
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = OrderSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk=None):
+        if not pk:
+            return Response({'error': 'Order ID is required for update'}, status=status.HTTP_400_BAD_REQUEST)
+        order = get_object_or_404(Order, pk=pk)
+        serializer = OrderSerializer(order, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk=None):
+        if not pk:
+            return Response({'error': 'Order ID is required for deletion'}, status=status.HTTP_400_BAD_REQUEST)
+        order = get_object_or_404(Order, pk=pk)
+        order.delete()
+        return Response({'message': 'Order deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+# orders/urls.py
+
+from django.urls import path
+from .views import OrderAPIView
+
+urlpatterns = [
+    path('orders/', OrderAPIView.as_view(), name='order-list-create'),
+    path('orders/<int:pk>/', OrderAPIView.as_view(), name='order-update-delete'),
+]
+
