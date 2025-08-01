@@ -1,0 +1,52 @@
+# orders/utils.py
+
+from datetime import datetime
+from .models import Order
+
+def generate_order_number():
+    """
+    Generates a unique order number in the format:
+    ORD-YYYYMMDD-XXXX (e.g., ORD-20250801-0001)
+    """
+    today = datetime.now().strftime('%Y%m%d')
+    today_orders = Order.objects.filter(order_number__startswith=f"ORD-{today}").order_by('-order_number')
+
+    if today_orders.exists():
+        # Extract the last 4-digit number and increment
+        last_order_number = today_orders.first().order_number
+        last_count = int(last_order_number.split('-')[-1])
+        new_count = last_count + 1
+    else:
+        new_count = 1
+
+    return f"ORD-{today}-{new_count:04d}"
+
+# orders/models.py
+
+from django.db import models
+from .utils import generate_order_number
+
+class Order(models.Model):
+    order_number = models.CharField(max_length=30, unique=True, blank=True)
+    customer_name = models.CharField(max_length=100)
+    total_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_paid = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.order_number:
+            self.order_number = generate_order_number()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.order_number
+
+Example Output
+ORD-20250801-0001
+ORD-20250801-0002
+ORD-20250802-0001  # when next day
+
+Migration Commands (if needed)
+python manage.py makemigrations
+python manage.py migrate
+
