@@ -1,0 +1,58 @@
+# library/models.py
+
+from django.db import models
+
+class BookManager(models.Manager):
+    def get_available_books(self):
+        return self.filter(available=True)
+
+
+class Book(models.Model):
+    title = models.CharField(max_length=200)
+    author = models.CharField(max_length=100)
+    published_date = models.DateField()
+    available = models.BooleanField(default=True)
+
+    # Attach custom manager
+    objects = BookManager()
+
+    def __str__(self):
+        return self.title
+
+# library/views.py
+
+from django.shortcuts import render
+from .models import Book
+
+def available_books_view(request):
+    available_books = Book.objects.get_available_books()
+    return render(request, 'library/available_books.html', {'books': available_books})
+
+# library/urls.py
+
+from django.urls import path
+from .views import available_books_view
+
+urlpatterns = [
+    path('available-books/', available_books_view, name='available-books'),
+]
+
+<!-- templates/library/available_books.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Available Books</title>
+</head>
+<body>
+    <h1>Available Books in the Library</h1>
+    <ul>
+        {% for book in books %}
+            <li>{{ book.title }} by {{ book.author }} ({{ book.published_date }})</li>
+        {% empty %}
+            <li>No books currently available.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
