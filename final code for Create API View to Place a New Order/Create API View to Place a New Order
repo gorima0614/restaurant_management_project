@@ -1,0 +1,75 @@
+# orders/serializers.py
+
+from rest_framework import serializers
+from .models import Order, OrderItem
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ['item_name', 'item_price', 'qnty']
+
+
+class OrderCreateSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = ['order_id', 'customer_name', 'note', 'is_paid', 'total_order_amount', 'created_at', 'items']
+        read_only_fields = ['order_id', 'total_order_amount', 'created_at']
+
+    def validate_items(self, value):
+        if not value:
+            raise serializers.ValidationError("At least one item must be provided.")
+        for item in value:
+            if item.get('qnty', 0) <= 0:
+                raise serializers.ValidationError("Quantity must be greater than zero for all items.")
+            if item.get('item_price', 0) < 0:
+                raise serializers.ValidationError("Item price cannot be negative.")
+        return value
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        total = sum(item['item_price'] * item['qnty'] for item in items_data)
+
+        order = Order.objects.create(total_order_amount=total, **validated_data)
+        for item in items_data:
+            OrderItem.objects.create(order=order, **item)
+
+        return order
+
+# orders/views.py
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import OrderCreateSerializer
+from .models import Order
+
+
+class OrderCreateAPIView(APIView):
+    def post(self, request):
+        serializer = OrderCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            order = serializer.save()
+            return Response(OrderCreateSerializer(order).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# orders/urls.py
+
+from django.urls import path
+from .views import OrderCreateAPIView
+
+urlpatterns = [
+    path('api/orders/', OrderCreateAPIView.as_view(), name='create-order'),
+]
+
+# project/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('orders.urls')),
+]
