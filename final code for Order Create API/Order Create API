@@ -1,0 +1,101 @@
+from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+
+    def __str__(self):
+        return self.name
+
+class Order(models.Model):
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    delivery_address = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+
+from rest_framework import serializers
+from .models import Order, OrderItem, Product
+
+class OrderItemSerializer(serializers.Serializer):
+    product_id = serializers.IntegerField()
+    quantity = serializers.IntegerField(min_value=1)
+
+    def validate_product_id(self, value):
+        if not Product.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Invalid product ID.")
+        return value
+
+class OrderCreateSerializer(serializers.Serializer):
+    delivery_address = serializers.CharField()
+    items = OrderItemSerializer(many=True)
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        delivery_address = validated_data['delivery_address']
+        items_data = validated_data['items']
+
+        order = Order.objects.create(customer=user, delivery_address=delivery_address)
+
+        total = 0
+        for item in items_data:
+            product = Product.objects.get(id=item['product_id'])
+            quantity = item['quantity']
+            OrderItem.objects.create(order=order, product=product, quantity=quantity)
+            total += product.price * quantity
+
+        order.total_amount = total
+        order.save()
+        return order
+
+class OrderResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'delivery_address', 'total_amount', 'created_at']
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import OrderCreateSerializer, OrderResponseSerializer
+
+class OrderCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = OrderCreateSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            order = serializer.save()
+            response_serializer = OrderResponseSerializer(order)
+            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+from django.urls import path
+from .views import OrderCreateView
+
+urlpatterns = [
+    path('orders/create/', OrderCreateView.as_view(), name='create-order'),
+]
+
+{
+  "delivery_address": "123 MG Road, Pune",
+  "items": [
+    {"product_id": 1, "quantity": 2},
+    {"product_id": 3, "quantity": 1}
+  ]
+}
+
+{
+  "id": 45,
+  "delivery_address": "123 MG Road, Pune",
+  "total_amount": "1499.00",
+  "created_at": "2025-08-01T18:41:00Z"
+}
+
