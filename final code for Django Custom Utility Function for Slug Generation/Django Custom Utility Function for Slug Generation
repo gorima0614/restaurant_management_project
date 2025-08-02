@@ -1,0 +1,32 @@
+# utils.py
+
+from django.utils.text import slugify
+
+def generate_slug(title):
+    """
+    Convert the given title string into a slug-friendly format.
+    Example: "Django is Awesome!" -> "django-is-awesome"
+    """
+    return slugify(title)
+
+# models.py
+
+from django.db import models
+from .utils import generate_slug  # import the utility
+
+class Article(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = generate_slug(self.title)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+python manage.py shell
+
+from myapp.utils import generate_slug
+generate_slug("Hello World from Django!")  # Output: 'hello-world-from-django'
