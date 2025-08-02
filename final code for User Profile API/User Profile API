@@ -1,0 +1,84 @@
+from django.db import models
+from django.contrib.auth.models import User
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=15, blank=True)
+    address = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.full_name
+
+from rest_framework import serializers
+from .models import UserProfile
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['user', 'full_name', 'email', 'phone_number', 'address']
+        read_only_fields = ['user', 'email']
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from .models import UserProfile
+from .serializers import UserProfileSerializer
+
+class UserProfileAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        try:
+            profile = request.user.profile
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data)
+
+    def put(self, request):
+        try:
+            profile = request.user.profile
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+from django.urls import path
+from .views import UserProfileAPIView
+
+urlpatterns = [
+    path('api/profile/', UserProfileAPIView.as_view(), name='user-profile'),
+]
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+from .models import UserProfile
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance, email=instance.email)
+
+def ready(self):
+    import your_app.signals
+
+GET /api/profile/
+Authorization: Bearer <token>
+
+PUT /api/profile/
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "full_name": "Jane Doe",
+  "phone_number": "+1234567890",
+  "address": "123 Main Street"
+}
