@@ -5,10 +5,10 @@ from django.db import models
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.CharField(max_length=100)
-    available_copies = models.PositiveIntegerField(default=1)
+    reserved = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.title} by {self.author}"
+        return self.title
 
 # serializers.py
 
@@ -18,7 +18,7 @@ from .models import Book
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
-        fields = ['id', 'title', 'author', 'available_copies']
+        fields = ['id', 'title', 'author', 'reserved']
 
 # views.py
 
@@ -29,39 +29,44 @@ from django.shortcuts import get_object_or_404
 from .models import Book
 from .serializers import BookSerializer
 
-class BookReservationAPIView(APIView):
+class ReserveBookView(APIView):
     def post(self, request, book_id):
         book = get_object_or_404(Book, id=book_id)
 
-        if book.available_copies <= 0:
-            return Response({'error': 'No copies available for reservation.'}, status=status.HTTP_400_BAD_REQUEST)
+        if book.reserved:
+            return Response(
+                {'error': 'Book is already reserved.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        book.available_copies -= 1
+        book.reserved = True
         book.save()
 
         serializer = BookSerializer(book)
-        return Response({'message': 'Book reserved successfully.', 'book': serializer.data}, status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Book reserved successfully.', 'book': serializer.data},
+            status=status.HTTP_200_OK
+        )
 
 # urls.py
 
 from django.urls import path
-from .views import BookReservationAPIView
+from .views import ReserveBookView
 
 urlpatterns = [
-    path('api/books/<int:book_id>/reserve/', BookReservationAPIView.as_view(), name='reserve-book'),
+    path('api/books/<int:book_id>/reserve/', ReserveBookView.as_view(), name='reserve-book'),
 ]
 
 {
   "message": "Book reserved successfully.",
   "book": {
-    "id": 5,
-    "title": "The Great Gatsby",
-    "author": "F. Scott Fitzgerald",
-    "available_copies": 2
+    "id": 3,
+    "title": "Atomic Habits",
+    "author": "James Clear",
+    "reserved": true
   }
 }
 
 {
-  "error": "No copies available for reservation."
+  "error": "Book is already reserved."
 }
-
