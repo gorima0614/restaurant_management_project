@@ -1,0 +1,72 @@
+# reservations/models.py
+from django.db import models
+from django.contrib.auth.models import User
+from books.models import Book  # Assuming Book model is in books app
+
+class BookReservation(models.Model):
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='reservations')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='book_reservations')
+    reservation_date = models.DateField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.user.username} reserved {self.book.title}"
+
+# reservations/serializers.py
+from rest_framework import serializers
+from .models import BookReservation
+from books.models import Book
+from django.contrib.auth.models import User
+
+class BookReservationSerializer(serializers.ModelSerializer):
+    book_id = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all(), source='book')
+    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), source='user')
+
+    class Meta:
+        model = BookReservation
+        fields = ['id', 'book_id', 'user_id', 'reservation_date', 'is_active']
+        read_only_fields = ['reservation_date']
+
+    def validate(self, attrs):
+        book = attrs.get('book')
+        user = attrs.get('user')
+        if BookReservation.objects.filter(book=book, user=user, is_active=True).exists():
+            raise serializers.ValidationError("This user already has an active reservation for this book.")
+        return attrs
+
+# reservations/views.py
+from rest_framework import generics
+from .models import BookReservation
+from .serializers import BookReservationSerializer
+
+class BookReservationCreateAPIView(generics.CreateAPIView):
+    queryset = BookReservation.objects.all()
+    serializer_class = BookReservationSerializer
+
+# reservations/urls.py
+from django.urls import path
+from .views import BookReservationCreateAPIView
+
+urlpatterns = [
+    path('reserve/', BookReservationCreateAPIView.as_view(), name='book-reserve'),
+]
+
+# project/urls.py
+from django.urls import path, include
+
+urlpatterns = [
+    path('api/', include('reservations.urls')),
+]
+
+{
+  "book_id": 3,
+  "user_id": 1
+}
+
+{
+  "id": 5,
+  "book_id": 3,
+  "user_id": 1,
+  "reservation_date": "2025-08-01",
+  "is_active": true
+}
