@@ -1,0 +1,63 @@
+# views.py
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+class MenuAPIView(APIView):
+    def get(self, request):
+        menu = [
+            {
+                "name": "Margherita Pizza",
+                "description": "Classic cheese and tomato pizza with basil.",
+                "price": 299.00
+            },
+            {
+                "name": "Pasta Alfredo",
+                "description": "Creamy Alfredo pasta with mushrooms and chicken.",
+                "price": 349.00
+            },
+            {
+                "name": "Caesar Salad",
+                "description": "Fresh romaine lettuce with Caesar dressing, croutons, and parmesan.",
+                "price": 199.00
+            },
+            {
+                "name": "Tandoori Chicken",
+                "description": "Spicy grilled chicken marinated in yogurt and spices.",
+                "price": 399.00
+            }
+        ]
+        return Response(menu, status=status.HTTP_200_OK)
+
+# urls.py
+
+from django.urls import path
+from .views import MenuAPIView
+
+urlpatterns = [
+    path('api/menu/', MenuAPIView.as_view(), name='restaurant-menu'),
+]
+
+[
+  {
+    "name": "Margherita Pizza",
+    "description": "Classic cheese and tomato pizza with basil.",
+    "price": 299.0
+  },
+  {
+    "name": "Pasta Alfredo",
+    "description": "Creamy Alfredo pasta with mushrooms and chicken.",
+    "price": 349.0
+  },
+  {
+    "name": "Caesar Salad",
+    "description": "Fresh romaine lettuce with Caesar dressing, croutons, and parmesan.",
+    "price": 199.0
+  },
+  {
+    "name": "Tandoori Chicken",
+    "description": "Spicy grilled chicken marinated in yogurt and spices.",
+    "price": 399.0
+  }
+]
