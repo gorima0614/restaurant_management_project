@@ -1,0 +1,71 @@
+# settings.py
+INSTALLED_APPS = [
+    ...
+    'rest_framework',
+    'rest_framework.authtoken',
+]
+
+python manage.py migrate
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework import status
+from django.contrib.auth import authenticate
+
+class LoginAPIView(APIView):
+    """
+    POST /api/login/
+    Required JSON: { "username": "", "password": "" }
+    Returns auth token.
+    """
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        if not username or not password:
+            return Response({"error": "Username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = authenticate(username=username, password=password)
+        if user:
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key})
+        else:
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+# settings.py
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+POST /api/login/
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "password": "testpass"
+}
+
+{
+    "token": "abc123xyz456"
+}
+
+Authorization: Token abc123xyz456
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+class ProtectedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        return Response({"message": f"Hello, {request.user.username}! You are authenticated."})
+
+path('api/protected/', ProtectedView.as_view(), name='protected'),
