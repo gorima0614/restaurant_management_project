@@ -1,0 +1,87 @@
+# books/models.py
+from django.db import models
+
+class Book(models.Model):
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=100)
+    genre = models.CharField(max_length=50)
+    published_date = models.DateField()
+
+    def __str__(self):
+        return self.title
+
+# books/serializers.py
+from rest_framework import serializers
+from .models import Book
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ['id', 'title', 'author', 'genre', 'published_date']
+
+# books/views.py
+from rest_framework import generics, filters
+from .models import Book
+from .serializers import BookSerializer
+from django_filters.rest_framework import DjangoFilterBackend
+
+class BookListAPIView(generics.ListAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['genre']
+    search_fields = ['title', 'author']
+
+# books/urls.py
+from django.urls import path
+from .views import BookListAPIView
+
+urlpatterns = [
+    path('books/', BookListAPIView.as_view(), name='book-list'),
+]
+
+# restaurant/urls.py
+from django.urls import path, include
+
+urlpatterns = [
+    path('api/', include('books.urls')),
+]
+
+# settings.py
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ]
+}
+
+pip install django-filter
+INSTALLED_APPS = [
+    ...
+    'django_filters',
+]
+
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "title": "Grilling Basics",
+      "author": "Chef John",
+      "genre": "cooking",
+      "published_date": "2022-05-10"
+    },
+    {
+      "id": 2,
+      "title": "Grill & Serve",
+      "author": "Anna Flame",
+      "genre": "cooking",
+      "published_date": "2023-07-15"
+    }
+  ]
+}
+
