@@ -1,16 +1,19 @@
-# accounts/models.py
+# models.py
+
 from django.db import models
 from django.contrib.auth.models import User
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    phone = models.CharField(max_length=20, blank=True)
+    full_name = models.CharField(max_length=100, blank=True)
+    phone_number = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.user.username}'s profile"
+        return self.user.username
 
-# accounts/signals.py
+# signals.py
+
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
@@ -21,24 +24,23 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
 
-# accounts/apps.py
+# apps.py (inside your app, e.g. myapp/apps.py)
+
 from django.apps import AppConfig
 
-class AccountsConfig(AppConfig):
-    name = 'accounts'
+class MyAppConfig(AppConfig):
+    name = 'myapp'  # replace with your actual app name
 
     def ready(self):
-        import accounts.signals  # noqa
+        import myapp.signals  # ensures signals are registered
 
 INSTALLED_APPS = [
-    ...
-    'accounts.apps.AccountsConfig',
+    # ...
+    'myapp.apps.MyAppConfig',  # instead of just 'myapp'
 ]
 
-python manage.py makemigrations accounts
-python manage.py migrate
-
-python manage.py shell
 from django.contrib.auth.models import User
-user = User.objects.create_user(username='testuser', password='12345')
-user.profile  # Should auto-create and return the related UserProfile instance
+
+user = User.objects.create_user(username='johndoe', password='password123')
+print(user.profile)  # UserProfile object will exist
+
