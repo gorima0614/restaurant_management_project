@@ -1,54 +1,81 @@
+# models.py
+
 from django.db import models
 from django.contrib.auth.models import User
 
-class UserProfile(models.Model):
+class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    full_name = models.CharField(max_length=100)
-    email = models.EmailField()
     phone_number = models.CharField(max_length=15, blank=True)
     address = models.TextField(blank=True)
 
     def __str__(self):
-        return self.full_name
+        return f"{self.user.username}'s Profile"
+
+# signals.py (auto-create profile on user registration)
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import User
+from .models import Profile
+
+@receiver(post_save, sender=User)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    else:
+        instance.profile.save()
+
+# serializers.py
 
 from rest_framework import serializers
-from .models import UserProfile
+from django.contrib.auth.models import User
+from .models import Profile
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    phone_number = serializers.CharField(source='profile.phone_number', allow_blank=True)
+    address = serializers.CharField(source='profile.address', allow_blank=True)
+
     class Meta:
-        model = UserProfile
-        fields = ['user', 'full_name', 'email', 'phone_number', 'address']
-        read_only_fields = ['user', 'email']
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'address']
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', {})
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.save()
+
+        profile = instance.profile
+        profile.phone_number = profile_data.get('phone_number', profile.phone_number)
+        profile.address = profile_data.get('address', profile.address)
+        profile.save()
+
+        return instance
+
+# views.py
 
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status, permissions
-from .models import UserProfile
+from rest_framework import status
 from .serializers import UserProfileSerializer
 
 class UserProfileAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        try:
-            profile = request.user.profile
-        except UserProfile.DoesNotExist:
-            return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = UserProfileSerializer(profile)
+        serializer = UserProfileSerializer(request.user)
         return Response(serializer.data)
 
     def put(self, request):
-        try:
-            profile = request.user.profile
-        except UserProfile.DoesNotExist:
-            return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# urls.py
 
 from django.urls import path
 from .views import UserProfileAPIView
@@ -57,28 +84,16 @@ urlpatterns = [
     path('api/profile/', UserProfileAPIView.as_view(), name='user-profile'),
 ]
 
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.contrib.auth.models import User
-from .models import UserProfile
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.create(user=instance, email=instance.email)
-
-def ready(self):
-    import your_app.signals
-
-GET /api/profile/
-Authorization: Bearer <token>
-
-PUT /api/profile/
-Content-Type: application/json
-Authorization: Bearer <token>
+{
+  "first_name": "Alice",
+  "last_name": "Smith",
+  "email": "alice@example.com",
+  "phone_number": "9876543210",
+  "address": "123 Main Street"
+}
 
 {
-  "full_name": "Jane Doe",
-  "phone_number": "+1234567890",
-  "address": "123 Main Street"
+  "first_name": "Alice",
+  "last_name": "Wonderland",
+  "phone_number": "9999999999"
 }
