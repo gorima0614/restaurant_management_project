@@ -1,0 +1,69 @@
+# models.py
+
+from django.db import models
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+    ]
+    
+    customer_name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    def __str__(self):
+        return f"Order #{self.id} - {self.customer_name}"
+
+# serializers.py
+
+from rest_framework import serializers
+from .models import Order
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'customer_name', 'created_at', 'status']
+
+# views.py
+
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import Order
+from .serializers import OrderSerializer
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+    @action(detail=True, methods=['post'], url_path='mark-completed')
+    def mark_completed(self, request, pk=None):
+        order = self.get_object()
+        if order.status == 'completed':
+            return Response({'message': 'Order is already completed.'}, status=status.HTTP_200_OK)
+        
+        order.status = 'completed'
+        order.save()
+        return Response({'message': f'Order #{order.id} marked as completed.'}, status=status.HTTP_200_OK)
+
+# urls.py
+
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import OrderViewSet
+
+router = DefaultRouter()
+router.register(r'orders', OrderViewSet)
+
+urlpatterns = [
+    path('api/', include(router.urls)),
+]
+
+POST /api/orders/1/mark-completed/
+
+{
+  "message": "Order #1 marked as completed."
+}
+
