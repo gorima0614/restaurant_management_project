@@ -1,0 +1,63 @@
+from django.db import models
+
+class Book(models.Model):
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=255)
+    genre = models.CharField(max_length=100)
+    published_date = models.DateField()
+    is_reserved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
+
+python manage.py makemigrations
+python manage.py migrate
+
+from rest_framework import serializers
+from .models import Book
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ['id', 'title', 'author', 'genre', 'published_date', 'is_reserved']
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Book
+from .serializers import BookSerializer
+from django.shortcuts import get_object_or_404
+
+class ReserveBookView(APIView):
+    """
+    Reserve a book by setting its is_reserved field to True.
+    """
+
+    def post(self, request, book_id):
+        book = get_object_or_404(Book, id=book_id)
+
+        if book.is_reserved:
+            return Response({"detail": "Book is already reserved."}, status=status.HTTP_400_BAD_REQUEST)
+
+        book.is_reserved = True
+        book.save()
+        serializer = BookSerializer(book)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+from django.urls import path
+from .views import ReserveBookView
+
+urlpatterns = [
+    path('books/<int:book_id>/reserve/', ReserveBookView.as_view(), name='reserve-book'),
+]
+
+POST /api/books/5/reserve/
+
+{
+  "id": 5,
+  "title": "The Alchemist",
+  "author": "Paulo Coelho",
+  "genre": "Fiction",
+  "published_date": "1993-05-01",
+  "is_reserved": true
+}
