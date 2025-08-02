@@ -1,0 +1,66 @@
+#orders/utils.py
+from django.utils.crypto import get_random_string
+from django.db.models import Max
+from .models import orders
+
+def generate_unique_order_id(prefix='ORD', paffing=8):
+    """
+    Generates a unique order ID like 'ORD00000123'.
+    """
+    last_order = Order.objects.aggregate(latest_id=Max('id'))['latest_id'] or 0
+    next_id = last_order + 1
+    order_id = f"{prefix}{str(next_id).zfill(padding)}"
+
+    #Double-check uniqueness (in case of non-sequential custom order_id field)
+    while Order.objects.filter(order_id=order_id).exist():
+        next_id += 1
+        order_id = f"{prefix}{str(next_id).zfill(padding)}"
+
+    return order_id
+
+# orders/models.py
+
+from django.db import models
+
+class Order(models.Model):
+    order_id = models.CharField(max_length=20, unique=True, editable=False)
+    customer_name = models.CharField(max_length=255)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.order_id
+
+# orders/views.py
+
+from .utils import generate_unique_order_id
+
+class CreateOrderAPIView(APIView):
+    def post(self, request):
+        # ... validate & collect item data
+        order_id = generate_unique_order_id()
+        order = Order.objects.create(
+            order_id=order_id,
+            customer_name=customer_name,
+            total_amount=total
+        )
+        # ... create OrderItems
+
+# orders/models.py
+
+from .utils import generate_unique_order_id
+
+def save(self, *args, **kwargs):
+    if not self.order_id:
+        self.order_id = generate_unique_order_id()
+    super().save(*args, **kwargs)
+
+Sample Output
+ORD00000001
+ORD00000002
+ORD00001234
+
+Note :
+> You can customize the prefix ('ORD') or padding (8) in the function.
+> To make order IDs unpredictable (e.g., for customers), add a random suffix:
+f"{prefix}{str(next_id).zfill(padding)}-{get_random_string(4).upper()}"
