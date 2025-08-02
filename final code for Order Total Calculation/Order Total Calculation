@@ -1,65 +1,51 @@
-# models.py
-
-from django.db import models
-
-class Order(models.Model):
-    customer_name = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Order #{self.id} by {self.customer_name}"
-
-class OrderItem(models.Model):
-    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    product_name = models.CharField(max_length=100)
-    quantity = models.PositiveIntegerField()
-    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
-
-    def __str__(self):
-        return f"{self.product_name} x {self.quantity}"
-
-    @property
-    def total_price(self):
-        return self.quantity * self.unit_price
-
 # utils.py
 
-from .models import Order, OrderItem
-from django.db.models import Sum, F
+def calculate_total_amount(items, discount_type=None, discount_value=0):
+    """
+    Calculate the total amount for an order.
 
-def calculate_order_total(order_id):
-    try:
-        order = Order.objects.get(id=order_id)
-    except Order.DoesNotExist:
-        return None  # Or raise an exception
+    Args:
+        items (list of dict): Each dict should have 'price' and 'quantity' keys.
+            Example: [{'price': 100, 'quantity': 2}, {'price': 50, 'quantity': 1}]
+        discount_type (str): 'percentage' or 'fixed'. Default is None.
+        discount_value (float): Value of the discount.
 
-    total = OrderItem.objects.filter(order=order).aggregate(
-        total_amount=Sum(F('quantity') * F('unit_price'))
-    )['total_amount'] or 0
+    Returns:
+        float: Final total amount after applying discount.
+    """
+
+    # Calculate subtotal
+    subtotal = sum(item['price'] * item['quantity'] for item in items)
+
+    # Apply discount
+    if discount_type == 'percentage':
+        discount = (discount_value / 100) * subtotal
+    elif discount_type == 'fixed':
+        discount = discount_value
+    else:
+        discount = 0
+
+    # Prevent negative totals
+    total = max(subtotal - discount, 0)
 
     return round(total, 2)
 
-# views.py
+from myapp.utils import calculate_total_amount
 
-from django.http import JsonResponse
-from .utils import calculate_order_total
-
-def order_total_view(request, order_id):
-    total = calculate_order_total(order_id)
-    if total is None:
-        return JsonResponse({'error': 'Order not found'}, status=404)
-    return JsonResponse({'order_id': order_id, 'total_amount': float(total)})
-
-# urls.py
-
-from django.urls import path
-from .views import order_total_view
-
-urlpatterns = [
-    path('order/<int:order_id>/total/', order_total_view, name='order-total'),
+items = [
+    {'price': 200, 'quantity': 2},  # ₹400
+    {'price': 150, 'quantity': 1}   # ₹150
 ]
 
-{
-  "order_id": 3,
-  "total_amount": 1599.99
-}
+# 10% discount
+total_1 = calculate_total_amount(items, discount_type='percentage', discount_value=10)
+print(total_1)  # Output: 495.0
+
+# ₹100 fixed discount
+total_2 = calculate_total_amount(items, discount_type='fixed', discount_value=100)
+print(total_2)  # Output: 450.0
+
+# No discount
+total_3 = calculate_total_amount(items)
+print(total_3)  # Output: 550.0
+
