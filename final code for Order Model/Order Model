@@ -1,0 +1,63 @@
+# models.py
+
+from django.db import models
+from django.contrib.auth.models import User
+
+ORDER_STATUS_CHOICES = [
+    ('PENDING', 'Pending'),
+    ('CONFIRMED', 'Confirmed'),
+    ('PREPARING', 'Preparing'),
+    ('DELIVERED', 'Delivered'),
+    ('CANCELLED', 'Cancelled'),
+]
+
+class Menu(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+
+    def __str__(self):
+        return self.name
+
+
+class Order(models.Model):
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='orders')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='PENDING')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order #{self.id} by {self.customer.username}"
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    menu_item = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+    item_total = models.DecimalField(max_digits=8, decimal_places=2, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.item_total = self.menu_item.price * self.quantity
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.menu_item.name}"
+
+example usage
+# Example in a Django shell
+
+from django.contrib.auth.models import User
+from yourapp.models import Menu, Order, OrderItem
+
+user = User.objects.first()
+menu_item1 = Menu.objects.create(name="Burger", price=150)
+menu_item2 = Menu.objects.create(name="Fries", price=50)
+
+order = Order.objects.create(customer=user)
+OrderItem.objects.create(order=order, menu_item=menu_item1, quantity=2)
+OrderItem.objects.create(order=order, menu_item=menu_item2, quantity=1)
+
+# Manually calculate total
+total = sum(item.item_total for item in order.items.all())
+order.total_amount = total
+order.save()
