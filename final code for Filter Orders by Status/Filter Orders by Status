@@ -1,0 +1,72 @@
+# models.py
+from django.db import models
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    ]
+    customer_name = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Order #{self.id} - {self.status}"
+
+# serializers.py
+from rest_framework import serializers
+from .models import Order
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'customer_name', 'status', 'total_amount', 'created_at']
+
+# views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status as http_status
+from .models import Order
+from .serializers import OrderSerializer
+
+class OrderListByStatusView(APIView):
+    """
+    GET /api/orders/?status=pending
+    Returns orders filtered by 'status'. If no status is given, returns all orders.
+    """
+
+    def get(self, request):
+        status_param = request.query_params.get('status')
+        valid_statuses = dict(Order.STATUS_CHOICES).keys()
+
+        if status_param:
+            if status_param not in valid_statuses:
+                return Response(
+                    {"error": f"Invalid status '{status_param}'. Valid options are: {list(valid_statuses)}"},
+                    status=http_status.HTTP_400_BAD_REQUEST
+                )
+            orders = Order.objects.filter(status=status_param)
+        else:
+            orders = Order.objects.all()
+
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data)
+
+# urls.py
+from django.urls import path
+from .views import OrderListByStatusView
+
+urlpatterns = [
+    path('api/orders/', OrderListByStatusView.as_view(), name='order-list-by-status'),
+]
+
+GET /api/orders/
+GET /api/orders/?status=pending
+GET /api/orders/?status=invalid
+{
+  "error": "Invalid status 'invalid'. Valid options are: ['pending', 'shipped', 'delivered', 'cancelled']"
+}
+
