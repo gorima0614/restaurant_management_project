@@ -1,0 +1,115 @@
+from django.db import models
+
+class UserQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_active=True)
+
+class UserManager(models.Manager):
+    def get_queryset(self):
+        return UserQuerySet(self.model, using=self._db)
+
+    def active(self):
+        return self.get_queryset().active()
+
+from django.contrib.auth.models import AbstractUser
+
+class User(AbstractUser):
+    # any custom fields
+
+    objects = UserManager()
+
+    def __str__(self):
+        return self.username
+
+# Get all active users
+active_users = User.objects.active()
+
+# Chain with other filters
+staff_active_users = User.objects.active().filter(is_staff=True)
+
+from django.contrib.auth.models import User
+
+class ActiveUserManager(UserManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active=True)
+
+class ActiveUser(User):
+    objects = ActiveUserManager()
+
+    class Meta:
+        proxy = True
+
+from django.contrib import admin
+from .models import User
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        return super().get_queryset(request).active()
+
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class UserQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_active=True)
+
+    def staff(self):
+        return self.filter(is_staff=True)
+
+    def superusers(self):
+        return self.filter(is_superuser=True)
+
+class UserManager(models.Manager):
+    def get_queryset(self):
+        return UserQuerySet(self.model, using=self._db)
+
+    def active(self):
+        return self.get_queryset().active()
+
+    def staff(self):
+        return self.get_queryset().staff()
+
+    def superusers(self):
+        return self.get_queryset().superusers()
+
+class User(AbstractUser):
+    # Add custom fields here if needed
+    # e.g., phone = models.CharField(max_length=15, blank=True)
+
+    objects = UserManager()
+
+    def __str__(self):
+        return self.username
+
+AUTH_USER_MODEL = 'yourapp.User'  # Replace 'yourapp' with your actual app name
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+# ✅ All active users
+active_users = User.objects.active()
+
+# ✅ All active staff users
+active_staff = User.objects.active().staff()
+
+# ✅ All superusers
+superusers = User.objects.superusers()
+
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .models import User
+
+@admin.register(User)
+class UserAdmin(BaseUserAdmin):
+    def get_queryset(self, request):
+        return super().get_queryset(request).active()
+
+class ActiveUser(User):
+    class Meta:
+        proxy = True
+        verbose_name = "Active User"
+        verbose_name_plural = "Active Users"
+
+    objects = UserManager()
