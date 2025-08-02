@@ -2,40 +2,50 @@
 
 from django.db import models
 
-class ActiveQuerySet(models.QuerySet):
-    def active(self):
-        return self.filter(active=True)
-
 class ActiveManager(models.Manager):
-    def get_queryset(self):
-        return ActiveQuerySet(self.model, using=self._db)
+    def filter_active(self):
+        return self.get_queryset().filter(is_active=True)
 
-    def active(self):
-        return self.get_queryset().active()
-
-class Product(models.Model):
+class Customer(models.Model):
     name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    active = models.BooleanField(default=True)
+    email = models.EmailField(unique=True)
+    is_active = models.BooleanField(default=True)
 
-    objects = ActiveManager()  # Use custom manager
+    objects = ActiveManager()  # Custom manager
 
     def __str__(self):
         return self.name
 
-# Get all active products
-Product.objects.active()
+# views.py
 
-# Equivalent to:
-Product.objects.filter(active=True)
+from django.http import JsonResponse
+from .models import Customer
 
-class Product(models.Model):
-    name = models.CharField(max_length=100)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    active = models.BooleanField(default=True)
+def active_customers_view(request):
+    active_customers = Customer.objects.filter_active()
+    data = [{'id': c.id, 'name': c.name, 'email': c.email} for c in active_customers]
+    return JsonResponse({'active_customers': data})
 
-    objects = models.Manager()       # Default manager
-    active_objects = ActiveManager() # Custom manager
+# urls.py
 
-# Usage:
-Product.active_objects.active()
+from django.urls import path
+from .views import active_customers_view
+
+urlpatterns = [
+    path('customers/active/', active_customers_view, name='active-customers'),
+]
+
+{
+  "active_customers": [
+    {
+      "id": 1,
+      "name": "Alice",
+      "email": "alice@example.com"
+    },
+    {
+      "id": 2,
+      "name": "Bob",
+      "email": "bob@example.com"
+    }
+  ]
+}
