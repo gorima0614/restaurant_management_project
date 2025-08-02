@@ -1,76 +1,65 @@
-#orders/utils.py
-def calculate_order_total(items):
-    """
-    Calulate total amount of an order.
-    :param items: list of dicts, each dict should contain 'quantity' and 'price' keys
-    :return: Decimal total amount
-    """
-    from decimal import Decimal
-
-    total = Decimal('0.00')
-    for item in items:
-        quantity = int(item.get('quantity', 0))
-        price = Decimal(str(item.get('price', 0)))
-        total += quatity * price
-    return total
-
-# orders/models.py
+# models.py
 
 from django.db import models
 
 class Order(models.Model):
-    customer_name = models.CharField(max_length=255)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    customer_name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order #{self.id} by {self.customer_name}"
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
-    product_name = models.CharField(max_length=255)
+    product_name = models.CharField(max_length=100)
     quantity = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
 
-# orders/views.py
+    def __str__(self):
+        return f"{self.product_name} x {self.quantity}"
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+    @property
+    def total_price(self):
+        return self.quantity * self.unit_price
+
+# utils.py
+
 from .models import Order, OrderItem
+from django.db.models import Sum, F
+
+def calculate_order_total(order_id):
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return None  # Or raise an exception
+
+    total = OrderItem.objects.filter(order=order).aggregate(
+        total_amount=Sum(F('quantity') * F('unit_price'))
+    )['total_amount'] or 0
+
+    return round(total, 2)
+
+# views.py
+
+from django.http import JsonResponse
 from .utils import calculate_order_total
 
-class CreateOrderAPIView(APIView):
-    def post(self, request):
-        customer_name = request.data.get('customer_name')
-        items = request.data.get('items', [])
+def order_total_view(request, order_id):
+    total = calculate_order_total(order_id)
+    if total is None:
+        return JsonResponse({'error': 'Order not found'}, status=404)
+    return JsonResponse({'order_id': order_id, 'total_amount': float(total)})
 
-        if not items:
-            return Response({'error': 'Order must include items.'}, status=status.HTTP_400_BAD_REQUEST)
+# urls.py
 
-        total = calculate_order_total(items)
-        order = Order.objects.create(customer_name=customer_name, total_amount=total)
+from django.urls import path
+from .views import order_total_view
 
-        for item in items:
-            OrderItem.objects.create(
-                order=order,
-                product_name=item['product_name'],
-                quantity=item['quantity'],
-                price=item['price']
-            )
-
-        return Response({
-            'message': 'Order created successfully',
-            'order_id': order.id,
-            'total_amount': str(order.total_amount)
-        }, status=status.HTTP_201_CREATED)
+urlpatterns = [
+    path('order/<int:order_id>/total/', order_total_view, name='order-total'),
+]
 
 {
-  "customer_name": "John Doe",
-  "items": [
-    { "product_name": "Pizza", "quantity": 2, "price": "12.50" },
-    { "product_name": "Coke", "quantity": 3, "price": "2.00" }
-  ]
-}
-
-{
-  "message": "Order created successfully",
-  "order_id": 12,
-  "total_amount": "31.00"
+  "order_id": 3,
+  "total_amount": 1599.99
 }
