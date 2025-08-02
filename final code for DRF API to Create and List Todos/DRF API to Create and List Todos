@@ -1,0 +1,100 @@
+# todos/models.py
+
+from django.db import models
+
+class Todo(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    is_completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+# todos/serializers.py
+
+from rest_framework import serializers
+from .models import Todo
+
+class TodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Todo
+        fields = '__all__'
+
+# todos/views.py
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Todo
+from .serializers import TodoSerializer
+from django.shortcuts import get_object_or_404
+
+class TodoListCreateAPIView(APIView):
+    def get(self, request):
+        todos = Todo.objects.all()
+        serializer = TodoSerializer(todos, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = TodoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class TodoDetailAPIView(APIView):
+    def get_object(self, pk):
+        return get_object_or_404(Todo, pk=pk)
+
+    def get(self, request, pk):
+        todo = self.get_object(pk)
+        serializer = TodoSerializer(todo)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        todo = self.get_object(pk)
+        serializer = TodoSerializer(todo, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        todo = self.get_object(pk)
+        todo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+# todos/urls.py
+
+from django.urls import path
+from .views import TodoListCreateAPIView, TodoDetailAPIView
+
+urlpatterns = [
+    path('todos/', TodoListCreateAPIView.as_view(), name='todo-list-create'),
+    path('todos/<int:pk>/', TodoDetailAPIView.as_view(), name='todo-detail'),
+]
+
+# project/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('todos.urls')),
+]
+
+python manage.py makemigrations todos
+python manage.py migrate
+
+{
+  "title": "Buy groceries",
+  "description": "Milk, Bread, Eggs"
+}
+
+{
+  "title": "Buy groceries (updated)",
+  "description": "Milk, Bread, Eggs, Cheese",
+  "is_completed": true
+}
