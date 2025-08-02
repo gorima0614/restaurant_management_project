@@ -1,0 +1,71 @@
+# products/models.py
+from django.db import models
+
+class ProductManager(models.Manager):
+    def get_active_products(self):
+        return self.filter(is_active=True)
+
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField()
+    is_active = models.BooleanField(default=True)
+
+    # Attach the custom manager
+    objects = ProductManager()
+
+    def __str__(self):
+        return self.name
+
+# products/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Product
+from .serializers import ProductSerializer
+
+class ActiveProductListAPIView(APIView):
+    def get(self, request):
+        active_products = Product.objects.get_active_products()
+        serializer = ProductSerializer(active_products, many=True)
+        return Response(serializer.data)
+
+# products/serializers.py
+from rest_framework import serializers
+from .models import Product
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'price', 'quantity', 'is_active']
+
+# products/urls.py
+from django.urls import path
+from .views import ActiveProductListAPIView
+
+urlpatterns = [
+    path('active-products/', ActiveProductListAPIView.as_view(), name='active-products'),
+]
+
+# main_project/urls.py
+from django.urls import path, include
+
+urlpatterns = [
+    path('api/', include('products.urls')),
+]
+
+[
+  {
+    "id": 1,
+    "name": "Pizza Dough",
+    "price": "5.99",
+    "quantity": 100,
+    "is_active": true
+  },
+  {
+    "id": 2,
+    "name": "Tomato Sauce",
+    "price": "2.49",
+    "quantity": 50,
+    "is_active": true
+  }
+]
