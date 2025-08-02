@@ -1,0 +1,118 @@
+from django.conf import settings
+from django.core.mail import send_mail
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+@receiver(post_save, sender=User)
+def send_welcome_email(sender, instance, created, **kwargs):
+    if created:
+        subject = "Welcome to Our Platform!"
+        message = f"Hi {instance.username},\n\nThank you for registering with us. We're excited to have you on board!"
+        from_email = settings.DEFAULT_FROM_EMAIL
+        recipient_list = [instance.email]
+
+        send_mail(subject, message, from_email, recipient_list)
+
+from django.apps import AppConfig
+
+class YourAppConfig(AppConfig):
+    name = 'yourapp'  # Replace with your app name
+
+    def ready(self):
+        import yourapp.signals  # Ensure signal handlers are loaded
+
+DEFAULT_FROM_EMAIL = 'noreply@example.com'
+
+# Configure your email backend (e.g., SMTP or console backend for testing)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # For development
+
+# For SMTP (in production), use this:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.yourprovider.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your_email'
+# EMAIL_HOST_PASSWORD = 'your_password'
+
+Subject: Welcome to Our Platform!
+From: noreply@example.com
+To: newuser@example.com
+Hi newuser,
+
+Thank you for registering with us. We're excited to have you on board!
+
+python manage.py shell
+from django.contrib.auth import get_user_model
+User = get_user_model()
+User.objects.create_user(username="newuser", email="newuser@example.com", password="test123")
+
+pip install celery
+import os
+from celery import Celery
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'your_project.settings')
+
+app = Celery('your_project')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
+
+from .celery import app as celery_app
+
+__all__ = ['celery_app']
+
+from celery import shared_task
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
+
+@shared_task
+def send_welcome_email_task(username, email):
+    subject = "Welcome to Our Platform!"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to = [email]
+
+    text_content = f"Hi {username},\n\nThank you for registering!"
+    html_content = f"""
+        <html>
+        <body>
+            <h2>Hi {username},</h2>
+            <p>Thank you for registering with us. We're excited to have you on board!</p>
+        </body>
+        </html>
+    """
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth import get_user_model
+from .tasks import send_welcome_email_task
+
+User = get_user_model()
+
+@receiver(post_save, sender=User)
+def trigger_welcome_email(sender, instance, created, **kwargs):
+    if created and instance.email:
+        send_welcome_email_task.delay(instance.username, instance.email)
+
+DEFAULT_FROM_EMAIL = 'noreply@yourdomain.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.yourprovider.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_email'
+EMAIL_HOST_PASSWORD = 'your_password'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+celery -A your_project worker --loglevel=info
+python manage.py shell
+from django.contrib.auth import get_user_model
+User = get_user_model()
+User.objects.create_user(username="async_user", email="async@example.com", password="pass123")
+
+
+
