@@ -1,0 +1,89 @@
+# orders/models.py
+from django.db import models
+
+class Order(models.Model):
+    customer_name = models.CharField(max_length=100)
+    customer_email = models.EmailField()
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order #{self.id} by {self.customer_name}"
+
+# orders/signals.py
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.core.mail import send_mail
+from .models import Order
+
+@receiver(post_save, sender=Order)
+def send_order_confirmation_email(sender, instance, created, **kwargs):
+    if created:
+        subject = f"Thank you for your order, {instance.customer_name}!"
+        message = (
+            f"Hi {instance.customer_name},\n\n"
+            f"Your order has been received.\n"
+            f"Order ID: {instance.id}\n"
+            f"Total Amount: ${instance.total_amount}\n"
+            f"Order Date: {instance.created_at.strftime('%Y-%m-%d %H:%M')}\n\n"
+            "We will notify you once it's shipped.\n\n"
+            "Best regards,\nRestaurant Team"
+        )
+        send_mail(
+            subject,
+            message,
+            'noreply@restaurant.com',  # From email (make sure this is configured)
+            [instance.customer_email],
+            fail_silently=False
+        )
+
+# orders/apps
+.py
+from django.apps import AppConfig
+
+class OrdersConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'orders'
+
+    def ready(self):
+        import orders.signals  # Ensure signal is registered
+
+# models.py (at the end)
+import orders.signals
+
+# settings.py
+
+# Development backend (prints emails to terminal)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# For production (example using SMTP)
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your_email@example.com'
+# EMAIL_HOST_PASSWORD = 'your_email_password'
+
+python manage.py shell
+from orders.models import Order
+Order.objects.create(
+    customer_name="Alice",
+    customer_email="alice@example.com",
+    total_amount=49.99
+)
+
+Subject: Thank you for your order, Alice!
+From: noreply@restaurant.com
+To: ['alice@example.com']
+Body:
+Hi Alice,
+
+Your order has been received.
+Order ID: 1
+Total Amount: $49.99
+Order Date: 2025-08-01 21:40
+
+We will notify you once it's shipped.
+
+Best regards,
+Restaurant Team
