@@ -1,0 +1,86 @@
+Step 1 : Define a custom manager
+from django.contrib.auth.models import BaseUserManager
+
+class UserManager(BaseUserManager):
+    def active(self):
+        return self.get_queryset().filter(is_active=True)
+
+Step 2 : Attach the manager to your custom user models
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class User(AbstractUser):
+    # any custom fields if you have them
+
+    # Attach the custom manager
+    objects = UserManager()
+
+Step 3 : Usage example
+active_users = User.objects.active()
+
+##Chainable queryst for more flexibility
+from django.db import models
+
+class UserQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_active=True)
+
+class UserManager(models.Manager):
+    def get_queryset(self):
+        return UserQuerySet(self.model, using=self._db)
+
+    def active(self):
+        return self.get_queryset().active()
+
+>>Then use:
+class User(AbstractUser):
+    objects = UserManager()
+
+User.objects.active().filter(email__icontains="gmail.com")
+
+#manger.py
+from django.db import models
+
+class UserQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(is_active=True)
+
+class UserManager(models.Manager):
+    def get_queryset(self):
+        return UserQuerySet(self.model, using=self._db)
+
+    def active(self):
+        return self.get_queryset().active()
+
+#models.py
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from .managers import UserManager  # or import from same file if in models.py
+
+class User(AbstractUser):
+    # Add any custom fields if needed
+
+    # Attach custom manager
+    objects = UserManager()
+
+    def __str__(self):
+        return self.username
+
+#Usage in code
+# Get all active users
+active_users = User.objects.active()
+
+# Filter active users by email domain
+gmail_users = User.objects.active().filter(email__icontains='gmail.com')
+
+#Admin filter
+from django.contrib import admin
+from .models import User
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        return super().get_queryset(request).active()
+
+
+
