@@ -1,0 +1,56 @@
+1. Ensure the RestaurantLocation model exists
+# models.py
+from django.db import models
+
+class RestaurantLocation(models.Model):
+    address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    zip_code = models.CharField(max_length=20)
+
+    def __str__(self):
+        return f"{self.address}, {self.city}, {self.state} - {self.zip_code}"
+
+2. Add a location instance in the Admin
+
+3. Update the Homepage View
+# views.py
+from django.shortcuts import render, redirect
+from .models import RestaurantLocation
+from .forms import ContactForm
+from django.conf import settings
+
+def home(request):
+    form = ContactForm(request.POST or None)
+    submitted = request.method == "POST" and form.is_valid()
+
+    if submitted:
+        form.save()
+        return redirect('/?submitted=true')
+
+    if 'submitted' in request.GET:
+        submitted = True
+
+    location = RestaurantLocation.objects.first()  # Assumes only one location
+
+    context = {
+        "restaurant_name": getattr(settings, 'RESTAURANT_NAME', 'My Restaurant'),
+        "form": form,
+        "submitted": submitted,
+        "location": location,
+    }
+    return render(request, "home.html", context)
+
+4. Update the Homepage Template (home.html)
+<!-- templates/home.html -->
+<h2>Our Address</h2>
+
+{% if location %}
+<p>
+  {{ location.address }}<br>
+  {{ location.city }}, {{ location.state }} - {{ location.zip_code }}
+</p>
+{% else %}
+<p>Address information is not available.</p>
+{% endif %}
+
