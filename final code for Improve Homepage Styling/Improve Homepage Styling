@@ -1,71 +1,138 @@
-Step 1: Create Static Folder Structure
-yourapp/
-├── static/
-│   └── css/
-│       └── styles.css
-
-
-Step 2: Add Some Basic Styles
-/* static/css/styles.css */
-
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #fafafa;
-    color: #333;
-    margin: 0;
-    padding: 0;
-}
-
-header {
-    background-color: #333;
-    color: white;
-    padding: 20px;
-    text-align: center;
-}
-
-h1 {
-    color: #c0392b;
-    margin-bottom: 10px;
-}
-
-p {
-    font-size: 1.1em;
-    margin: 10px 0;
-    padding: 0 20px;
-}
-
-footer {
-    background-color: #eee;
-    padding: 15px;
-    text-align: center;
-    font-size: 0.9em;
-    margin-top: 50px;
-}
-
-Step 3: Load Static Files in Template
-<!-- templates/home.html -->
-{% load static %}
+Sample home.html Template with Improved Inline Styling
 {% extends 'base.html' %}
 
-{% block title %}Home - The Tasty Spoon{% endblock %}
+{% block title %}Welcome to My Restaurant{% endblock %}
 
 {% block content %}
-<header>
-    <h1>Welcome to {{ restaurant_name }}</h1>
-</header>
+    <div style="
+        max-width: 800px;
+        margin: 40px auto;
+        text-align: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    ">
+        <h1 style="font-size: 40px; color: #2c3e50;">Welcome to My Restaurant</h1>
+        <p style="font-size: 18px; color: #555; margin-bottom: 30px;">
+            Enjoy delicious meals and great service in a cozy atmosphere.
+        </p>
 
-<main>
-    <p>Enjoy our curated selection of delicious dishes made with passion.</p>
-</main>
+        <!-- Search Bar -->
+        <form method="get" action="{% url 'home' %}" style="margin-bottom: 20px;">
+            <input
+                type="text"
+                name="q"
+                placeholder="Search for menu items..."
+                style="padding: 10px; width: 250px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;"
+            >
+            <button
+                type="submit"
+                style="padding: 10px 16px; background-color: #28a745; color: white; border: none; border-radius: 5px;"
+            >
+                Search
+            </button>
+        </form>
+
+        <!-- Logo -->
+        <img src="{% static 'images/logo.png' %}" alt="Restaurant Logo" style="width: 150px; margin-top: 20px;">
+    </div>
 {% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/styles.css' %}">
-{% endblock %}
 
+In python 
+views.py – Define the Homepage View
+# views.py
+from django.shortcuts import render
+from datetime import datetime
+
+def home_view(request):
+    query = request.GET.get('q')  # Optional: captures search query
+    context = {
+        'year': datetime.now().year,
+        'query': query,
+    }
+    return render(request, 'home.html', context)
+
+2. urls.py – Connect the View
+# urls.py
+from django.urls import path
+from .views import home_view
+
+urlpatterns = [
+    path('', home_view, name='home'),
+]
+
+3. base.html – Shared Layout + Footer
+<!-- templates/base.html -->
+{% load static %}
+
+<!DOCTYPE html>
+<html>
 <head>
-    <title>{% block title %}{% endblock %}</title>
-    {% block extra_css %}{% endblock %}
+    <title>{% block title %}My Restaurant{% endblock %}</title>
 </head>
+<body style="margin: 0; background-color: #f0f2f5;">
+
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 15px; background: #222; color: #eee; margin-top: 40px;">
+        &copy; {{ year }} My Restaurant. All rights reserved.
+    </footer>
+</body>
+</html>
+
+4. home.html – Styled Homepage Template
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+{% block title %}Welcome to My Restaurant{% endblock %}
+
+{% block content %}
+<div style="
+    max-width: 800px;
+    margin: 40px auto;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+">
+    <h1 style="font-size: 40px; color: #2c3e50;">Welcome to My Restaurant</h1>
+    <p style="font-size: 18px; color: #555; margin-bottom: 30px;">
+        Enjoy delicious meals and great service in a cozy atmosphere.
+    </p>
+
+    <!-- Search Bar -->
+    <form method="get" action="{% url 'home' %}" style="margin-bottom: 20px;">
+        <input
+            type="text"
+            name="q"
+            placeholder="Search for menu items..."
+            style="padding: 10px; width: 250px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;"
+        >
+        <button
+            type="submit"
+            style="padding: 10px 16px; background-color: #28a745; color: white; border: none; border-radius: 5px;"
+        >
+            Search
+        </button>
+    </form>
+
+    <!-- Logo -->
+    <img src="{% static 'images/logo.png' %}" alt="Restaurant Logo" style="width: 150px; margin-top: 20px;">
+</div>
+{% endblock %}
+
+5. Place Your Logo in Static Files
+/your_project/
+    /static/
+        /images/
+            logo.png
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [ BASE_DIR / "static" ]
 
 
