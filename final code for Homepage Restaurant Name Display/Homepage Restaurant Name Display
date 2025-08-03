@@ -1,0 +1,18 @@
+Step 1 : add settings.py
+# settings.py
+RESTAURANT_NAME = "Tasty Bites"
+
+Step 2: Access it in the view
+# views.py
+from django.conf import settings
+from django.shortcuts import render
+
+def home(request):
+    context = {
+        "restaurant_name": settings.RESTAURANT_NAME
+    }
+    return render(request, "home.html", context)
+
+Step 3: Display in template
+<!-- home.html -->
+<h1>Welcome to {{ restaurant_name }}</h1>
