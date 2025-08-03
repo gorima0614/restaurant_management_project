@@ -1,0 +1,76 @@
+Step 1: Store the Address in settings.py
+# settings.py
+RESTAURANT_ADDRESS = "123 Food Street, Flavor Town, India"
+GOOGLE_MAPS_EMBED_URL = "https://www.google.com/maps/embed?pb=YOUR_EMBED_URL_HERE"
+
+Step 2: Update views.py to pass address and map
+# views.py
+from django.shortcuts import render
+from django.conf import settings
+from .forms import ContactForm
+from .models import RestaurantInfo  # Optional if using model-based name
+
+def home(request):
+    form = ContactForm(request.POST or None)
+    submitted = False
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect('/?submitted=true')
+
+    if 'submitted' in request.GET:
+        submitted = True
+
+    context = {
+        "restaurant_name": getattr(settings, 'RESTAURANT_NAME', 'My Restaurant'),
+        "restaurant_address": getattr(settings, 'RESTAURANT_ADDRESS', 'Unknown Address'),
+        "google_maps_url": getattr(settings, 'GOOGLE_MAPS_EMBED_URL', ''),
+        "form": form,
+        "submitted": submitted,
+    }
+    return render(request, "home.html", context)
+
+Step 3: Update home.html Template
+<!-- templates/home.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ restaurant_name }}</title>
+</head>
+<body>
+    <h1>Welcome to {{ restaurant_name }}</h1>
+
+    <!-- Address Section -->
+    <h2>Our Location</h2>
+    <p>{{ restaurant_address }}</p>
+
+    {% if google_maps_url %}
+    <iframe
+        src="{{ google_maps_url }}"
+        width="600"
+        height="450"
+        style="border:0;"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+    {% endif %}
+
+    <!-- Contact Form Section -->
+    <h2>Contact Us</h2>
+    {% if submitted %}
+        <p style="color: green;">Thank you for your submission!</p>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+
+Example Google Maps Embed URL
+GOOGLE_MAPS_EMBED_URL = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.387177378847!2d144.9574436153181!3d-37.81610797975119!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d43f0fafe73%3A0x1d7c7bb63a09cb64!2sSome%20Restaurant!5e0!3m2!1sen!2sin!4v1693303292280!5m2!1sen!2sin"
+
+
