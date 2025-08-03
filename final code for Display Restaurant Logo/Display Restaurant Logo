@@ -1,0 +1,47 @@
+1. Put Your Logo in the Static Folder
+your_project/
+├── static/
+│   └── images/
+│       └── logo.png
+
+
+2. Configure settings.py for Static Files
+# settings.py
+
+STATIC_URL = '/static/'
+
+# (Optional if not already added)
+import os
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+
+
+3. Update the Homepage Template (e.g., home.html)
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurant Homepage</title>
+    <style>
+        .logo {
+            display: block;
+            margin: 0 auto;
+            width: 200px; /* Adjust as needed */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logo Display -->
+    <img src="{% static 'images/logo.png' %}" alt="Restaurant Logo" class="logo">
+
+    <!-- Rest of your homepage content -->
+
+</body>
+</html>
+
+
+4. Ensure Static Files Are Collected in Production
+python manage.py collectstatic
