@@ -1,0 +1,30 @@
+Step 1: Define the MenuItem Model
+# models.py
+from django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def __str__(self):
+        return self.name
+
+Step 2: Make Migrations
+# Detect changes in models
+python manage.py makemigrations
+
+Migrations for 'restaurant_app':
+  restaurant_app/migrations/0001_initial.py
+    - Create model MenuItem
+
+Step 3: Apply Migrations to the Database
+python manage.py migrate
+
+Step 4: Register the Model in Admin
+# admin.py
+from django.contrib import admin
+from .models import MenuItem
+
+admin.site.register(MenuItem)
+
