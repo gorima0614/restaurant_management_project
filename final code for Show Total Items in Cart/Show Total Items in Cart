@@ -1,0 +1,44 @@
+Step 1 : Store Cart Data in Session
+# cart structure example stored in session:
+# request.session['cart'] = {
+#     '1': 2,  # MenuItem with id=1, quantity=2
+#     '3': 1,  # MenuItem with id=3, quantity=1
+# }
+
+Step 2 : Helper Function to get Cart Count
+# utils.py (or in views.py if small project)
+def get_cart_item_count(session):
+    cart = session.get('cart', {})
+    return sum(cart.values())
+
+Step 3 : Update Homepage view to pass Cart Count
+# views.py
+from .models import RestaurantLocation
+from .utils import get_cart_item_count  # if placed in utils.py
+
+def home(request):
+    location = RestaurantLocation.objects.first()
+    cart_count = get_cart_item_count(request.session)
+
+    return render(request, 'home.html', {
+        'location': location,
+        'cart_count': cart_count,
+    })
+
+Step 4 : Display the Cart Count in Template
+<!-- templates/home.html -->
+<div class="cart-summary" style="float: right;">
+     <strong>Cart:</strong> {{ cart_count }} item{{ cart_count|pluralize }}
+</div>
+
+Step 5 : Update Cart in Other views
+# views.py
+def add_to_cart(request, item_id):
+    cart = request.session.get('cart', {})
+    cart[str(item_id)] = cart.get(str(item_id), 0) + 1
+    request.session['cart'] = cart
+    return redirect('home')  # or wherever
+
+
+
+
