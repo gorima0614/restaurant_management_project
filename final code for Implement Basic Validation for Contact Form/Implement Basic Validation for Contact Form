@@ -1,0 +1,55 @@
+Step 1: Update Your Contact Form with Validation
+# forms.py
+from django import forms
+
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=100, required=True)
+    email = forms.EmailField(required=True)  # Built-in email validation
+    message = forms.CharField(
+        widget=forms.Textarea,
+        required=True,
+        min_length=10,
+        help_text="Please enter at least 10 characters."
+    )
+
+Step 2: Improve Form Feedback in Template
+<!-- templates/contact.html -->
+<h1>Contact Us</h1>
+
+{% if sent %}
+    <p style="color: green;">Thank you! Your message has been sent.</p>
+{% endif %}
+
+<form method="POST" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <p>
+        {{ form.name.label_tag }}<br>
+        {{ form.name }}<br>
+        {{ form.name.errors }}
+    </p>
+    <p>
+        {{ form.email.label_tag }}<br>
+        {{ form.email }}<br>
+        {{ form.email.errors }}
+    </p>
+    <p>
+        {{ form.message.label_tag }}<br>
+        {{ form.message }}<br>
+        {{ form.message.errors }}
+    </p>
+    <button type="submit">Send</button>
+</form>
+
+Step 3: View Logic Already Handles Validation
+# views.py
+def contact_view(request):
+    form = ContactForm(request.POST or None)
+    sent = False
+
+    if request.method == "POST" and form.is_valid():
+        # Send email logic here (already implemented earlier)
+        sent = True
+
+    return render(request, 'contact.html', {'form': form, 'sent': sent})
+
