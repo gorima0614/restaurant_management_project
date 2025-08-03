@@ -1,0 +1,49 @@
+Step 1: Use a Base Template
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Restaurant{% endblock %}</title>
+</head>
+<body>
+    {% block content %}{% endblock %}
+
+    <footer style="margin-top: 50px; padding: 10px; background-color: #f2f2f2; text-align: center;">
+        <p>&copy; {{ current_year }} The Tasty Spoon. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+
+Step 2: Add a Context Processor for the Current Year
+# yourapp/context_processors.py
+from datetime import datetime
+
+def current_year(request):
+    return {
+        'current_year': datetime.now().year
+    }
+# settings.py
+TEMPLATES = [
+    {
+        # ...
+        'OPTIONS': {
+            'context_processors': [
+                # existing context processors...
+                'yourapp.context_processors.current_year',
+            ],
+        },
+    },
+]
+
+
+Step 3: Extend the Base in All Templates
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Welcome to {{ restaurant_name }}</h1>
+<p>Enjoy your stay!</p>
+{% endblock %}
+
+
