@@ -1,0 +1,54 @@
+1. HTML Form in Template (home.html)
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurant Homepage</title>
+</head>
+<body>
+
+    <!-- Search Bar -->
+    <form method="get" action="{% url 'home' %}">
+        <input
+            type="text"
+            name="q"
+            placeholder="Search for menu items..."
+            style="padding: 8px; width: 250px; border-radius: 5px; border: 1px solid #ccc;"
+        >
+        <button
+            type="submit"
+            style="padding: 8px 12px; border-radius: 5px; border: none; background-color: #28a745; color: white;"
+        >
+            Search
+        </button>
+    </form>
+
+</body>
+</html>
+
+
+2. Update URLconf (urls.py)
+# urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home_view, name='home'),
+]
+
+
+3. Handle the Query in Your View (views.py)
+# views.py
+from django.shortcuts import render
+
+def home_view(request):
+    query = request.GET.get('q')
+    if query:
+        print(f"User searched for: {query}")  # Just to show it's working
+
+    return render(request, 'home.html', {})
+
+
+Now, when a user types something and hits "Search", the page reloads and the terminal shows:
+User searched for: pizza
