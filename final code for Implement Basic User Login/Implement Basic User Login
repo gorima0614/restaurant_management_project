@@ -1,0 +1,94 @@
+1. Use Django’s Built-in Login View
+Django provides a login view at django.contrib.auth.views.LoginView
+
+2. Configure URLs for Login in urls.py
+# urls.py
+from django.urls import path
+from django.contrib.auth.views import LoginView
+from .views import home_view, order_view, faq_view, privacy_policy_view
+
+urlpatterns = [
+    path('', home_view, name='home'),
+    path('order/', order_view, name='place_order'),
+    path('faq/', faq_view, name='faq'),
+    path('privacy-policy/', privacy_policy_view, name='privacy_policy'),
+
+    # Built-in login view (uses your custom template)
+    path('login/', LoginView.as_view(template_name='login.html'), name='login'),
+]
+
+
+3. Create login.html Template
+{% extends 'base.html' %}
+{% block title %}Login - My Restaurant{% endblock %}
+
+{% block content %}
+<div style="
+    max-width: 400px;
+    margin: 50px auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+">
+    <h2 style="text-align: center; color: #2c3e50;">Login</h2>
+
+    {% if form.errors %}
+        <p style="color: red; text-align: center;">Invalid username or password.</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <div style="margin-bottom: 15px;">
+            <label for="id_username">Username:</label><br>
+            <input type="text" name="username" id="id_username" required style="width: 100%; padding: 8px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label for="id_password">Password:</label><br>
+            <input type="password" name="password" id="id_password" required style="width: 100%; padding: 8px;">
+        </div>
+        <div style="text-align: center;">
+            <button type="submit" style="
+                padding: 10px 20px;
+                background-color: #007bff;
+                color: white;
+                border: none;
+                border-radius: 5px;
+            ">
+                Login
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+4. Link to Login Page from Homepage
+<a href="{% url 'login' %}" style="color: #007bff; text-decoration: underline;">Login</a>
+
+5. Set Redirect After Login
+LOGIN_REDIRECT_URL = '/'  # Redirect to homepage after successful login
+
+6. Show Login Status in base.html
+<!-- Inside base.html -->
+<div style="text-align: right; padding: 10px 20px; background-color: #f5f5f5;">
+    {% if user.is_authenticated %}
+        Hello, {{ user.username }} |
+        <a href="{% url 'logout' %}">Logout</a>
+    {% else %}
+        <a href="{% url 'login' %}">Login</a>
+    {% endif %}
+</div>
+
+from django.contrib.auth.views import LogoutView
+
+path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
+
+
+Done!!!
+You now have:
+A login page with basic error handling
+A login form using Django's built-in authentication
+A link to login from the homepage
+A logout option
