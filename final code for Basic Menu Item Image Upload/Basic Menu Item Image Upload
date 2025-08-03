@@ -1,0 +1,55 @@
+ 1. Update the MenuItem Model
+ # models.py
+from django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    image = models.ImageField(upload_to='menu_images/', blank=True, null=True)  # New field
+
+    def __str__(self):
+        return self.name
+
+2. Update Migrations
+python manage.py makemigrations
+python manage.py migrate
+
+3. Update Settings for Media Files
+import os
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+4. Serve Media Files in Development
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    # your app routes
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+5. Show Images in Template (e.g., menu.html)
+<!-- templates/menu.html -->
+<h1>{{ restaurant_name }} - Menu</h1>
+
+<ul>
+  {% for item in menu_items %}
+    <li>
+      <strong>{{ item.name }}</strong><br>
+      {{ item.description }}<br>
+      ₹{{ item.price }}<br>
+      {% if item.image %}
+        <img src="{{ item.image.url }}" alt="{{ item.name }}" width="200">
+      {% endif %}
+    </li>
+  {% empty %}
+    <li>No menu items available.</li>
+  {% endfor %}
+</ul>
+
+6. Add/Upload Images via Admin
+
+7. Ensure You Have Pillow Installed
+pip install Pillow
+
