@@ -1,0 +1,57 @@
+Step 1: Update the RestaurantLocation Model
+# models.py
+from django.db import models
+from django.contrib.postgres.fields import JSONField  # Only for PostgreSQL
+
+class RestaurantLocation(models.Model):
+    address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    zip_code = models.CharField(max_length=20)
+    opening_hours = models.JSONField(blank=True, null=True)  # New field
+
+    def __str__(self):
+        return f"{self.address}, {self.city}, {self.state} - {self.zip_code}"
+
+Step 2: Make & Apply Migrations
+python manage.py makemigrations
+python manage.py migrate
+
+Step 3: Add Opening Hours via Admin
+{
+  "Monday": "9:00 AM - 9:00 PM",
+  "Tuesday": "9:00 AM - 9:00 PM",
+  "Wednesday": "9:00 AM - 9:00 PM",
+  "Thursday": "9:00 AM - 10:00 PM",
+  "Friday": "9:00 AM - 10:30 PM",
+  "Saturday": "10:00 AM - 11:00 PM",
+  "Sunday": "Closed"
+}
+
+Step 4: Update Homepage View
+# views.py
+from .models import RestaurantLocation
+
+def home(request):
+    location = RestaurantLocation.objects.first()
+    opening_hours = location.opening_hours if location else {}
+
+    return render(request, 'home.html', {
+        'location': location,
+        'opening_hours': opening_hours,
+    })
+
+Step 5: Display Opening Hours in Template
+<!-- templates/home.html -->
+<h2>Opening Hours</h2>
+
+{% if opening_hours %}
+  <ul>
+    {% for day, hours in opening_hours.items %}
+      <li><strong>{{ day }}:</strong> {{ hours }}</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Opening hours not available.</p>
+{% endif %}
+
