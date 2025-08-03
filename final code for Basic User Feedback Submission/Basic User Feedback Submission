@@ -1,0 +1,99 @@
+1. Create the Feedback Model
+from django.db import models
+
+class Feedback(models.Model):
+    name = models.CharField(max_length=100)
+    message = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback from {self.name} on {self.submitted_at.strftime('%Y-%m-%d')}"
+
+
+2. Make Migrations
+python manage.py makemigrations
+python manage.py migrate
+
+
+ 3. Create a Django Form
+ from django import forms
+from .models import Feedback
+
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = Feedback
+        fields = ['name', 'message']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Your Name'}),
+            'message': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Your Feedback'}),
+        }
+
+
+4. Create the View
+from django.shortcuts import render, redirect
+from .forms import FeedbackForm
+
+def feedback_view(request):
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return render(request, 'feedback_thankyou.html')
+    else:
+        form = FeedbackForm()
+    return render(request, 'feedback.html', {'form': form})
+
+
+5. Add URL Route
+from django.urls import path
+from .views import feedback_view
+
+urlpatterns = [
+    path('feedback/', feedback_view, name='feedback'),
+]
+
+
+6. Create feedback.html Template
+{% extends 'base.html' %}
+{% block title %}Feedback{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: auto; padding: 40px;">
+    <h2>Submit Your Feedback</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" style="
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        ">Submit</button>
+    </form>
+</div>
+{% endblock %}
+
+
+7. Create feedback_thankyou.html Template
+{% extends 'base.html' %}
+{% block title %}Thank You{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-top: 50px;">
+    <h2>Thank you for your feedback!</h2>
+    <a href="/" style="text-decoration: none; color: #007bff;">← Back to Home</a>
+</div>
+{% endblock %}
+
+
+
+Done!!
+Users can submit name and feedback.
+Data is stored in DB.
+CSRF protected.
+Simple thank you message after submission.
+
+
+
