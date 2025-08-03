@@ -1,0 +1,66 @@
+1. Create a 404.html Template
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Page Not Found - My Restaurant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #fafafa;
+        }
+        h1 {
+            font-size: 48px;
+            color: #e74c3c;
+        }
+        p {
+            font-size: 20px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>404 - Page Not Found</h1>
+    <p>Sorry, we couldn't find that page.</p>
+    <p><a href="{% url 'home' %}">Return to Homepage</a></p>
+</body>
+</html>
+
+
+2. Set DEBUG = False in settings.py
+# settings.py
+DEBUG = False
+
+ALLOWED_HOSTS = ['*']  # or use your domain/IP in production
+
+
+3. Serve Static Files Correctly in Production
+# settings.py
+# Ensure you have this:
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+python manage.py collectstatic
+
+
+4. Optional: Custom 404 View for Logging
+# views.py
+from django.shortcuts import render
+
+def custom_404_view(request, exception):
+    return render(request, '404.html', status=404)
+
+#urls.py
+# urls.py
+handler404 = 'yourapp.views.custom_404_view'
+
+
+5. Test It
+http://localhost:8000/thispagedoesnotexist/
+
+If DEBUG = False, you should see your custom 404 page.
+
+
+
