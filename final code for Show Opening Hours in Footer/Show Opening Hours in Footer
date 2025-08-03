@@ -1,0 +1,73 @@
+Step 1: Ensure Opening Hours Are in the Model
+# models.py
+class RestaurantLocation(models.Model):
+    # ... other fields
+    opening_hours = models.JSONField(blank=True, null=True)
+
+{
+  "Mon-Fri": "11am - 9pm",
+  "Sat-Sun": "10am - 10pm"
+}
+
+Step 2: Create a Base Template
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Restaurant{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+    {% block content %}{% endblock %}
+
+    <footer class="footer" style="text-align:center; padding: 20px; background-color: #f5f5f5; margin-top: 50px;">
+        {% if location and location.opening_hours %}
+            <h5>🕒 Opening Hours</h5>
+            <ul style="list-style: none; padding: 0;">
+                {% for day, hours in location.opening_hours.items %}
+                    <li>{{ day }}: {{ hours }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </footer>
+
+</body>
+</html>
+
+Step 3: Pass location to Context Globally
+# context_processors.py
+from .models import RestaurantLocation
+
+def restaurant_info(request):
+    location = RestaurantLocation.objects.first()
+    return {'location': location}
+
+# settings.py
+TEMPLATES = [
+    {
+        'OPTIONS': {
+            'context_processors': [
+                # default processors...
+                'django.template.context_processors.request',
+                'yourapp.context_processors.restaurant_info',  # ✅ add this
+            ],
+        },
+    },
+]
+
+Step 4: Use the Base Template on Pages
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+    <h1>Welcome to Our Restaurant</h1>
+    <!-- homepage content -->
+{% endblock %}
+
+
+
+Result
+🕒 Opening Hours
+Mon-Fri: 11am - 9pm  
+Sat-Sun: 10am - 10pm
