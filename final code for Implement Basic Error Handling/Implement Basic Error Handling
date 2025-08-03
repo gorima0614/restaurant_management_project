@@ -1,0 +1,43 @@
+ Step 1: Example View Before Error Handling
+# views.py
+from django.shortcuts import render
+from .models import RestaurantInfo
+
+def home(request):
+    restaurant = RestaurantInfo.objects.first()
+    return render(request, 'home.html', {'restaurant_name': restaurant.name})
+
+
+Step 2: Add Basic Error Handling
+# views.py
+from django.shortcuts import render
+from .models import RestaurantInfo
+from django.db import DatabaseError
+
+def home(request):
+    try:
+        restaurant = RestaurantInfo.objects.first()
+        restaurant_name = restaurant.name if restaurant else "Our Restaurant"
+    except DatabaseError:
+        restaurant_name = "Our Restaurant (DB Error)"
+
+    return render(request, 'home.html', {'restaurant_name': restaurant_name})
+
+
+ Step 3: Update Template
+ <h1>Welcome to {{ restaurant_name }}</h1>
+
+
+Tip: Log the Error
+import logging
+
+logger = logging.getLogger(__name__)
+
+def home(request):
+    try:
+        restaurant = RestaurantInfo.objects.first()
+        restaurant_name = restaurant.name if restaurant else "Our Restaurant"
+    except DatabaseError as e:
+        logger.error(f"Database error: {e}")
+        restaurant_name = "Our Restaurant (Error)"
+
