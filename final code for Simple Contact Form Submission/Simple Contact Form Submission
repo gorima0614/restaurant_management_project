@@ -1,0 +1,81 @@
+Step 1: Create the ContactSubmission Model
+# models.py
+from django.db import models
+
+class ContactSubmission(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.email}"
+
+Step 2: Create a Django Form# forms.py
+from django import forms
+from .models import ContactSubmission
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = ContactSubmission
+        fields = ['name', 'email']
+
+Step 3: Add the View Logic
+# views.py
+from django.shortcuts import render, redirect
+from .forms import ContactForm
+from .models import ContactSubmission
+
+def contact_view(request):
+    form = ContactForm(request.POST or None)
+    submitted = False
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('/contact/?submitted=true')
+
+    if 'submitted' in request.GET:
+        submitted = True
+
+    return render(request, 'contact.html', {
+        'form': form,
+        'submitted': submitted
+    })
+
+Step 4: Create the Template (contact.html)
+<!-- templates/contact.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contact Us</title>
+</head>
+<body>
+    <h1>Contact Us</h1>
+
+    {% if submitted %}
+        <p style="color: green;">Thank you for contacting us!</p>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+
+Step 5: Add URL Routing
+# urls.py
+from django.urls import path
+from .views import contact_view
+
+urlpatterns = [
+    path('contact/', contact_view, name='contact'),
+]
+
+Step 6: Add to Admin Panel
+# admin.py
+from django.contrib import admin
+from .models import ContactSubmission
+
+admin.site.register(ContactSubmission)
+
