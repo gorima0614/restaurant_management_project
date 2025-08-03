@@ -1,0 +1,68 @@
+Step 1: Update the View (home or menu_view)# views.py
+from django.shortcuts import render
+from .models import MenuItem, RestaurantLocation
+from .forms import ContactForm
+
+def home(request):
+    form = ContactForm(request.POST or None)
+    submitted = False
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('/?submitted=true')
+
+    if 'submitted' in request.GET:
+        submitted = True
+
+    query = request.GET.get('q', '')  # Get search query from URL
+    if query:
+        menu_items = MenuItem.objects.filter(name__icontains=query)
+    else:
+        menu_items = MenuItem.objects.all()
+
+    location = RestaurantLocation.objects.first()
+
+    context = {
+        "form": form,
+        "submitted": submitted,
+        "menu_items": menu_items,
+        "location": location,
+        "query": query,
+    }
+    return render(request, "home.html", context)
+
+Step 2: Update Template with Search Bar (home.html)
+<!-- templates/home.html -->
+<h1>Welcome to Our Restaurant</h1>
+
+<!-- Address -->
+{% if location %}
+  <h2>Our Address</h2>
+  <p>{{ location.address }}, {{ location.city }}, {{ location.state }} - {{ location.zip_code }}</p>
+{% endif %}
+
+<!-- Search Bar -->
+<form method="GET" action="">
+  <input type="text" name="q" placeholder="Search menu..." value="{{ query }}">
+  <button type="submit">Search</button>
+</form>
+
+<!-- Menu Results -->
+<h2>Menu Items</h2>
+{% if menu_items %}
+  <ul>
+    {% for item in menu_items %}
+      <li>
+        <strong>{{ item.name }}</strong><br>
+        {{ item.description }}<br>
+        ₹{{ item.price }}
+        {% if item.image %}
+          <br><img src="{{ item.image.url }}" width="200">
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No menu items found.</p>
+{% endif %}
+
