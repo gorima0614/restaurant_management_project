@@ -1,0 +1,79 @@
+Step 1: Update views.py to Pass Current Datetime
+# views.py
+from django.shortcuts import render
+from datetime import datetime
+
+def home_view(request):
+    context = {
+        'year': datetime.now().year,
+        'current_datetime': datetime.now(),  # add this line
+    }
+    return render(request, 'home.html', context)
+
+
+Step 2: Display It in home.html Template
+{% extends 'base.html' %}
+{% block title %}Home - My Restaurant{% endblock %}
+
+{% block breadcrumbs %}
+    <span style="color: #6c757d;">Home</span>
+{% endblock %}
+
+{% block content %}
+<div style="
+    max-width: 800px;
+    margin: 40px auto;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+">
+
+    <!-- Welcome Section -->
+    <h1 style="font-size: 40px; color: #2c3e50;">Welcome to My Restaurant</h1>
+    <p style="font-size: 20px; color: #555; margin-bottom: 20px;">
+        Serving happiness on every plate – your cozy spot for delicious food!
+    </p>
+
+    <!-- 📅 Current Date and Time -->
+    <p style="font-size: 16px; color: #444; margin-bottom: 30px;">
+        Current Date & Time: {{ current_datetime|date:"F j, Y, g:i A" }}
+    </p>
+
+    <!-- Search Bar -->
+    <form method="get" action="{% url 'home' %}" style="margin-bottom: 20px;">
+        <input
+            type="text"
+            name="q"
+            placeholder="Search for menu items..."
+            style="padding: 10px; width: 250px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;"
+        >
+        <button
+            type="submit"
+            style="padding: 10px 16px; background-color: #28a745; color: white; border: none; border-radius: 5px;"
+        >
+            Search
+        </button>
+    </form>
+
+    <!-- Logo -->
+    <img src="{% static 'images/logo.png' %}" alt="Restaurant Logo" style="width: 150px; margin-top: 20px;">
+</div>
+{% endblock %}
+
+Optional: Use a Custom Filter (If You Want More Control)
+# templatetags/custom_filters.py
+from django import template
+from django.utils import timezone
+
+register = template.Library()
+
+@register.filter
+def full_datetime(value):
+    return timezone.localtime(value).strftime("%A, %B %d, %Y – %I:%M %p")
+
+{% load custom_filters %}
+{{ current_datetime|full_datetime }}
+
