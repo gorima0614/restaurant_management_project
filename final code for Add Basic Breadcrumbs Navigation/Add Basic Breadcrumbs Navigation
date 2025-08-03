@@ -1,0 +1,65 @@
+1. Update base.html – Add a Breadcrumb Block
+<!-- templates/base.html -->
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}My Restaurant{% endblock %}</title>
+</head>
+<body style="margin: 0; background-color: #f0f2f5;">
+
+    <!-- Breadcrumbs -->
+    <div style="
+        font-family: Arial, sans-serif;
+        padding: 15px 30px;
+        background-color: #fff;
+        border-bottom: 1px solid #ddd;
+    ">
+        {% block breadcrumbs %}
+            <a href="{% url 'home' %}" style="text-decoration: none; color: #007bff;">Home</a>
+        {% endblock %}
+    </div>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 15px; background: #222; color: #eee; margin-top: 40px;">
+        &copy; {{ year }} My Restaurant. All rights reserved.
+    </footer>
+</body>
+</html>
+
+
+2. Example for Homepage (home.html)
+{% extends 'base.html' %}
+{% block title %}Home - My Restaurant{% endblock %}
+
+{% block breadcrumbs %}
+    <span style="color: #6c757d;">Home</span>
+{% endblock %}
+
+{% block content %}
+    <!-- same homepage content as before -->
+{% endblock %}
+
+
+3. Example for Another Page (menu.html)
+{% extends 'base.html' %}
+{% block title %}Menu - My Restaurant{% endblock %}
+
+{% block breadcrumbs %}
+    <a href="{% url 'home' %}" style="text-decoration: none; color: #007bff;">Home</a> &gt;
+    <span style="color: #6c757d;">Menu</span>
+{% endblock %}
+
+{% block content %}
+    <h2 style="text-align: center;">Our Menu</h2>
+    <!-- Menu content -->
+{% endblock %}
+
+
+Result
+Home > Menu
+
