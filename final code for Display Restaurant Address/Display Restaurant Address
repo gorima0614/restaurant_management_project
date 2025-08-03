@@ -1,4 +1,4 @@
-1. Ensure the RestaurantLocation model exists
+Step 1: Define the Address Model
 # models.py
 from django.db import models
 
@@ -11,46 +11,39 @@ class RestaurantLocation(models.Model):
     def __str__(self):
         return f"{self.address}, {self.city}, {self.state} - {self.zip_code}"
 
-2. Add a location instance in the Admin
+Step 2: Apply Migrations
+python manage.py makemigrations
+python manage.py migrate
 
-3. Update the Homepage View
+Step 3: Update the Homepage View
 # views.py
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from .models import RestaurantLocation
-from .forms import ContactForm
-from django.conf import settings
 
 def home(request):
-    form = ContactForm(request.POST or None)
-    submitted = request.method == "POST" and form.is_valid()
+    location = RestaurantLocation.objects.first()  # Assume only one location for now
+    return render(request, 'home.html', {'location': location})
 
-    if submitted:
-        form.save()
-        return redirect('/?submitted=true')
 
-    if 'submitted' in request.GET:
-        submitted = True
-
-    location = RestaurantLocation.objects.first()  # Assumes only one location
-
-    context = {
-        "restaurant_name": getattr(settings, 'RESTAURANT_NAME', 'My Restaurant'),
-        "form": form,
-        "submitted": submitted,
-        "location": location,
-    }
-    return render(request, "home.html", context)
-
-4. Update the Homepage Template (home.html)
+Step 4: Update the Homepage Template
 <!-- templates/home.html -->
-<h2>Our Address</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Our Restaurant</title>
+</head>
+<body>
+    <h1>Welcome to Our Restaurant</h1>
 
-{% if location %}
-<p>
-  {{ location.address }}<br>
-  {{ location.city }}, {{ location.state }} - {{ location.zip_code }}
-</p>
-{% else %}
-<p>Address information is not available.</p>
-{% endif %}
+    <h2>Our Address</h2>
+    {% if location %}
+        <p>
+            {{ location.address }}<br>
+            {{ location.city }}, {{ location.state }} - {{ location.zip_code }}
+        </p>
+    {% else %}
+        <p>Address not available.</p>
+    {% endif %}
+</body>
+</html>
 
