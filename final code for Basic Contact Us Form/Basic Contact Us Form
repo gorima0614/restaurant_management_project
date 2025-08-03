@@ -1,0 +1,91 @@
+1. Create the Model
+# models.py
+from django.db import models
+
+class ContactSubmission(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.email}"
+
+2. Create the Form
+# forms.py
+from django import forms
+from .models import ContactSubmission
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+        model = ContactSubmission
+        fields = ['name', 'email']
+
+3. Update the View
+# views.py
+from django.shortcuts import render, redirect
+from .forms import ContactForm
+from django.conf import settings
+from .models import RestaurantInfo  # optional if you use model-based restaurant name
+
+def home(request):
+    form = ContactForm(request.POST or None)
+    submitted = False
+
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            return redirect('/?submitted=true')
+
+    if 'submitted' in request.GET:
+        submitted = True
+
+    # Fetch restaurant name (either from settings or model)
+    restaurant_name = getattr(settings, 'RESTAURANT_NAME', 'My Restaurant')
+
+    context = {
+        "form": form,
+        "submitted": submitted,
+        "restaurant_name": restaurant_name
+    }
+    return render(request, "home.html", context)
+
+4. Create the Template
+<!-- templates/home.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ restaurant_name }}</title>
+</head>
+<body>
+    <h1>Welcome to {{ restaurant_name }}</h1>
+
+    <h2>Contact Us</h2>
+
+    {% if submitted %}
+        <p style="color: green;">Thank you for your submission!</p>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+
+5. Register the Model in Admin
+# admin.py
+from django.contrib import admin
+from .models import ContactSubmission
+
+admin.site.register(ContactSubmission)
+
+6. Set Up URL
+# urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+]
+
