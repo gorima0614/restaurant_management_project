@@ -1,0 +1,81 @@
+1. Update base.html with a Breadcrumb Block
+<!-- base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}My Restaurant{% endblock %}</title>
+</head>
+<body>
+
+    <!-- Header / Navbar here -->
+
+    <!-- Breadcrumbs -->
+    <nav style="padding: 10px 20px; background-color: #f1f1f1; font-size: 14px;">
+        {% block breadcrumbs %}
+        <!-- Default breadcrumb (can be overridden) -->
+        <a href="{% url 'home' %}">Home</a>
+        {% endblock %}
+    </nav>
+
+    <!-- Main Page Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+</body>
+</html>
+
+
+2. Use the breadcrumbs Block in Other Pages
+Home Page (home.html)
+{% extends 'base.html' %}
+{% block title %}Home - My Restaurant{% endblock %}
+
+{% block breadcrumbs %}
+    <span style="color: #999;">Home</span>
+{% endblock %}
+
+{% block content %}
+    <h1>Welcome to Our Restaurant</h1>
+    <!-- other homepage content -->
+{% endblock %}
+
+Menu Page (menu.html)
+{% extends 'base.html' %}
+{% block title %}Menu - My Restaurant{% endblock %}
+
+{% block breadcrumbs %}
+    <a href="{% url 'home' %}">Home</a> &gt;
+    <span style="color: #999;">Menu</span>
+{% endblock %}
+
+{% block content %}
+    <h2>Our Menu</h2>
+    <!-- Menu items -->
+{% endblock %}
+
+
+Order Confirmation Page (order_confirmation.html)
+{% block breadcrumbs %}
+    <a href="{% url 'home' %}">Home</a> &gt;
+    <a href="{% url 'place_order' %}">Order</a> &gt;
+    <span style="color: #999;">Confirmation</span>
+{% endblock %}
+
+
+3.Style Breadcrumbs for Consistency
+nav a {
+    color: #007bff;
+    text-decoration: none;
+}
+nav a:hover {
+    text-decoration: underline;
+}
+
+
+ Result
+ Home > Order > Confirmation
+OR 
+Home > Menu
+
