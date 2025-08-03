@@ -1,0 +1,45 @@
+Step 1: Create a RestaurantInfo model
+# models.py
+from django.db import models
+
+class RestaurantInfo(models.Model):
+    name = models.CharField(max_length=255)
+    
+    def __str__(self):
+        return self.name
+
+
+Step 2: Run migrations
+python manage.py makemigrations
+python manage.py migrate
+
+
+Step 3: Add the view logic
+# views.py
+from django.shortcuts import render
+from .models import RestaurantInfo
+
+def home(request):
+    restaurant_name = RestaurantInfo.objects.first()
+    return render(request, 'home.html', {'restaurant_name': restaurant_name})
+
+
+Step 4: Display it in the homepage template
+<!-- home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Welcome to {{ restaurant_name.name }}</h1>
+    <p>Your favorite destination for food!</p>
+</div>
+{% endblock %}
+
+
+Step 5: Add a record via Django admin or shell
+python manage.py shell
+from yourapp.models import RestaurantInfo
+RestaurantInfo.objects.create(name="The Tasty Spoon")
+
+
+
