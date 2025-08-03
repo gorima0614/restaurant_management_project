@@ -1,0 +1,48 @@
+Step 1: Create the View
+# views.py
+from django.conf import settings
+from django.shortcuts import render
+
+def home(request):
+    restaurant_name = getattr(settings, 'RESTAURANT_NAME', 'My Restaurant')
+    return render(request, 'home.html', {'restaurant_name': restaurant_name})
+
+From a Model
+# views.py
+from django.shortcuts import render
+from .models import RestaurantInfo
+
+def home(request):
+    restaurant = RestaurantInfo.objects.first()
+    restaurant_name = restaurant.name if restaurant else "My Restaurant"
+    return render(request, 'home.html', {'restaurant_name': restaurant_name})
+
+
+Step 2: Create the Template
+home.html
+<!-- templates/home.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ restaurant_name }}</title>
+</head>
+<body>
+    <h1>Welcome to {{ restaurant_name }}!</h1>
+    <p>We’re delighted to have you here. Explore our delicious menu and enjoy your meal!</p>
+</body>
+</html>
+
+
+Step 3: Set Up the URL
+# urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+]
+
+
+Result
+Welcome to The Tasty Spoon!
+We’re delighted to have you here. Explore our delicious menu and enjoy your meal!
