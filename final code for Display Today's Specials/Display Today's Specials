@@ -1,0 +1,69 @@
+Step 1: Create a Model for Today’s Specials
+# models.py
+from django.db import models
+
+class TodaySpecial(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    is_active = models.BooleanField(default=True)  # to mark current specials
+
+    def __str__(self):
+        return self.name
+
+
+ Step 2: Run Migrations
+ python manage.py makemigrations
+python manage.py migrate
+
+
+ Step 3: Add Some Specials via Admin or Shell
+ Register the model in admin.py:
+ from django.contrib import admin
+from .models import TodaySpecial
+
+admin.site.register(TodaySpecial)
+
+ add from the shell:
+ python manage.py shell
+from your_app.models import TodaySpecial
+TodaySpecial.objects.create(name="Paneer Tikka", description="Grilled paneer cubes with spices", price=249.00)
+TodaySpecial.objects.create(name="Butter Naan", description="Soft Indian bread topped with butter", price=49.00)
+
+
+Step 4: Update the Homepage View
+from django.shortcuts import render
+from .models import TodaySpecial
+from datetime import datetime
+
+def home_view(request):
+    specials = TodaySpecial.objects.filter(is_active=True)
+    context = {
+        'specials': specials,
+        'year': datetime.now().year,
+    }
+    return render(request, 'home.html', context)
+
+
+Step 5: Update home.html Template
+{% if specials %}
+<div style="padding: 40px 20px; background-color: #f8f9fa;">
+    <h2 style="text-align: center; font-size: 32px; margin-bottom: 20px;">Today's Specials</h2>
+    <div style="max-width: 800px; margin: auto;">
+        {% for item in specials %}
+            <div style="background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 5px;">{{ item.name }}</h3>
+                <p style="margin-bottom: 5px;">{{ item.description }}</p>
+                <p style="font-weight: bold;">₹{{ item.price }}</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+
+Result:
+Now your homepage shows:
+A "Today’s Specials" section
+Data pulled from the database
+Easy to update via admin panel or backend
