@@ -1,0 +1,58 @@
+Step 1: Extend the MenuItem Model with an Image Field
+# models.py
+from django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    image = models.ImageField(upload_to='menu_images/', blank=True, null=True)  # NEW
+
+    def __str__(self):
+        return self.name
+
+Step 2: Run Migrations
+python manage.py makemigrations
+python manage.py migrate
+
+Step 3: Configure MEDIA in settings.py
+# settings.py
+import os
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+Step 4: Update urls.py to Serve Media in Development
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    # your other URLs
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+Step 5: Modify the Template to Display Menu Item Images
+<!-- templates/menu.html -->
+<h1>Our Menu</h1>
+
+<div style="display: flex; flex-wrap: wrap; gap: 20px;">
+  {% for item in menu_items %}
+    <div style="border: 1px solid #ccc; padding: 10px; width: 250px;">
+      {% if item.image %}
+        <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width: 100%; height: auto;" />
+      {% endif %}
+      <h3>{{ item.name }}</h3>
+      <p>{{ item.description }}</p>
+      <p><strong>₹{{ item.price }}</strong></p>
+    </div>
+  {% endfor %}
+</div>
+
+Step 6: Upload Images via Admin Panel
+# admin.py
+from django.contrib import admin
+from .models import MenuItem
+
+admin.site.register(MenuItem)
+
+
+
