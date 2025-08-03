@@ -1,0 +1,78 @@
+1. Create the order.html Template
+<!-- templates/order.html -->
+{% extends 'base.html' %}
+{% block title %}Place an Order - My Restaurant{% endblock %}
+
+{% block breadcrumbs %}
+    <a href="{% url 'home' %}" style="text-decoration: none; color: #007bff;">Home</a> &gt;
+    <span style="color: #6c757d;">Place Order</span>
+{% endblock %}
+
+{% block content %}
+<div style="
+    max-width: 800px;
+    margin: 40px auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    text-align: center;
+">
+    <h1 style="color: #2c3e50;">Place Your Order</h1>
+    <p style="color: #555;">Order page coming soon! Stay tuned.</p>
+</div>
+{% endblock %}
+
+
+2. Add a View in views.py
+# views.py
+from django.shortcuts import render
+from datetime import datetime
+
+def order_view(request):
+    return render(request, 'order.html', {'year': datetime.now().year})
+
+
+ 3. Add the URL in urls.py
+# urls.py
+from django.urls import path
+from .views import home_view, faq_view, privacy_policy_view, order_view
+
+urlpatterns = [
+    path('', home_view, name='home'),
+    path('faq/', faq_view, name='faq'),
+    path('privacy-policy/', privacy_policy_view, name='privacy_policy'),
+    path('order/', order_view, name='place_order'),
+]
+
+
+4. Add the "Order Now" Button in home.html
+<!-- Order Now Button -->
+<a href="{% url 'place_order' %}" style="
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 25px;
+    font-size: 18px;
+    background-color: #e74c3c;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+">
+    Order Now
+</a>
+
+<style>
+    a:hover {
+        background-color: #c0392b;
+    }
+</style>
+
+
+Final Result
+On your homepage, you’ll see a red “Order Now” button that links to /order/, with a placeholder page for now.
+
+
+
+
