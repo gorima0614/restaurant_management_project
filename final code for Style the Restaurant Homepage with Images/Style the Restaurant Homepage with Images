@@ -1,0 +1,76 @@
+1. Add Images to Your Project
+your_app/
+├── static/
+│   └── your_app/
+│       ├── images/
+│       │   ├── background.jpg
+│       │   └── food.jpg
+
+
+2. Load Static Files in Template
+{% load static %}
+
+
+3. Style the Homepage with Images
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Welcome - My Restaurant{% endblock %}
+
+{% block breadcrumbs %}
+    <span style="color: #999;">Home</span>
+{% endblock %}
+
+{% block content %}
+<div style="
+    background-image: url('{% static 'your_app/images/background.jpg' %}');
+    background-size: cover;
+    background-position: center;
+    padding: 100px 20px;
+    text-align: center;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+">
+    <h1 style="font-size: 48px; margin-bottom: 10px;">Welcome to Our Restaurant</h1>
+    <p style="font-size: 20px;">Delicious food made with love. Order now and enjoy!</p>
+    <a href="{% url 'place_order' %}" style="
+        margin-top: 30px;
+        display: inline-block;
+        background-color: #28a745;
+        color: white;
+        padding: 15px 30px;
+        text-decoration: none;
+        font-size: 18px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    ">Order Now</a>
+</div>
+
+<!-- Food gallery section -->
+<div style="padding: 40px 20px; text-align: center;">
+    <h2 style="font-size: 32px; margin-bottom: 20px;">Our Specials</h2>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+        <img src="{% static 'your_app/images/food.jpg' %}" alt="Delicious Dish" style="width: 300px; height: auto; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+        <!-- Repeat <img> blocks with other images if needed -->
+    </div>
+</div>
+{% endblock %}
+
+
+4.Configure settings.py
+# settings.py
+STATIC_URL = '/static/'
+
+# During development only
+STATICFILES_DIRS = [ BASE_DIR / 'static' ]
+
+5. Make Sure Static Files Are Served (During Development)
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+
+Result
+Hero section with a full-width background image
+A clear headline, tagline, and call-to-action
+A responsive food image gallery
