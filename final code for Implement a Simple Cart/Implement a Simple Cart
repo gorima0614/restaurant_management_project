@@ -1,0 +1,95 @@
+1. Create the MenuItem Model
+from django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def __str__(self):
+        return self.name
+
+python manage.py makemigrations
+python manage.py migrate
+
+
+2. Define Views for Cart
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import MenuItem
+
+# Add to cart
+def add_to_cart(request, item_id):
+    item = get_object_or_404(MenuItem, id=item_id)
+    cart = request.session.get('cart', {})
+
+    if str(item_id) in cart:
+        cart[str(item_id)]['quantity'] += 1
+    else:
+        cart[str(item_id)] = {
+            'name': item.name,
+            'price': float(item.price),
+            'quantity': 1,
+        }
+
+    request.session['cart'] = cart
+    return redirect('view_cart')
+
+# View cart
+def view_cart(request):
+    cart = request.session.get('cart', {})
+    total = sum(item['price'] * item['quantity'] for item in cart.values())
+    return render(request, 'cart.html', {'cart': cart, 'total': total})
+
+
+3. Define URLs
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('add-to-cart/<int:item_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/', views.view_cart, name='view_cart'),
+]
+
+
+4. Create cart.html Template
+{% extends 'base.html' %}
+{% block title %}Your Cart{% endblock %}
+
+{% block content %}
+<h2 style="text-align:center;">Your Cart</h2>
+
+{% if cart %}
+<table style="margin:auto; border-collapse: collapse;">
+    <tr><th>Item</th><th>Price</th><th>Quantity</th><th>Subtotal</th></tr>
+    {% for item in cart.values %}
+    <tr>
+        <td>{{ item.name }}</td>
+        <td>₹{{ item.price }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>₹{{ item.price|floatformat:2|add:"0"|floatformat:"2"|floatformat }} x {{ item.quantity }} = ₹{{ item.price|floatformat:2|add:"0"|floatformat:"2"|add:item.quantity|floatformat:"2" }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<p style="text-align:center; font-weight:bold; margin-top:20px;">Total: ₹{{ total }}</p>
+{% else %}
+<p style="text-align:center;">Your cart is empty.</p>
+{% endif %}
+
+<a href="/" style="display:block; text-align:center; margin-top:30px;">← Continue Shopping</a>
+{% endblock %}
+
+
+5. Add "Add to Cart" Buttons
+<a href="{% url 'add_to_cart' item.id %}" style="
+    background-color: #007bff;
+    color: white;
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+">Add to Cart</a>
+
+
+Done! Your Cart Works
+Cart stored in request.session
+Works for both anonymous and logged-in users
+Quantities increase if you add the same item
