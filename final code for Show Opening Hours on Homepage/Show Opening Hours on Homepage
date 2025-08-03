@@ -1,0 +1,76 @@
+Step 1: Create an OpeningHour Model
+# models.py
+from django.db import models
+
+class OpeningHour(models.Model):
+    DAY_CHOICES = [
+        ('Mon', 'Monday'),
+        ('Tue', 'Tuesday'),
+        ('Wed', 'Wednesday'),
+        ('Thu', 'Thursday'),
+        ('Fri', 'Friday'),
+        ('Sat', 'Saturday'),
+        ('Sun', 'Sunday'),
+    ]
+
+    day = models.CharField(max_length=3, choices=DAY_CHOICES, unique=True)
+    open_time = models.TimeField()
+    close_time = models.TimeField()
+
+    def __str__(self):
+        return f"{self.get_day_display()}: {self.open_time} - {self.close_time}"
+
+
+Step 2: Migrate the Model
+python manage.py makemigrations
+python manage.py migrate
+
+
+Step 3: Add Opening Hours via Django Admin
+from django.contrib import admin
+from .models import OpeningHour
+
+admin.site.register(OpeningHour)
+
+
+Step 4: Update the View to Pass Opening Hours
+from django.shortcuts import render
+from .models import OpeningHour, TodaySpecial
+from datetime import datetime
+
+def home_view(request):
+    specials = TodaySpecial.objects.filter(is_active=True)
+    opening_hours = OpeningHour.objects.all().order_by('id')  # Keep Mon-Sun order
+
+    context = {
+        'specials': specials,
+        'opening_hours': opening_hours,
+        'year': datetime.now().year,
+    }
+    return render(request, 'home.html', context)
+
+
+Step 5: Update home.html to Show the Opening Hours
+{% if opening_hours %}
+<div style="padding: 40px 20px; background-color: #f1f1f1;">
+    <h2 style="text-align: center; font-size: 28px; margin-bottom: 20px;">Opening Hours</h2>
+    <table style="margin: auto; border-collapse: collapse;">
+        {% for hour in opening_hours %}
+        <tr>
+            <td style="padding: 8px 20px; font-weight: bold;">{{ hour.get_day_display }}</td>
+            <td style="padding: 8px 20px;">
+                {{ hour.open_time|time:"H:i" }} - {{ hour.close_time|time:"H:i" }}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+
+Result:
+Opening Hours
+-------------
+Monday     10:00 - 22:00
+Tuesday    10:00 - 22:00
+...
