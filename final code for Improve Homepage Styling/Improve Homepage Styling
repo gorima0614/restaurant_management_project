@@ -1,0 +1,71 @@
+Step 1: Create Static Folder Structure
+yourapp/
+├── static/
+│   └── css/
+│       └── styles.css
+
+
+Step 2: Add Some Basic Styles
+/* static/css/styles.css */
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #fafafa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    color: #c0392b;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 1.1em;
+    margin: 10px 0;
+    padding: 0 20px;
+}
+
+footer {
+    background-color: #eee;
+    padding: 15px;
+    text-align: center;
+    font-size: 0.9em;
+    margin-top: 50px;
+}
+
+Step 3: Load Static Files in Template
+<!-- templates/home.html -->
+{% load static %}
+{% extends 'base.html' %}
+
+{% block title %}Home - The Tasty Spoon{% endblock %}
+
+{% block content %}
+<header>
+    <h1>Welcome to {{ restaurant_name }}</h1>
+</header>
+
+<main>
+    <p>Enjoy our curated selection of delicious dishes made with passion.</p>
+</main>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    {% block extra_css %}{% endblock %}
+</head>
+
+
