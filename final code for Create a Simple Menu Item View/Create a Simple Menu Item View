@@ -1,0 +1,56 @@
+Step 1: Create the View
+# views.py
+from django.shortcuts import render
+
+def menu_items(request):
+    # Hardcoded list of menu items
+    menu = [
+        {'name': 'Margherita Pizza', 'description': 'Classic delight with cheese and tomato', 'price': 250},
+        {'name': 'Pasta Alfredo', 'description': 'Creamy white sauce pasta with veggies', 'price': 300},
+        {'name': 'Paneer Tikka', 'description': 'Grilled paneer with Indian spices', 'price': 200},
+    ]
+    return render(request, 'menu_items.html', {'menu': menu})
+
+
+ Step 2: Create the Template
+ {% extends "base.html" %}
+{% block title %}Menu{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Our Menu</h2>
+    <ul style="list-style: none; padding: 0;">
+        {% for item in menu %}
+            <li style="border-bottom: 1px solid #ccc; margin-bottom: 20px; padding-bottom: 10px;">
+                <h3>{{ item.name }} - ₹{{ item.price }}</h3>
+                <p>{{ item.description }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+
+Step 3: Add URL Pattern
+# urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('menu/', views.menu_items, name='menu_items'),
+]
+
+
+Step 4: Link from Navigation
+<nav>
+    <ul>
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'menu_items' %}">Menu</a></li>
+    </ul>
+</nav>
+
+
+Result
+Margherita Pizza – ₹250
+Pasta Alfredo – ₹300
+Paneer Tikka – ₹200
