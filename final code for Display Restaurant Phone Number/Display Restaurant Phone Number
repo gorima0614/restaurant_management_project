@@ -1,4 +1,4 @@
-Step 1: Add Phone Number to the Model
+Step 1: Add Phone Number to Model
 # models.py
 from django.db import models
 
@@ -7,40 +7,40 @@ class RestaurantLocation(models.Model):
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     zip_code = models.CharField(max_length=20)
-    phone_number = models.CharField(max_length=20, blank=True, null=True)  # NEW FIELD
-    opening_hours = models.JSONField(blank=True, null=True)  # if using opening hours
+    phone_number = models.CharField(max_length=20, blank=True, null=True)  # ✅ Add this
+    opening_hours = models.JSONField(blank=True, null=True)
+    logo = models.ImageField(upload_to='restaurant_logos/', blank=True, null=True)
 
     def __str__(self):
-        return f"{self.address}, {self.city}, {self.state} - {self.zip_code}"
+        return f"{self.address}, {self.city}, {self.state}"
 
-Step 2: Make and Apply Migrations
+Step 2: Make Migrations
 python manage.py makemigrations
 python manage.py migrate
 
-Step 3 : Update/View in admin
+Step 3: Add Phone Number in Admin
+Go to /admin
+Edit your RestaurantLocation entry
+Add or update the phone number
 
-Step 4 : Udate the Homepage View
+Step 4: Update View to Pass Model to Template
 # views.py
-from django.shortcuts import render
 from .models import RestaurantLocation
 
 def home(request):
-    location = RestaurantLocation.objects.first()
-
-    context = {
+    location = RestaurantLocation.objects.first()  # or get based on logic
+    return render(request, 'home.html', {
         'location': location,
-        'phone_number': location.phone_number if location else '',
-        'opening_hours': location.opening_hours if location else {},
-    }
-    return render(request, 'home.html', context)
+    })
 
-Step 5 : Display phone number in template
-<!-- templates/home.html -->
-<h2>Contact Us</h2>
-
-{% if phone_number %}
-  <p><strong>Phone:</strong> {{ phone_number }}</p>
-{% else %}
-  <p>Phone number not available.</p>
+Step 5: Display It in the Template
+{% if location.phone_number %}
+    <div class="contact-info" style="text-align:center; margin-top:20px;">
+        <strong>  Phone:</strong> <span style="font-size: 1.2em;">{{ location.phone_number }}</span>
+    </div>
 {% endif %}
 
+Bonus: Style with Bootstrap
+<div class="alert alert-info text-center mt-3">
+    <strong>  Call Us:</strong> {{ location.phone_number }}
+</div>
