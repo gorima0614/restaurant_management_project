@@ -1,0 +1,76 @@
+ Step 1: Update Settings for Email Sending
+ # settings.py
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'yourrestaurantemail@gmail.com'        # Replace with your email
+EMAIL_HOST_PASSWORD = 'your-app-password'                # Use App Password or secure password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+RESTAURANT_CONTACT_EMAIL = 'yourrestaurantemail@gmail.com'
+
+Step 2 : Create a contact form (Django form)
+# forms.py
+from django import forms
+
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    email = forms.EmailField()
+    message = forms.CharField(widget=forms.Textarea)
+
+Step 3 : Create the view to handle the form and send the Email
+# views.py
+from django.core.mail import send_mail
+from django.shortcuts import render
+from django.conf import settings
+from .forms import ContactForm
+
+def contact_view(request):
+    form = ContactForm(request.POST or None)
+    sent = False
+
+    if request.method == "POST" and form.is_valid():
+        name = form.cleaned_data['name']
+        email = form.cleaned_data['email']
+        message = form.cleaned_data['message']
+
+        subject = f"New Contact Message from {name}"
+        full_message = f"From: {name} <{email}>\n\n{message}"
+        recipient = getattr(settings, 'RESTAURANT_CONTACT_EMAIL', settings.DEFAULT_FROM_EMAIL)
+
+        send_mail(subject, full_message, settings.DEFAULT_FROM_EMAIL, [recipient])
+        sent = True
+
+    return render(request, 'contact.html', {'form': form, 'sent': sent})
+
+Step 4 : Create the Template (contact.html)
+<!-- templates/contact.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contact Us</title>
+</head>
+<body>
+<h1>Contact Us</h1>
+
+{% if sent %}
+    <p style="color: green;">Thank you! Your message has been sent.</p>
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Send</button>
+</form>
+</body>
+</html>
+
+Step 5 : Add URL Route 
+# urls.py
+from django.urls import path
+from .views import contact_view
+
+urlpatterns = [
+    path('contact/', contact_view, name='contact'),
+]
+
