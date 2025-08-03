@@ -1,0 +1,49 @@
+Step 1: Create the View
+# views.py
+from django.shortcuts import render
+
+def contact_us(request):
+    return render(request, 'contact_us.html')
+
+Step 2: Create the Template
+{% extends "base.html" %}
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+<div style="padding: 40px; max-width: 600px; margin: auto;">
+    <h2>Contact Us</h2>
+    <p>If you have any questions or feedback, feel free to reach out!</p>
+
+    <ul style="list-style: none; padding: 0; font-size: 16px;">
+        <li><strong>📍 Address:</strong> 123 Foodie Street, Flavor Town</li>
+        <li><strong>📞 Phone:</strong> +91-9876543210</li>
+        <li><strong>✉️ Email:</strong> contact@ourrestaurant.com</li>
+        <li><strong>🕒 Hours:</strong> Mon-Sun, 10am – 10pm</li>
+    </ul>
+</div>
+{% endblock %}
+
+Step 3: Add the URL
+# urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('contact/', views.contact_us, name='contact_us'),
+]
+
+Step 4: Link from the Navigation
+<nav>
+    <ul style="list-style: none; display: flex; gap: 20px;">
+        <li><a href="{% url 'home' %}">Home</a></li>
+        <li><a href="{% url 'about_us' %}">About Us</a></li>
+        <li><a href="{% url 'contact_us' %}">Contact Us</a></li>
+    </ul>
+</nav>
+
+
+Done
+📍 Address: 123 Foodie Street, Flavor Town  
+📞 Phone: +91-9876543210  
+✉️ Email: contact@ourrestaurant.com  
+🕒 Hours: Mon-Sun, 10am – 10pm
