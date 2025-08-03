@@ -1,0 +1,37 @@
+Step 1: Create the View
+# views.py
+from django.shortcuts import render
+
+def reservations(request):
+    return render(request, 'reservations.html')
+
+
+Step 2: Create the Template
+yourapp/templates/reservations.html
+<!-- templates/reservations.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservations</title>
+</head>
+<body>
+    <h1>Reservations</h1>
+    <p>Reservations coming soon! Stay tuned.</p>
+</body>
+</html>
+
+
+ Step 3: Add URL Pattern
+ # urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('reservations/', views.reservations, name='reservations'),
+]
+
+
+Step 4: Link from Homepage or Navbar
+<!-- home.html or base.html -->
+<a href="{% url 'reservations' %}">Make a Reservation</a>
