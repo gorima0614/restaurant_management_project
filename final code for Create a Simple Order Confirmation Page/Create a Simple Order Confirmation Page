@@ -1,0 +1,65 @@
+1. Create Template: order_confirmation.html
+{% extends 'base.html' %}
+{% block title %}Order Confirmation - My Restaurant{% endblock %}
+
+{% block breadcrumbs %}
+    <a href="{% url 'home' %}" style="text-decoration: none; color: #007bff;">Home</a> &gt;
+    <span style="color: #6c757d;">Order Confirmation</span>
+{% endblock %}
+
+{% block content %}
+<div style="
+    max-width: 600px;
+    margin: 50px auto;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 30px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+">
+    <h1 style="color: #28a745;">✅ Order Confirmed!</h1>
+    <p style="font-size: 18px; color: #333;">Thank you for your order.</p>
+    <p style="font-size: 16px;">Your order number is: <strong>#{{ order_number }}</strong></p>
+    <a href="{% url 'home' %}" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #007bff; color: white; border-radius: 6px; text-decoration: none;">
+        Back to Home
+    </a>
+</div>
+{% endblock %}
+
+
+2. Create View: order_confirmation_view
+import random
+from django.shortcuts import render
+
+def order_confirmation_view(request):
+    # Simulate an order number (in real app, you'd get this from DB)
+    order_number = random.randint(100000, 999999)
+    return render(request, 'order_confirmation.html', {'order_number': order_number})
+
+
+3. Add URL: urls.py
+from .views import order_confirmation_view
+
+path('order/confirmation/', order_confirmation_view, name='order_confirmation'),
+
+
+4. Link to Confirmation Page
+<a href="{% url 'order_confirmation' %}" style="
+    display: inline-block;
+    margin-top: 30px;
+    padding: 12px 24px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+">
+    Submit Order
+</a>
+
+
+Result!!
+You now have a basic, styled Order Confirmation page with:
+An auto-generated order number
+A thank-you message
+A “Back to Home” button
