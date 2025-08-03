@@ -1,0 +1,58 @@
+1. Create the Template faq.html
+{% extends 'base.html' %}
+{% block title %}FAQ - My Restaurant{% endblock %}
+
+{% block breadcrumbs %}
+    <a href="{% url 'home' %}" style="text-decoration: none; color: #007bff;">Home</a> &gt;
+    <span style="color: #6c757d;">FAQ</span>
+{% endblock %}
+
+{% block content %}
+<div style="
+    max-width: 800px;
+    margin: 40px auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+">
+    <h1 style="color: #2c3e50;">Frequently Asked Questions</h1>
+
+    <h3>What are your opening hours?</h3>
+    <p>We are open daily from 10:00 AM to 10:00 PM.</p>
+
+    <h3>Do you offer vegetarian or vegan options?</h3>
+    <p>Yes, we have a wide variety of vegetarian and vegan dishes
+
+
+ 2. Add the View in views.py
+ # views.py
+from django.shortcuts import render
+from datetime import datetime
+
+def faq_view(request):
+    return render(request, 'faq.html', {'year': datetime.now().year})
+
+
+3. Add the URL in urls.py
+# urls.py
+from django.urls import path
+from .views import home_view, privacy_policy_view, faq_view
+
+urlpatterns = [
+    path('', home_view, name='home'),
+    path('privacy-policy/', privacy_policy_view, name='privacy_policy'),
+    path('faq/', faq_view, name='faq'),
+]
+
+
+4. Add a Link to the Homepage (base.html or home.html)
+<!-- Inside base.html footer -->
+<footer style="text-align: center; padding: 15px; background: #222; color: #eee; margin-top: 40px;">
+    &copy; {{ year }} My Restaurant. All rights reserved. |
+    <a href="{% url 'privacy_policy' %}" style="color: #ccc;">Privacy Policy</a> |
+    <a href="{% url 'faq' %}" style="color: #ccc;">FAQ</a>
+</footer>
+
+
