@@ -1,0 +1,82 @@
+1. Update Your About Model (or Create One)
+from django.db import models
+
+class About(models.Model):
+    heading = models.CharField(max_length=200)
+    description = models.TextField()
+    image = models.ImageField(upload_to='about/', blank=True, null=True)
+
+    def __str__(self):
+        return self.heading
+
+
+2. Migrate the Model
+python manage.py makemigrations
+python manage.py migrate
+
+
+3. Register the Model in Admin 
+from django.contrib import admin
+from .models import About
+
+admin.site.register(About)
+
+4. Set Up Media Handling
+import os
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    # your app urls here
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+5. Create the View for About Page
+from django.shortcuts import render
+from .models import About
+
+def about_view(request):
+    about = About.objects.first()
+    return render(request, 'about.html', {'about': about})
+
+
+6. Create the about.html Template
+{% extends 'base.html' %}
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: auto; padding: 40px;">
+    {% if about %}
+        <h2 style="text-align: center;">{{ about.heading }}</h2>
+        <p style="margin-top: 20px;">{{ about.description }}</p>
+        
+        {% if about.image %}
+            <img src="{{ about.image.url }}" alt="About Us Image" style="width:100%; margin-top: 20px; border-radius: 10px;">
+        {% endif %}
+    {% else %}
+        <p>No about info available.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+7. Add URL Pattern
+from django.urls import path
+from .views import about_view
+
+urlpatterns = [
+    path('about/', about_view, name='about'),
+]
+
+
+Result:
+Image is uploaded via admin.
+Description and image displayed on /about/
+No hardcoding needed; content is dynamic.
