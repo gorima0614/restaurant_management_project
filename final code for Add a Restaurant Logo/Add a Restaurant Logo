@@ -1,0 +1,45 @@
+Step 1 : Update the Model
+# models.py
+from django.db import models
+
+class RestaurantLocation(models.Model):
+    address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    zip_code = models.CharField(max_length=20)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    opening_hours = models.JSONField(blank=True, null=True)
+    logo = models.ImageField(upload_to='restaurant_logos/', blank=True, null=True)  # ✅ Add this
+
+    def __str__(self):
+        return f"{self.address}, {self.city}, {self.state}"
+
+Step 2 : Make and Apply Migrations
+python manage.py makemigrations
+python manage.py migrate
+
+Step 3 : Enable Media File Handling
+# settings.py
+import os
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+#urls.py
+# project/urls.py
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    # your other paths
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+Step 4 : Upload Logo via Django Admin
+
+step 5 : Display Logo in Homepage Template
+<!-- templates/home.html -->
+{% if location.logo %}
+    <img src="{{ location.logo.url }}" alt="Restaurant Logo" height="100">
+{% else %}
+    <p>No logo uploaded yet.</p>
+{% endif %}
