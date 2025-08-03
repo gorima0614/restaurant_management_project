@@ -1,0 +1,37 @@
+Step 1: Add phone_number to your restaurant model
+# models.py
+class RestaurantInfo(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.TextField()
+    phone_number = models.CharField(max_length=20, blank=True)  # <-- Add this
+    # other fields...
+
+
+python manage.py makemigrations
+python manage.py migrate
+
+Step 2: Update Your View
+# views.py
+from django.shortcuts import render
+from .models import RestaurantInfo
+
+def home(request):
+    restaurant = RestaurantInfo.objects.first()
+    context = {
+        'restaurant_name': restaurant.name if restaurant else 'Our Restaurant',
+        'phone_number': restaurant.phone_number if restaurant else 'N/A',
+    }
+    return render(request, 'home.html', context)
+
+Step 3: Update Template
+<!-- home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Welcome to {{ restaurant_name }}</h1>
+<p>Contact us at: <strong>{{ phone_number }}</strong></p>
+{% endblock %}
+
+
+
+
