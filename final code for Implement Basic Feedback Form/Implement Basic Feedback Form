@@ -1,0 +1,77 @@
+Step 1: Create the Feedback Model
+# models.py
+from django.db import models
+
+class Feedback(models.Model):
+    name = models.CharField(max_length=100, blank=True)  # optional
+    comments = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback from {self.name or 'Anonymous'} at {self.submitted_at}"
+
+Step 2: Create a Django Form
+# forms.py
+from django import forms
+from .models import Feedback
+
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = Feedback
+        fields = ['name', 'comments']
+        widgets = {
+            'comments': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Your feedback...'}),
+        }
+
+Step 3: Create the View
+# views.py
+from django.shortcuts import render, redirect
+from .forms import FeedbackForm
+
+def feedback_view(request):
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('feedback_thanks')  # You can also redirect to 'home'
+    else:
+        form = FeedbackForm()
+    return render(request, 'feedback.html', {'form': form})
+
+Step 4: Add a Simple Thanks Page
+# views.py
+def feedback_thanks(request):
+    return render(request, 'feedback_thanks.html')
+
+Step 5: Create Templates
+<!-- templates/feedback.html -->
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback</title>
+</head>
+<body>
+    <h2>Leave Us Your Feedback</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+
+feedback_thanks.html
+<!-- templates/feedback_thanks.html -->
+<h2>Thank you for your feedback!</h2>
+<p>We appreciate your thoughts and will review them soon.</p>
+
+Step 6: Add URLs
+# urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('feedback/', views.feedback_view, name='feedback'),
+    path('feedback/thanks/', views.feedback_thanks, name='feedback_thanks'),
+]
