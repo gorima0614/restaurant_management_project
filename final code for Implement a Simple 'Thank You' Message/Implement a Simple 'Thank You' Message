@@ -1,0 +1,49 @@
+Step 1 : Create the Contact Form
+#forms.py
+from django import forms
+
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    email = forms.EmailField()
+    message = forms.CharField(widget=forms.Textarea)
+
+Step 2 : Create the view the redirect to thank you 
+#views.py
+from django.shortcuts import render, redirect
+from .forms import ContactForm
+
+def contact_us(request):
+   if request.method == 'POST':
+     form = ContactForm(request.POST)
+     if form.is_valid():
+        # process form data, e.g, save or email 
+        return redirect('thank_you')  # redirect after POST
+    else:
+       form = ContactForm()
+    return render(request, 'contact_us.html', {'form': form})
+
+def thank_you(request):
+   return render(request, 'thank_you.html')
+
+Step 3 : Create the URL Routes
+#urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('contact/', views.contact_us, name='contact_us'),
+    path('thank_you/', views.thank_you, name='thank_you'),
+]
+
+Step 4 : Create the Template
+templates/contact_us.html
+<h1>Contact Us</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Send Message</button>
+</form>
+
+templates/thank_you.html
+<h1>Thank You!</h1>
+<p>Your message has been received. We will get back to you shortly.</p>
