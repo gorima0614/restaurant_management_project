@@ -1,0 +1,24 @@
+Step 1 : Update Model Fields
+ #models.py
+ class Chef(models.Model):
+     name = models.CharField(max_length=100)
+     bio = models.TextField()
+     image = models.ImageField(upload_to='chef_images/')
+     alt_text = models.CharField(max_length=255, default='Chef Image')
+
+     def __str__(self):
+        return self.name
+
+Then run:
+python manage.py makemigrations
+python manage.py migrate
+
+Admin Update
+class ChefAdmin(admin.ModelAdmin):
+    list_display = [ 'name']
+    fields = [ 'name', 'bio', 'image', 'alt_text']
+
+
+Step 2 : Use descriptive alt text in templates
+<img src="{% static 'images/restaurantjpg' %}" alt="Inside view of the restaurant with tables and lighting">
+
