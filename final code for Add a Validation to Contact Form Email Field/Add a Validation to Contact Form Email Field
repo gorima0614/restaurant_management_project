@@ -1,0 +1,48 @@
+Step 1 : Basic Validation Using EmailField
+#forms.py
+from django import forms
+from django.core.exceptions import ValidationError
+
+class ContactForm(forms.Form):
+   name = forms.CharField(max_length=100)
+   email = forms.EmailField(
+      max_length=100,
+      error_messages={
+          'invalid': 'Enter a valid email address.',
+          'required': 'Email is required.'
+      }
+   )
+   message = forms.CharField(widget=forms.Textarea)
+
+
+Step 2 : Add custom email Validation
+ class ContactForm(forms.Form):
+     name = forms.CharField(max_length=100)
+     email = forms.EmailField(max_length=100)
+     message = forms.CharField(widget=forms.Textarea)
+
+     def clean_email(self):
+        email = self.cleaned_data['email']
+        if email.endswith('@tempmail.com'):
+           raise ValidationError('Disposable email addresses are not allowed.')
+        return email
+
+
+Step 3 : Display Validation Errors in Template
+ <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    {% if form.errors %}
+       <ul class="errorlist">
+          {% for field in form %}
+            {% for error in field.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+          {% endfor %}
+        </ul>
+    {% endif %}
+
+    <button type="submit">Send Message</button>
+</form>
+
