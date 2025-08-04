@@ -1,0 +1,69 @@
+Step 1 : Update or Create the Model
+#models.py
+from django.db import models
+
+class RestaurantInfo(models.Model):
+    name = models.ChaeField(max_length=255)
+    address = models.TextField()
+    description = models.TextField(blank=True)  #add this ChaeField
+
+    def __str__(slef):
+       return self.name
+
+Make Migrations
+python manage.py makemigrations
+python manage.py migrate
+
+Step 2 : Add Decsription via Admin Panel or Shell
+i. admin.py
+ from django.contrib import admin
+ from .models import RestaurantInfo
+
+ admin.site.register(RestaurantInfo)
+
+ii. Visit/admin/ and add a description to your restaurant entry.
+ python manage.py Shell
+ 
+ from yourapp.models import RestaurantInfo
+ r = RestaurantInfo.objects.first()
+ r.desccription = "We serve delicious food made with fresh ingredients and a warm smile!"
+ r.save()
+
+
+ Step 3 : Create the view for about us page
+ #views.py
+  from django.shortcuts import render
+  from .models import RestaurantInfo
+
+  def about_us(request):
+      restaurant = RestaurantInfo.objects.first()
+      return render(request, 'about_us.html', {'restaurant': restaurant})
+
+
+Step 4 : Add Route in urls.py
+ from django.urls import path
+ from . import views
+
+ urlpatterns = [
+    path('about/', views.about_us, name='about_us'),
+ ]
+
+
+Step 5 : Create the template about_us.html
+ <!DOCTYPE html>
+ <html>
+ <head>
+    <title>About Us</title>
+</head>
+<body>
+   <h1>About Our Restaurant</h1>
+
+   {% if restaurant %}
+      <p><strong>{{restaurant.name}}</strong></p>
+      <p>{{ restaurant.description }</p}
+    {% else %}
+      <p>Restaurant information not available.</p>
+    {% endif %}
+</body>
+</html>
+
