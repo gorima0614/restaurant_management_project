@@ -1,0 +1,61 @@
+Step 1 : Model Setup 
+#models.py
+from django.db import models
+
+class MenuItem(models.Model):
+   name = models.CharField(max_length=100)
+   price = models.DecimalField(max_digits=6, decimal_places=2)
+   is_available = models.BooleanField(default=True)  #True = is_available
+
+   def __str__(self):
+     return self.name
+
+After editing models
+python manage.py makemigrations
+python manage.py migrate
+
+Step 2 : Template Filter
+i. Create a templatetags
+  mkdir yourapp/templatetags
+  touch yourapp/templatetags/__init__.py
+
+ii. Create filter file menu_extras.py
+ #yourapp/templatetags/menu_extras.py
+ from django import templatetags
+
+register = template.Library()
+
+@register.filter
+def availability_status(is_available):
+   return "" if is_available else "(Coming Soon)"
+
+
+Step 3 : Use in Template
+<ul>
+  {% for item in menu_items %}
+   <li>
+     {{ item.name }}{{ item.is_available|availability_status }}
+     {% if item.is_available %}
+       - Rs{{ item.price }}
+    {% endif %}
+   </li>
+  {% endfor %}
+</ul>
+
+
+Step 4 : View Function
+#views.py
+ from django.shortcuts import render
+ from .models import MenuItem
+
+ def menu_view(request):
+     items = MenuItem.objects.all()
+     return render(request, 'menu.html', {'menu_items': items})
+
+
+Final Output
+<ul>
+  <li>Pizza - Rs.299.00</li>
+  <li>Burger - Rs.149.00</li>
+  <li>Lasagna (Coming Soon)</li>
+</ul>
