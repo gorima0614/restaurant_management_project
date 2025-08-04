@@ -1,0 +1,52 @@
+Step 1 : Update or Create a Model to Store the Address
+#models.py
+
+from django.db import models
+class RestaurantInfo(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+
+    def __str__(self):
+       return self.name
+
+Run migrations
+python manage.py makemigrations
+python manage.py migrate
+
+Step 2 : Add Address vis Django Admin or Shell
+i. Register the model in admin.py
+  from django.contrib import admin
+  from .models import RestaurantInfo
+
+  admin.site.register(RestaurantInfo)
+
+ii. Go to/admin/, add your restaurant name and address.
+    python manage.py shell 
+    from yourapp.models import RestaurantInfo
+    RestaurantInfo.objects.create(name="My Restaurant", address="123 Main St, Your City, ZIP")
+
+Step 3 : Update Your View
+ from django.shortcuts import render
+ from .models import RestaurantInfo
+
+ def contact_us(request):
+     restaurant = RestaurantInfo.objects.first()  #assuming only one
+     return render(request, 'contact_us.html', {'restaurant': restaurant})
+
+Step 4 : Update the urls.py
+ from django.urls import path
+ from . import views
+
+ urlpatterns = [
+    path('contact/', views.contact_us, name='contact_us'),
+ ]<
+
+ Step 5 : Update contact_us.html Template
+  <h1>Contact Us</h1>
+  {% if restaurant %}
+     <p><strong>Address:</strong> {{restaurant.address}}</p>
+  {% else %}
+     <p>Address not available.</p>
+  {% endif %}
+
+
