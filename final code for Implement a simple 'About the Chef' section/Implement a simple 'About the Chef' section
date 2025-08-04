@@ -1,0 +1,102 @@
+Step 1 : Create the Chef Model
+#models.py
+from django.db import models
+
+class Chef(models.Model):
+    name = models.CharField(max_length=100)
+    bio = models.TextField()
+    image = models.ImageField(upload_to='chef_image/')
+
+    def __str__(self):
+       return self.name
+
+Then run the migartions
+python manage.py makemigrations
+python manage.py migrate
+
+
+Step 2 : Admin Registration
+#admin.py
+ from django.contrib import admin
+ from .models import Chef
+
+ admin.site.register(Chef)
+
+
+ Step 3 : Create the View
+ #views.py
+ from django.shortcuts import render
+ from .models import Chef
+
+ def about_chef(request):
+     chef = Chef.objects.first()  #Assuming one chef
+     return render(request, 'about_chef.html', {'chef': chef})
+
+
+Step 4 : Create the Template
+ <!DOCTYPE html>
+ <html>
+ <head>
+    <title>About the Chef</title>
+    <style>
+        .chef-container {
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        .chef-image {
+            max-width: 300px;
+            border-radius: 10px;
+        }
+        .chef-name {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .chef-bio {
+            margin-top: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chef-container">
+       {% if chef %}
+           <img src="{{ chef.imae.url}}" alt="{{chef.name }}" class="chef-image"><br>
+           <div class="chef-name">{{ chef.name }}</div>
+           <div class="chef-bio">{{ chef.bio }}</div>
+        {% else %}
+           <p>Chef information coming soon.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
+
+
+Step 5 : Configure url
+ #urls.py
+  from django.urls import path
+  from . import views
+
+  urlpatterns = [
+    path('about-chef/', views.about_chef, name='about_chef'),
+  ]
+
+
+Step 6 : Enable Media File Support
+#settings.py
+ MEDIA_URL = '/media'
+ MEDIA_ROOT = BASE_DIR / 'media'
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+Step 7 : Link from Homepage
+<a href="{% url 'about_chef' %}">Meet Our Chef</a>
+
+
+
+
