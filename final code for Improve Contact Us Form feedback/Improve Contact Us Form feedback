@@ -1,0 +1,84 @@
+Step 1 : Update view to use Django messages framework
+#views.py
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import ContactForm
+from .models import Contact 
+
+def contact_view(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+           form.save()
+           messages.success(request, 'Thank you, your message has been sent!')
+           return redirect('contact')
+    else: 
+        form = ContactForm()
+
+    return render(request, 'contact.html', {'form': form})
+
+
+Step 2 : Update template tp display the feedback
+#contact.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contact Us</title>
+    <style>
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px;
+            margin-bottem: 15px;
+            border : 1px solid #c3e6cb;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Contact Us</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+           <div class="success-message">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="Submit">Send Message</button>
+    </form>
+</body>
+</html>
+
+Step 3 : Customize ContactForm
+#forms.py
+from django import forms
+from .models impor Contact
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+       model = Contact
+       fields = ['name', 'email', 'message']
+
+
+Step 4 : Enable Messages in settings.py
+INSTALLED_APPS = [
+    'django.contrib.messages',
+    ...
+]
+
+MIDDLEWARE = [
+    ...,
+    'django.contrib.messages.middleware.MessageMiddleware',
+]
+
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.DEBUG: 'debug',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'error',
+}
