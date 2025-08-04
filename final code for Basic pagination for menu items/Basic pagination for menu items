@@ -1,0 +1,78 @@
+Step 1 : Update view with Paginator
+#views.py
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from .models import MenuItem
+
+def menu_view(request):
+    item_list = MenuItem.objects.all()
+    paginator = Paginator(item_list, 6)
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'menu.html', {;page_obj': page_obj})
+
+
+Step 2 : Update template with pagination controls
+#templates/menu.html
+ <!DOCTYPE html>
+ <html>
+ <head>
+     <title>Menu</title>
+     <style>
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination a, .pagination span {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 0 4px;
+            border: 1px solid #ccc;
+            text-decoratio: none;
+            color: #333;
+        }
+        .pagination .current {
+            font-weight: bold;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Our Menu</h1>
+    <ul>
+       {% for item in page_obj %}
+          <li>{{ item.name }} - Rs{{ item.price }}</li>
+       {% empty %}
+          <li>No menu items available.</li>
+       {% endfor %}
+    </ul>
+
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; First</a>
+            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        <span class"current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page.obj.next_page_number }}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+        {% endif %}
+    </div>
+</body>
+</html>
+
+
+Step 3 : URL Configuration
+#urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('menu/', views.menu_view, name='menu')
+]
