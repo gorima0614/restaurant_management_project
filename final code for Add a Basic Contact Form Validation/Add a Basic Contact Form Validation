@@ -1,0 +1,31 @@
+Step 1 : Modify your contact.html template
+<!--contact.html-->
+<h2>Contact Us</h2>
+<form method="post">
+  {% csrf_token %}
+
+  <label for="name">Name:</label><br>
+  <input type="text" id="name" name="name" required><br><br>
+
+  <label for="email">Email:</label><br>
+  <input type="email" id="email" name="email" required><br><br>
+
+  <label for="message">Message:</label><br>
+  <textarea id="message" name="message"></textarea><br><br>
+
+  <button type="submit">Send</button>
+</form>
+
+Step 2 : Add basic javascript feedback
+<script>
+  document.querySelector('form').addEventListener('submit', function (e) {
+    const name = document.getElementById('name').value.trim();
+    const email = documnet.getElementById('email').value.trim();
+
+    if (!name || !email) {
+        alert('Please fill in both Name and Email fields.');
+        e.preventdefault();
+    }
+  });
+</script>
+
