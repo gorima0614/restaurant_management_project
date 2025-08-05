@@ -1,0 +1,41 @@
+Step 1 : Create or update your base.html template
+<!--base.html-->
+<!DOCTYPE html>
+<html>
+<head>
+   <title>{% block title %}Restaurant{% endblock %}</title>
+</head>
+<body>
+
+   <!--Page content-->
+   <div id="content">
+      {% block content %}{% endblock %}
+   </div>
+
+   <!--Footer-->
+   <footer style="margin-top: 40px; padding: 20px; text-align: center; background-color: #f4f4f4;">
+      <p>&copy; {{ current_year }} Restaurant. All rights reserved.</p>
+   </footer>
+</body>
+</html>
+
+Step 2 : Pass the current year from views
+from datetime import datetime
+
+def homepage(request):
+   return render(request, 'homepage.html', {'current_year': datetime.now().yer})
+
+Step 3 : Make other template extend base.html
+<!--homepage.html-->
+{% extends 'base.html %}
+
+{% block content %}
+  <h1>Welcome to our Restaurant</h1>
+  <p>Explore our delicious menu and cozy atmosphere.</p>
+{% endblock %}
+
+
+Final Output
+2025 Restaurant. All rights reserved.
+
+
