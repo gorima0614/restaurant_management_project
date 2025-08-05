@@ -1,0 +1,26 @@
+Step 1 : Update or create the contact page template
+#contact.html
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Contact Us</h1>
+  <p>For any inquiries, feel free to reach out via email:</p>
+  <p>
+     <a href="mailto:contact@delishbites.com">contact@delishbites.com</a>
+  </p>
+{% endblock %}
+
+
+Step 2 : Ensure you have a view and url
+#views.py
+def contact(request):
+  return render(request, 'contact.html')
+
+#urls.py
+path('contact/', views.contact, anme='contact'),
+
+
+Final Output:
+Your contact Us page will now show:
+For any inquiries, feel free tp reach out via email:
+contact@delishbites.com
