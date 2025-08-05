@@ -1,0 +1,31 @@
+Step 1 : Update the <title> in the template
+<!--base.html-->
+<head>
+  <title>{% block title %}Restaurant{% endblock %}</title>
+</head>
+
+#homepage.html
+{% block title %}Delish Bites - Authentic Indian Cuisine in Mumbai{% endblock %}
+
+The result:
+Delish Bites - Authentic Indian Cuisine in Mumbai
+
+
+Step 2 : Make the title dynamic in view context
+#views.py
+def homepage(request):
+   from = NewsletterSignupForm()
+   if request.method == 'POST':
+     form = NewsletterSignupForm(request.POST)
+     if form.is_valid():
+        form.save()
+        return redirect('homepage')
+
+context = {
+    'form': form,
+    'page_title': 'Deliah Bites - Authentic Indian Cuisine in Mumbai'
+}
+return render(request, 'homepage.html', context)
+
+
+
