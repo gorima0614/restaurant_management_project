@@ -1,0 +1,40 @@
+Step 1 : Create a placeholder view
+#views.py
+def reservations(request):
+   eturn render(request, 'reservations.html')
+
+Step 2 : Add the URL Pattern
+#urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.homepage, name='homepage'),
+    path('reservations/', views.reservations, name='reservations'),
+]
+
+
+Step 3 : Create the reservation.html template
+<!--reservations.html-->
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Reservations</h1>
+  <p>This is a placeholder for the reservations page. Booking system coming soom!</p>
+{% endblock %}
+
+
+Step 4 : Update the homapage navigation menu
+<!--navigation menu in base.html or homepage.html-->
+
+<nav> 
+  <ul style="list-style: none; display: flex; gap: 15px;">
+<li><a href="{% url 'homepage' %}">Home</a></li>
+<li><a href="{% url 'about_us' %}">About Us</a></li>
+<li><a href="{% url 'reservations' %}">Reservations</a></li>
+<li><a href="{% url ;contact' %}">Contact</a></li>
+</ul>
+</nav>
+
+
+
