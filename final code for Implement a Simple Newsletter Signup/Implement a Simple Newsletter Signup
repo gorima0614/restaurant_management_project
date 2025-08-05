@@ -1,0 +1,65 @@
+step 1 : Create the model
+#models.py
+from django.db import models
+
+class NewsletterSubscriber(models.Model):
+   email = models.EmailField(unique=True)
+   subscribed_at = models.DateTimeField(auto_now_add=True)
+
+   def __str__(self):
+      return self.email
+
+Then run :
+python manage.py makemigrations
+python manage.py migrate
+
+
+Step 2 : Create the from
+#forms.py
+from django import forms
+from .models import NewsletterSubscriber
+
+class NewsletterSignupForm(form.ModelForm):
+   class Meta:
+      model = NewsletterSubscriber
+      fields = ['email']
+      widgets = {
+        'email': forms.EmailInput(attrs={
+            'placeholder': 'Enter your email',
+            'class': 'newsletter-input',
+        })
+      }
+
+
+Step 3 : Update the homepage view
+#views.py
+from django.shortcuts import render, redirect
+from .forms import NewsletterSignupForm
+
+def homepage(request):
+   form = NewsletterSignupForm()
+
+   if request.method == 'POST':
+      form = NewsletterSignupForm(request.POST)
+      if form.is_valid():
+
+         form.save()
+         return redirect('homepage')
+   return render(request, 'homepage.html', {'form': form})
+
+
+Step 4 : Update the template
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Welcome to our restaurant</h1>
+  <p>Delicious food. Warm atmosphere.Subscribe to our newsletter!</p>
+
+  <h3>Newsletter Signup</h3>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.email }}
+    <button type="submit">Subscribe</button>
+   </form>
+{% endblock %}
+
