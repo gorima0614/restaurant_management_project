@@ -1,0 +1,49 @@
+Step 1 : Update your Django View
+#views.py
+from django.shortcuts import render
+
+def homepage(request):
+    opening_hours = {
+        'Monday': '10:00 AM - 10:00 PM',
+        'Tuesday': '10:00 AM - 10:00 PM',
+        'Wednesday': '10:00 AM - 10:00 PM',
+        'Thursday': '10:00 AM - 11:00 PM',
+        'Friday': 10:00 AM - 11:00 PM',
+        'Saturday': 9:00 AM - 11:00 PM',
+        'Sunday': 9:00 AM - 9:00 PM',
+    }
+    return render(request, 'homepage.html', {'opening_hours': opening_hours})
+
+
+Step 2 : Update your template
+ <!--homepage.html-->
+ <h2>Restaurant Opening Hours</h2>
+ <ul>
+   {% for day, time in opening_hours.item %}
+     <li><strong>{{ day }}:</strong> {{ time }}</li>
+   {% endfor %}
+</ul>
+
+
+Step 3 : Style the section
+<style>
+  h2 {
+    color: #2c3c50;
+    margin-bottom: 10px;
+  }
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  li {
+    padding: 5px 0;
+    font-size: 16px;
+  }
+</style>
+
+
+Final Output:
+Restaurant Opening Hours
+Monday:    10:00 AM - 10:00 PM
+Tuesday:   10:00 AM - 10:00 PM
+...
