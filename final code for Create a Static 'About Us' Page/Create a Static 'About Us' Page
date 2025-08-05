@@ -1,0 +1,33 @@
+Step 1 : Add the view
+#views.py
+from django.shortcuts import render
+
+def about_us(request):
+    return render(request, 'about.html')
+
+
+Step 2 : create the URL Pattern
+#urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('about/', views.about_us, name='about_us'),
+]
+
+
+Step 3 : Create the Template
+<!--about.html-->
+
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>About Us</h1>
+  <p>Wlcome to our restaurant! we serve delicious meals made with love and fresh ingredients.</p>
+  <p>Our mission is to create an enjoyable dining experience for all our customers.</p>
+  <p>Stay tuned for updates on our story, team, and values.</p>
+{% endblock %}
+
+
+Step 4 : Add link to navbar or homepage
+<a href="{%url 'about_us' %}">About Us</a>
