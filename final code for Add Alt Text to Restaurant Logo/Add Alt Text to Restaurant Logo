@@ -1,0 +1,14 @@
+Step 1 : Ensure static setup in settings.py
+#settings.py
+STATIC_URL = '/static/'
+
+
+Step 2 : Load staticfiles in template
+{% load static %}
+
+
+Step 3 : Add logo with descriptive alt text
+<!--base.html or homepage.html-->
+<img src="{% static 'images/logo.png' %}" alt="Delish Bites Restaurant Logo - Authentic Indian Cuisine in Mumbai"/>
+
+
