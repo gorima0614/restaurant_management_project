@@ -1,0 +1,55 @@
+Step 1 : Update the Template
+<!--homepage.html-->
+<nav aria-label="breadcrumb" style="margin-bottom: 20px;">
+  <ol style="list-style: none; padding: 0; display: flex;">
+    <li style="margin-right: 8px;">
+      <a href="{% url 'homepage' %}" style="text-decoration: none; color: #3498db;">Home</a>
+    </li>
+  </ol>
+</nav>
+
+Step 2 : Ensure URL name for homepage exists
+#urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.homepage, name='homepage'),
+]
+
+Step 3 : Move Breadcrumb to base template for reuse
+<!--base.html-->
+<body>
+  <header>
+    <!--your header content-->
+
+  </header>
+
+  <nav aria-label="breadcrumb" style="margin: 20px 0;">
+    {% block breadcrumb %}
+      <!--Default breadcrumb-->
+      <ol style="list-style: none; padding: 0;">
+        <li><a href="{% url 'homepage' %}">Home</a></li>
+      </ol>
+    {% endblock %}
+ </nav>
+
+ <main>
+   {% block content %}{% endblock %}
+ </main>
+</body>
+
+#homepage.html
+{% extends 'base.html' %}
+
+{% block breadcrumb %}
+  <ol style="list-style: none; padding: 0;">
+    <li><a href="{% url 'homepage' %}">Home</a></li>
+  </ol>
+{% endblock %}
+
+{% block content %}
+  <h1>Welcome to Our Restaurant</h1>
+  <!--other homepage content-->
+{% endblock %}
+
