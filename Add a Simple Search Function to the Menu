@@ -1,0 +1,53 @@
+Step 1 : Assume you have a MenuItem Model
+#models.py
+class MenuItem(models.Model):
+     name = models.CharField(max_length=100)
+     description = models.TextField()
+     price = models.DecimalField(max_digits=6, decimal_paces=2)
+
+     def __str__(self):
+        return self.name
+
+Step 1 : Update the viw to handle search queries
+#views.py
+from django.shortcuts import render
+from .models import MenuItem
+
+def menu(request):
+   query = request.GET.get(' q')
+   if query:
+     items = MenuItem.objects.filter(name__icontains=query)
+   else:
+     items = MenuItem.objects.all()
+   return render(request, 'menu.html', {'items': items, 'query': query})
+
+
+Step 3 : Create or update the template
+#menu.html
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Our Menu</h1>
+
+  <!--Search Bar-->
+  <form method="get" actions="">
+    <input type="text" name="q" placeholder="Search menu..." value="{{ query|default: '' }}">
+    <button type="submit">Search<button>
+ </form>
+
+ <!--Menu List-->
+ <ul>
+   {% for item in items %}
+     <li>
+       <strong>{{ item.name }}</strong>: {{ item.description }}- Rs{{ item.price }}
+     </li>
+    {% empty %}
+      <li>No menu items found.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+
+
+Step 4 : Add the URL Pattern
+#urls.py
+path('menu/', views.menu, name='menu'),
