@@ -26,4 +26,3 @@ Step 2 : Update your footer template
    <p>&copy; {{ current_year }} Delish Bites. All rights reserved.</p>
 </footer>
 
-
