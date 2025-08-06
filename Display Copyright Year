@@ -1,10 +1,9 @@
-Step 1 A : Use a custom context processor
+Step 1 A : Create a Context Processor
 #yourapp/context_processors.py
 from datetime import datetime
 
 def current_year(request):
    return {'current_year': datetime.now().year}
-
 
 Step 1 B : Register it in settings.py
 #settings.py
@@ -20,12 +19,13 @@ TEMPLATES = [
     },
 ]
 
-Step 2 : Update your footer Template 
+Step 2 : Update your footer template 
 #base.html
-<footer style="text-align: center; margin-top: 40px;">
-   <p>&copy; {{ current_year }}Delish Bites. All rights reserved.</p>
+<foter style="text-align: center; margin_top: 40px;">
+    <p>&copy; {{ current_year }}Delish Bites. All rights reserved.</p>
 </footer>
+
 
 ---Output---
 On the frontend, you'll see:
-2025 Delish Bites.All rights reserved
+2025 Delish Bites.All rights reserved.
