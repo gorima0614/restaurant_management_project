@@ -1,0 +1,31 @@
+Step 1 A : Use a custom context processor
+#yourapp/context_processors.py
+from datetime import datetime
+
+def current_year(request):
+   return {'current_year': datetime.now().year}
+
+
+Step 1 B : Register it in settings.py
+#settings.py
+TEMPLATES = [
+    {
+        ...
+        'OPTIONS': {
+            'context_processors': [
+                ...
+                'yourapp.context_processors.current_year',
+            ],
+        },
+    },
+]
+
+Step 2 : Update your footer Template 
+#base.html
+<footer style="text-align: center; margin-top: 40px;">
+   <p>&copy; {{ current_year }}Delish Bites. All rights reserved.</p>
+</footer>
+
+---Output---
+On the frontend, you'll see:
+2025 Delish Bites.All rights reserved
