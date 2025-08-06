@@ -1,0 +1,46 @@
+Step 1 : Create the view
+#views.py
+from dajngo.shortcuts import render
+
+def our_story(request):
+   return render(request, 'our_story.html')
+
+
+Step 2 : Add the URL pattern
+#urls.py
+from django.urls import path
+from . import views
+
+urlpatterns= [
+    path('', views.homepage, name='homepage'),
+    path('our-story/', views.our_story, name='our_story'),
+]
+
+Step 3 : Create the template
+<!--our_story.html-->
+
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Our Story</h1>
+  <p>
+   Delish Bites started as a small family-owned kitchen in Mumbai with a bib dream to bring authentic Indian flavors to every table. Over the years, we've grown into a local favorite, serving fresh, handmade dishes using traditional recipes passed down through generations.
+  </p>
+  <p>
+  Our mission has always been to serve food that feels like home - warm, welcoming, and full of flavor.
+  Thank you for being a part of our journey!  
+  </p>
+{% endblock %}
+
+Step 4 : Add a link in the navigation menu
+<!--base.html-->
+<nav>
+  <ul style="display: flex; gap: 15px; list-style: none;">
+    <li><a href="{% url 'homepage' %}">Home</a></li>
+    <li><a href="{% url 'about_us %}">About Us</a></li>
+    <li><a href="{% url 'our_story' %}">Our Story</a></li>
+    <li><a href="{% url 'menu' %}">Menu</a></li>
+    <li><a href="{% url 'contact' %}">Contact</a></li>
+  </ul>
+</nav>
+
