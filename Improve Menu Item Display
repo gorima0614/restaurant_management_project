@@ -1,0 +1,63 @@
+Step 1 : Updae menu.html template
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+  <h1>Our Menu</h1>
+
+  <!--Search Bar-->
+  <form method="get" action="" style="margin-bottom: 20px;">
+    <input type="text" name="q" placeholder="Search menu..." value="{{ query|default:'' }}" style="padding: 8px; width: 250px;">
+    <button type="submit" style="padding: 8px 12px;">Search</button>
+</form>
+
+<!--Menu Item Cards-->
+<div class="menu-container">
+  {% for item in items %}
+    <div class="menu-item">
+      <h3>{{ item.name }}</h3>
+      <p>{{ item.description }}</p>
+      <p><strong>Rs{{ item.price }}</strong></p>
+    </div>
+  {% empty %}
+    <p>No menu items found.</p>
+  {% endfor %}
+ </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+   .menu-container {
+     display: flex;
+     flex-wrap: wrap;
+     gap: 20px;
+   }
+
+   .menu-item {
+     border: 1px solid #ccc;
+     padding: 15px;
+     width: 250px;
+     border-radius: 8px;
+     box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+     backgroung-color: #f9f9f9;
+   }
+
+   .menu-items h3 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #333;
+   }
+
+   .menu-item p {
+      margin: 5px 0;
+   }
+</style>
+{% endblock %}
+
+
+Step 2 : Enable extra_css block in base.html
+<!--base.html-->
+<head>
+   <title>{% block title %}Delish Bites{% endblock %}</title>
+   {% block extra_css %}{% endblock %}
+</head>
