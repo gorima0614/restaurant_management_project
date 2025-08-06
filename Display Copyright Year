@@ -10,12 +10,12 @@ Step 1 B : Register it in settings.py
 TEMPLATES = [
     {
         ...
-        'OPTIONS': [
+        'OPTIONS': {
             'context_processors': [
                 ...
                 'yourapp.context_processors.current_year',
             ],
-        ],
+        },
     },
 ]
 
@@ -25,4 +25,5 @@ Step 2 : Update your footer template
 <footer style="text-align: center; margin-top: 40px;">
    <p>&copy; {{ current_year }} Delish Bites. All rights reserved.</p>
 </footer>
+
 
