@@ -1,0 +1,67 @@
+Step 1 : Ensure email backend is set up
+#settings.py
+EMAIL_BACKEND = 'django.core,mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = ''noreply@delsihbites.com'
+
+Step 2 : Create a simple contact form 
+#forms.py
+from django import forms
+
+class ContactForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    email = forms.EmailField()
+    message = forms.CharField(widget=forms.Textarea)
+
+
+Step 3 : Update the view to send an email
+#views.py
+from django.core.mail import send_email
+from django.shortcuts import render, redirect
+from .forms import ContactForm
+
+def contact(request):
+    form = ContactForm()
+    if request.method == 'POST':
+       form = ContactForm(request.POST)
+       if form.is_valid():
+          user_email = form.cleaned_data['email']
+          user_name = form.cleaned_data['name']
+
+          send_mail(
+            subject='Thankyou for contacting Delish Bites!',
+            message=f"Hi {user_name},\n\nThanks for reaching out! We've received your message and will get back to you shortly.\n\n- Delish Bites Team",
+            from_email=None, 
+            receipient_list=[user_email],
+            fail_silently=False,
+          )
+          return redirect('contact')
+    return render(request, 'contact.html', {'form': form})
+
+
+Step 4 : Create or Update contact.html template
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Contact Us</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Send</button>
+  </form>
+{% endblock %}
+
+
+--Test it--
+python manage.py runserver
+
+--Submit the form--
+Subject: Thank you for contacting Delish Bites!
+From: noreply@delsihbites.com
+To: user@example.com
+Body:
+Hi John,
+
+Thanks for reaching out! We've received your message and will get back to you shortly.
+
+-Delish Bites team
+
