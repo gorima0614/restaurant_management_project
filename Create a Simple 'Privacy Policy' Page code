@@ -1,0 +1,55 @@
+Step 1 : Create the template :- privacy.html
+<!--templates/privacy.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Privacy Policy</title>
+    <style>
+        body {
+            font-family: Arial, sana-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            line-height: 106;
+            backgroung-color: #f9f9f9;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Privacy policy</h1>
+    <p>This Privacy Policy explains how we collect, use, and protect your personal information.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla ut enim at elit imperdiet fermentum. Morbi blandit, justo nec dictum tincidunt, eros lorem congue ante, nec eleifend lorem nisi vitae arcu.</p>
+    <p>By using our website, you consent to the terms of this Privacy Policy.</p>
+</ody>
+</html>
+
+Step 2 : Add a URL route for the page
+#urls.policy
+from django.urls import path
+from django.views.generic import TemplateView
+
+urlpatterns = [
+    #..other paths
+    path('privact/', TemplateView.as_view(template_name='privacy.html'), name='privacy_policy'),
+]
+
+
+Step 3 : Add the link to the footer in base.html
+#base.html
+<!--Inside<footer>in base.html-->
+<p>
+  <a href="https://facebook.com/placeholder" target="_blank" style="color: #fff; margin: 0 10px;">Facebook</a> |
+  <a href="https://instagram.com/placeholder" target="_blank style="color: #fff; margin: 0 10px;">Instagram</a> |
+  <a href="{% url 'terms_of_service' %}" style="color: #fff; margin: 0 10px;">Term of Service</a> |
+  <a href="{% url 'privacy_policy' %}" style="color: #fff; margin: 0 10px;">Privacy Policy</a>
+</p>
