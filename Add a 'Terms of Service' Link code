@@ -1,0 +1,37 @@
+Step 1 : Update footer in base.htm;
+<!--templates/base.html-->
+{% load sttic %}
+<DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}My Reataurant{% endblock %}</title>
+</head>
+<body>
+    
+     {% block content %}
+     {% endblock %}
+
+     <!--Footer-->
+     <footer style="background: #333; color: #fff; text-align: center; padding: 20px 0;">
+         <p>&copy; 2025 My Reataurant. All rights reserved.</p>
+         <p>
+            <a href="https://facebook.com/placeholder" target="_blank" style="color: #fff; margin: 0 10px;">Facebook</a> |
+            <a href="https://instagram.com/placeholder" target="_blank" style="color: #fff; margin: 0 10px;">Instagram</a>
+            <a href="{% url 'terms_of_service' %}" style="color: #fff; margin: 0 10px;">Terms of Service</a>
+        </p>
+    </footer>
+</body>
+</html>
+
+
+Step 2 : Create a URL Route for 'terms_of_service'
+#urls.py
+from django.urls import path
+from django.views.generic import TemplateView
+
+urlpatterns = [
+    #...your other routes
+    path('terms/', TemplateView.as_view(template_name='terms.html'), name='terms_of_service'),
+]
+
