@@ -1,0 +1,101 @@
+Step 1 : Create the template:- our_team.html
+<!--templates/our_team.html-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Our Team>/title>
+    <style>
+       body {
+           font-family: Arial, sna-serif;
+           background: #f8f8f8;
+           padding: 40px;
+           max-width: 1000px;
+           margin: auto;
+       }
+
+       h1 {
+           text-align: center;
+           margin-bottom: 40px;
+           color: #333;
+       }
+
+       .team-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+       }
+
+       .team-member {
+           background-color: white;
+           padding: 20px;
+           border-radius: 10px;
+           box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+           text-align: center;
+           width: 250px;
+       }
+
+       .team-member img {
+           width: 120px;
+           height: 120px;
+           object-fit: cover;
+           border-radius: 50%;
+           margin-bottom: 15px;
+       }
+
+       .team-member h3 {
+            margin: 10px 0 5px;
+       }
+
+       .team-member p {
+           font-size: 14px;
+           color: #666;
+       }
+    </style>
+</head>
+<body>
+   <h1>Meet Our Team</h1>
+   <div class="team-container">
+      <div class="team-member">
+          <img src="{% static 'images/chef1.jpg' %}"alt="Chef John">
+          <h3>Chef John</h3>
+          <p>Head Chef with 15 years of experience in Italian cuisine.</p>
+      </div>
+      <div class="team-member">
+          <img src="{% static 'images/manager1.jpg' %}" alt="Manager Lisa">
+          <h3>Lisa Gomez</h3>
+          <p>Restaurant Manager ensuring everything runs smoothly.</p>
+      </div>
+      <div class="team-member">
+         <img src="{% static 'images/server1.jpg' %}" alt="server Alex">
+         <h3>Alex Lee</h3>
+         <p>Friendly server who brings a smile to every table.</p>
+      </div>
+    </div>
+</body>
+</html>
+
+
+Plceholder images:::
+static/images/chef1.jpg
+static/images/manager1.jpg
+static/images/server1.jpg
+
+
+Step 2 : Add a URL Route
+from django.urls import path
+from django.views.generic import TemplateView
+
+urlpatterns = [
+    path('team/', TemplateView.as_view(template_name='our_team.html'), name='our_team'),
+]
+
+
+Step 3 : Add alink to the footer 
+<a href="{% url 'our_team' %}" style="color: #fff; margin: 0 10px;">Or Team</a>
+
+
+
+
