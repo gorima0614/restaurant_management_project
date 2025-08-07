@@ -1,0 +1,61 @@
+Step 1 : Create the placeholder
+<!--templates/reservations.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reservations</title>
+<style>
+     body {
+        font-family: Arial, sans-serif;
+        padding: 40px;
+        max-width: 800px;
+        margin: auto;
+        background-color: #f8f8f8;
+        text-align: center;
+     }
+
+     h1 {
+        color: #333;
+        margin-bottom: 20px;
+     }
+
+     p {
+        font-size: 16px;
+        color: #666;
+     }
+     </style>
+</head>
+<body>
+   <h1>Make a Reservation</h1>
+   <p>This is a placeholder for the reservation system. More features coming soon!</p>
+</body>
+</html>
+
+
+Step 2 : Add the URL 
+from django.urls import path
+from django.views.generic import TemplateView
+
+urlpatterns = [
+    path('', TemplateView.as_view(template_name='home.html'), name='home')'
+    path('reservations/', TemplateView.as_view(template_name='reservations.html'), name='reservations'),
+]
+
+
+Step 3 : Add the reservatuion button to the homapage
+<!--Inside templates/home.html, below your carousel or welcome message-->
+<div style="text-align: center; margin-top: 30px;">
+   <a href="{% url 'reservations' %}" style="
+       display: inline-block;
+       background-color: #3498db;
+       color: white;
+       padding: 12px 25px;
+       font-size: 16px;
+       border-radius: 5px;
+       text-decorations: none;
+       transition: background 03.s;
+    ">
+      Make a reservation
+    </a>
+</div>
