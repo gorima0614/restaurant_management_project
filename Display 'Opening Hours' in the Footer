@@ -1,0 +1,60 @@
+Step 1 : Update the footer in base.html
+<!--template/base.html-->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}MyRestaurant{% endblock %}</title>
+</head>
+<body>
+
+    {% block content 5}
+    {% endblock %}
+    <!--footer-->
+    <footer style="background: #333; color: #fff; text-align: center; padding: 30px 0;">
+        <p>&copy; 2025 My Restaurant. All rights reserved.</p>
+
+        <p>
+            <a href="https://facebook.com/placeholder" target="_blank" style="color: #fff; margin:0 10px;">Facebook</a> |
+            < a href="https://instagram.com/placeholder" target="_blank style="color: #fff; margin: 0 10px;">Instagram</a> |
+            <a href="{% url 'terms_of_service' %}" style="color: #fff; margin: 0 10px;">Terms of Service</a> |
+            <a href="{% url 'privacy_policy' %}" style="color: #fff; margin: 0 10px;">Privacy Policy</a> 
+        </p>
+
+        <div style="margin-top: 15px;">
+            <strong>Opening Hours:</strong><br>
+            Mon - Fri: 10:00 AM - 10:00 PM<br>
+            Sat - Sun: 9:00 AM - 11:00 PM
+        </div>
+    </footer>
+</body>
+</html>
+
+Step 2 : Style with CSS 
+/* static/css/style.css */
+footer {
+    background: #333;
+    color: #fff;
+    text-align: center;
+    padding: 30px 0;
+}
+
+footer a {
+    color: #fff;
+    margin: 0 10px;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-deoration: underline;
+}
+
+footer .hours {
+    margin-top: 15px;
+}
+
+Result:::::
+Opening Hours:
+Mon - Fri: 10:00 AM - 10:00 PM
+Sat - Sun: 9:00 AM - 11:00 PM
