@@ -1,0 +1,76 @@
+Step 1 : Homepage view
+#restaurant/views.py
+from django.shortcuts import render
+
+def home(request):
+   return render(request, "home.html")
+
+
+Step 2 : Template with Search Bar
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Restaurant Home</title>
+    <style>
+       body {
+           font-family: Arial, sans-serif;
+           background: #fafafa;
+           text-align: center;
+           padding: 50px;
+       }
+
+       .search-container {
+           margin-top: 20px;
+       }
+       input[type="text"] {
+           padding: 10px;
+           width: 250px;
+           border: 1px solid #ccc;
+           border-radius: 5px;
+       }
+       button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            boder: none;
+            border-radius: 5px;
+            cursor: pointer;
+       }
+       button:hover {
+           background-color: #218838;
+       }
+    </style>
+</head>
+<body>
+   
+    <h1>Welcome to Our Restaurant</h1>
+
+    <div class="search-container">
+      <input type="text" placeholder="Search...">
+      <button onclick="showSearchMeassage()">Search</button>
+    </div>
+
+    <script>
+        function showSearchMeassage() {
+            alert("Search");
+        }
+    </script>
+</body>
+</html>
+
+
+Step 3 : URL Mapping
+restaurant/urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+]
+
+
+Step 4 : Test it 
+python manage.py runserver
+
+Go to http://localhost:8000/ and click the search button- you'll see a simple alert that says "Search".
