@@ -1,0 +1,38 @@
+Step 1 : Create the Address Model
+#home/models.py
+from django.db import models
+
+class RestaurantInfo(models.Model):
+   name = models.CharField(max_length=255, default="My Restaurant")
+   address = models.TextField()
+
+   def __str__(self):
+       return self.name
+
+Step 2 : Register the model in Admin
+from django.contrib import Admin
+from .models import RestaurantInfo
+
+admin.site.register(RestaurantInfo)
+
+Step 3 : Run Migrations
+python manage.py makemigrations
+python manage.py migrate
+
+Step 4 : Fetch data in the homepage view
+#home/views.py
+from django.shortcuts import render
+from .models import RestaurantInfo
+
+def index(request):
+    restaurant = RestaurantInfo.objects.first()
+    return render(request, "home/index.html", {"restaurant": restaurant})
+.
+Step 5 : Display the Address in the template
+<h1>Welcome to {{ restaurant.name }}</h1>
+<p><strong>Address:</strong> {{ restaurant.address }}</p>
+
+Step 6 : Add data in admin
+1. Go to /admin
+2. Add a RestaurantInfo entry with your restaurant name and address.
+3. Refresh the homepage
