@@ -1,0 +1,20 @@
+Step 1 : Edit the homepage template
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Welcom to our restaurant!">
+    <title>Restaurant Home</title>
+    <link rel="stylesheet' href="{% static 'css/style.css' %}">
+</head>
+<body>
+   <h1>Welcome to Our Restaurant</h>
+   <p>Enjoy delicious meals and great ambiance.</p>
+</body>
+</html>
+
+Step 2 : Why this helps SEO
+1. Search engines use the meta description to show a short snippet in results.
+2. Having a clear, keyword-rich decription increases click-through rate.
