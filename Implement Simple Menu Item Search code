@@ -1,0 +1,58 @@
+Step 1 : Example MenuItem model
+from  django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def __str__(self):
+       return self.name
+
+
+Step 2 : Update the menu view
+from django,shortcuts import render
+from .models import MenuItem
+
+def menu_list(request):
+    query = request.GET.get("q")
+    if query:
+       items = MenuItem.objects.filter(name__icontains=query)
+    else:
+       items = MenuItem.objects.all()
+    return render(reuqest, "menu/menu_list.html", {"items": items, "query": query})
+
+
+Step 3 : Add URL Route
+from django.urls import path
+from .import views
+
+urlpatterns = [
+    path("", views.menu_list, name="menu"),
+]
+
+path("menu/", include("menu.urls")),
+
+Step 4 : Create the template with search bar
+{% extends "base.html" %}
+
+{% block title %}Menu{% endblock %}
+
+{% block content %}
+<h1>Our Menu</h1>
+
+Step 4 : Create the template with search bar
+<form method="get" action="{% url 'menu' %}">
+    <input type="text" nmae="q" placeholder="search menu items..." value="{{ query|default:'' }}">
+    <button type="submit">Search</button>
+</form>
+
+<hr>
+   <ul>
+       <li>
+           <strong>{{ item.name }}</strong> - ${{ item.price }}<br>
+           {{ item.description }}
+        </li>
+    </ul>
+    <p>No menu items found.</p>
+    
