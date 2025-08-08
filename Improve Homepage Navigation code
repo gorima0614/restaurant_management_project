@@ -1,0 +1,63 @@
+Step 1 : Base template with navigation
+<!DOCTYPE html>
+<html lang='en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Restaurant{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <!--Navigation Menu-->
+    <nav>
+       <ul>
+           <li><a href="{% url 'home' %}">Home</a></li>
+           <li><a href="{% url 'menu' %}">Menu</a></li>
+           <li><a href="{% url 'about' %}">About</a></li>
+           <li><a href="{% url 'contact' %}">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!--Page Content-->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
+
+
+Step 2 : Homepage template extending Base
+{% extends "base.html" %}
+
+{% block title %}Home - My Restaurant{% endblock %}
+
+{% block content %}
+<h1>Welcome to {{ restaurant.name }}</h1>
+<p><strong>Address:</strong> {{ restaurant.address }}</p>
+{% endblock %}
+
+
+Step 3 : Define URLs for Each Section
+from django.urls import path
+from home import views as home_views
+from menu import views as menu_views
+from pages import views as pages_views
+
+urlpatterns = [
+    path('', home_views.index, name='home'),
+    path('menu/', menu_views.meu_list, name='menu'),
+    path('about/', pages_views.about, name='about'),
+    path('about/', pages_views.contact, name='contact'),
+]
+
+
+Step 4 : Create the views
+from django.shortcuts import render
+
+def about(request):
+    return render(request, 'pages/about.html')
+
+def contact(request):
+    return render(request, 'pages/contact.html')
+
+
