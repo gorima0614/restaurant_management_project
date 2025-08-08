@@ -1,0 +1,40 @@
+Step 1 : Create a base template
+{% load static %}
+<!DOCTYPE html>
+<html lamg="en">
+<head>
+    <meta chardet="UTF-8">
+    <meta name="viewport" content="width-device-width, initial-sclae=1.0">
+    <title>{% block title %}Restaurant{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Our Restaurant</h1>
+    </header>
+
+    <main>
+       {% block content %}{% endblock %}
+    </main>
+
+    <footer style="text-align: center; margin-top: 20px; padding: 10px; background: #f4f4f4;">
+       Powered by Django
+    </footer>
+</body>
+</html>
+
+
+Step 2 : Extend the base template in your pages
+{% extends "base.html" %}
+
+{% block title %}Home - Restaurant{% endblock %}
+ 
+{% block content %}
+    <h2>Welcome to Our Restaurant</h2>
+    <p>Enjoy delicious meals and a grate ambiance.</p>
+{% endblock %}
+
+
+Step 3 : Result
+1. Every page that extends base.html will now automatically have "Powered by Django" in the footer.
+2 You only need to change the footer in one file if you ever want to update it. 
