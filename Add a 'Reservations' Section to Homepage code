@@ -1,0 +1,36 @@
+Step 1 : HTML + Tailwind CSS 
+<section class="bg-gray-50 py-12">
+   <div class="max-w-6xl mx-auto px-6 text-center">
+     <h2 class="text-3xl font-bold text-gray-800">Reservations</h2>
+     <p class="mt-4 text-gray-600 max-w-2xl mx-auto">
+       Book your table in advance and enjoy a seamless dining experience.
+       Our reservation system ensures you have the perfect spot waiting for you.
+    </p>
+    <a href="/reservations"
+       class="inline-block mt-6 px-6 py-3 bg-red-600 text-white font-semibold rounded=;g shadow hover:bg-red-700 transition duration-300">
+      make a Reservation
+    </a>
+   </div>
+</section>
+
+
+Step 2 : React/Next.js component version
+export default function ReservationsSection() {
+  return (
+    <section className="bg-gray-50 py-12">
+      <div className="max-w-6xl max-auto px-6 text-center">
+        <h2 className="text-3xl font-bold text-gray-800">Reservations</h2>
+        <p className="mt-4 text-gray-600 max-w-2xl mx-auto">
+          Book your table in advance and enjoy a seamless dining experience.
+          Our reservation system ensures you have the perfect spot waiting for you.
+        </p>
+        <a 
+          href="/reservations"
+          className="inline-block mt-6 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg shadow hover:bg-red-700 transition duration-300"
+        >
+          Make a Reservation
+        </a>
+      </div>
+    </section>
+  );
+}
