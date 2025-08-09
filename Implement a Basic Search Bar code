@@ -1,0 +1,53 @@
+Step 1 : Add search bar HTML to template
+<header class="site-header">
+     <div class="header-content">
+         <h1>My Restaurant</h1>
+
+         <form class="search-form" action="#" method="GET">
+             <input type="text" name="q" placeholder="Search menu...">
+             <button type="submit">Search</button>
+        </form>
+    </div>
+</header>
+
+
+Step 2 : Style the search bar
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.search-form input[type="text"] {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.search-form button {
+    background-color: #ff6347;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.search-form button:hover {
+    background-color: #e5533d;
+}
+
+Step 3 : TailwindCSS 
+<form class="flex items-center space-x-2" action="#" method="GET">
+    <input type="text" name="q" placeholder="search menu..."
+           class="px-3 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" />
+    <button type="submit"
+            class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">
+        search
+    </button>
+</form>
+
+
+****Result****
+> A working looking search bar in the header.
+> Currently doesn't search, but will be ready to connect to a a search function later.
