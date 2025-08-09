@@ -1,0 +1,58 @@
+Step 1 : Add news section to homepage template
+<section class="news-section">
+    <h2>Ltest News</h2>
+
+    <div class="news-item">
+      <h3> New Menu Launch!</h3>
+      <p>We're excited to announce our brand-new seasonal menu featuring frsh local ingredients. Come try it this weekend!</p>
+      <span class="news-date">August 9, 2025</span>
+    </div>
+
+    <div class="news-item">
+       <h3> Anniversary Celebration</h3>
+       <p>Join us for our 2nd anniversary celebration with live music and special discounts all day!</p>
+       <span class="news-date">July 15, 2025</span>
+    </div>
+</section>
+
+Step 2 : Style with CSS 
+.news-section {
+    background-color: #f9f9f9;
+    padding: 20px;
+    max-width: 900px;
+    margin: 30px auto;
+    border-radius: 8px;
+}
+
+.news-section h2 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.news-item h3 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: #ff6347;
+}
+
+.news-date p{
+    color: #555
+    margin-bottom: 6px;
+}
+
+.news-date {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+Step 3 : Link CSS in base template
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+****Result****
+> Clean "Latest News" box with announcements
+> Each news item has a little title, description, and date
+> Hardcoded now, but styled so you can easily make it dynamic later
+
