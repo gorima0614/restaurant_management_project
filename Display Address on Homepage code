@@ -1,38 +1,68 @@
-Step 1 : Create the Address Model
+Step 1 : Create a model for the address
 #home/models.py
 from django.db import models
 
 class RestaurantInfo(models.Model):
-   name = models.CharField(max_length=255, default="My Restaurant")
-   address = models.TextField()
+    name = models.CharField(max_length=200, default="My Restaurant")
+    address = models.TextField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
 
-   def __str__(self):
+    class Meta:
+        verbose_name = "Restaurant Information"
+        verbose_name_plural = "Restaurant Information"
+    
+    def __str__(self):
        return self.name
 
-Step 2 : Register the model in Admin
+Step 2 : Register in Admin
 from django.contrib import Admin
-from .models import RestaurantInfo
+from .mdels import RestaurantInfo
 
-admin.site.register(RestaurantInfo)
+@admin.register(RestaurantInfo)
+class RestaurantInfoAdmin(admin.ModelAdmin):
+    list_display = ("name", "address", "phone", "email")
 
-Step 3 : Run Migrations
+
+Step 3 : Migrate Database
 python manage.py makemigrations
-python manage.py migrate
+python manage.py Migrate
 
-Step 4 : Fetch data in the homepage view
+Step 4 : Add data in admin
+> Go to /admin
+> Add a restaurant entry with your restaurant's address.
+
+
+Step 5 : Fetch in view
 #home/views.py
 from django.shortcuts import render
 from .models import RestaurantInfo
 
-def index(request):
-    restaurant = RestaurantInfo.objects.first()
-    return render(request, "home/index.html", {"restaurant": restaurant})
-.
-Step 5 : Display the Address in the template
-<h1>Welcome to {{ restaurant.name }}</h1>
-<p><strong>Address:</strong> {{ restaurant.address }}</p>
+def homepage(request):
+    restaurant_info = RestaurantInfo.objects.first()
+    return render(request, "home/homepage.html", {"restaurant_info})
 
-Step 6 : Add data in admin
-1. Go to /admin
-2. Add a RestaurantInfo entry with your restaurant name and address.
-3. Refresh the homepage
+
+Step 6 : Display in template
+#home/templates/home/homepage.html
+<section class="bg-gray-100 py-6">
+  <div class="max-w-6xl mx-auto px-6 text-center">
+    <h2 class="text-lg font-semibold text-gray-700">Visit Us</h2>
+    {% if restaurant_info %}
+       <p class="mt-2 text-gray-600">{{ restaurant_info.address }}</p>
+    {% else %}
+       <p class="mt-2 text*gray-400">Address coming soon...</p>
+    {% endif %}
+  </div>
+</section>
+
+
+--Result--
+> Address is editable via Django Admin.
+> Homepage dynamically displays it.
+> No need to hardcode the address in HTML.
+
+
+
+
+
