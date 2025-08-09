@@ -1,0 +1,75 @@
+Step 1 : Add HTML to homepage template
+<section class="chefs-special">
+    <h2>Chef's Special</h2>
+
+    <div class="special-item">
+        <h3>Grilled Chicken with Lemon Butter</h3>
+        <p>Fresh chicken grilled with perfection, topped with our house-made lemon butter sauce.</p>
+        <soan class="price">Rs300</span>
+    </div>
+
+    <div class="special-item">
+       <h3>Truffle Choco Cake</h3>
+       <p>Creamy cake coated with truffle chocolate and glazed choco.</p>
+       <span class="price">Rs190</span>
+    </div>
+</section>
+
+Step 2 : Style the section
+.chef-special {
+    background-color: #fff8f0;
+    padding: 20px;
+    max-width: 900px;
+    margin: 30px auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.chef-special h2 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #d35400;
+}
+
+.special-item {
+    padding: 15px;
+    border-bottom: 1px soid #ddd;
+}
+
+.special-item:last-child {
+    border-bottom: none;
+}
+
+.special-item h3 {
+    font-size: 1.2rem;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.special-item .price {
+    font-weight: bold;
+    color: #27ae60;
+}
+
+Step 3 : Tailwind CSS 
+<section class="bg-orange-50 py-8 px-6 max-w-4xl mx-auto rounded-lg shadow">
+    <h2 class="text-center text-2xl font-bold text-orange-700 mb-6">Chef's Special</h2>
+
+    <div class="pb-4 mb-4 border-b border-gray=300">
+       <h3 class="text-lg font-semibold text-gray-800">Grilled chicken with lemon butter</h3>
+       <p class="text-gray-600">Fresh chicken grilled with lemon butter sauce.</p>
+       <span class="text-green-600 font-bold">Rs300</span>
+    </div>
+
+    <div>
+       <h3 class="text-lg font-semibold text-gray-800">Truffle Choco Cake</h3>
+       <p class="text-gray-600">Ceamy cake coated with truffle chocolate with glazed choco.</p>
+       <span class="text-green-600 font-bold">Rs190</span>
+    </div>
+</section>
+
+****Result****
+> Clean, styled section highlighting the special
+> Hardcoded items for now-perfect for an MVP
+> Easily expandable later to pull from the database
