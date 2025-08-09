@@ -1,0 +1,81 @@
+Step 1 : HTML for newsletter form
+<section class="newsletter-signup">
+   <h2>Join Our Newsletter</h2>
+   <p>Get updates on our latest dishes, offers, and events.</p>
+
+   <form action="#" method="POST" class="newsletter-form">
+      <input type="email" name="email" placeholder="Enter your email" required>
+      <button type="submit">Subscribe</button>
+    </form>
+</section>
+
+
+Step 2 : CSS Styling version
+.newsletter-signup {
+    background-colr: #f4f4f4;
+    padding: 30px;
+    text-align: center;
+    border-radius: 8px;
+    max-width: 500px;
+    margin: 40px auto;
+}
+
+.newsletter-signup h2 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.newsletter-signup p {
+    color: #666;
+    margin-bottom: 16px;
+}
+
+.newsletter-form {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.newsletter-form input[type="email"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 250px;
+}
+
+.newsletter-form button {
+    background-color: #ff6347;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.newsletter-form button:hover {
+    background-color: #e5533d;
+}
+
+
+Step 3 : Tailwind CSS 
+<section class="bg-gray-100 py-8 px-4 text-center rounded-lg max-w-lg mx-auto">
+   <h2 class="text-xl font-bold text-gray-800 mb-2">Join Our Newsletter</h2>
+   <p class="text-gray-600 mb-4">Get updates on our latest dishes, offers and events</p>
+
+   <form action="#" method="POST' class="flex flex-col sm:flex-row justify-center gap-"3>
+      <input type="email" name="email" placeholder="Enter your email" required  
+            class="px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300 w-full sm:w-auto">
+        <button type="submit"
+             class=""bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition">
+          Subscribe
+        </button>
+    </form>
+</section>
+
+
+****Result****
+> Nicely styled signup form
+> Works visually but doesn't save data yet
+> Ready to hook into Django backend later.
