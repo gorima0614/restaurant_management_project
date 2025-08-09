@@ -1,0 +1,75 @@
+Step 1 : Configure email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_email@gmail.com'
+EMAIL_HOST_PASSWORD = 'your_email_password'
+EMAIL_FROM_EMAIL = EMAIL_HOST_USER
+
+Step 2 : Update the contact form view
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import ContactForm
+
+def contact_view(request):
+    if request.method == "POST":
+       form = ContactForm(request.POST)
+       if form.is_valid():
+          contact = form.save()
+
+          user_email = form.cleaned_data.get("email")
+          send_mail(
+            subject="Thank You for Contacting Us",
+            message="Hello! We have received your messsage and will get back to you shortly.\n\n- My restaurant Team",
+            from_email=None,
+            recipient_list=[user_email],
+            fail_silently=False,
+          )
+
+          messages.success(request, "Your message has been sent. A confirmation email has been sent to you.")
+          return redirect("contact")
+    else:
+        form = ContactForm()
+    return render(request, "home/contact.html", {"form": form})
+
+
+****Example Contact form****
+#home/forms.py
+from django import forms
+from .models import ContactMessage
+
+class ContactForm(forms.ModelForm):
+   class Meta:
+      model = ContactMessage
+      fields = ["name", "email", "message"]
+
+
+****Example Contact model****
+#home/models.py
+from django.db import models
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+       return f"{slef.name} ({self.email})"
+
+
+****Test Email Sending****
+python manage.py shell
+
+from django.core.mail import send_mail
+send_mail("Test", "This is a test email.", None, ["your_email@gmail.com"])
+
+
+****Result****
+> User submits the contact form.
+> Their message is saved in the database.
+> They instantly receive a "Thank You" email.
+> You can also send yourself a notification email if needed.
+
