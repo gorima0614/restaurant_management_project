@@ -1,0 +1,46 @@
+Step 1 : HTML footer template
+<footer class="site-footer">
+  <div class="footer-content">
+    <p>&copy; {{ year }} My Restaurant. All rights reserved.</p>
+  </div>
+</footer>
+
+
+Step 2 : CSS Styling 
+.site-footer {
+    background-color: #333;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+}
+
+.site-footer .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    font-size: 0.9rem;
+}
+
+.site-footer a {
+    color: #ffcc00;
+    text-decoration: none;
+}
+
+.site-footer a:hocer {
+    text-decoration: underline;
+}
+
+Step 3 : Link the CSS in base template
+<link rel="stylesheet" href="{% static 'css/stylesheet.css' %}:>
+
+Step 4 : TailwindCSS
+<footer class="bg-gray-900 text-white py-6">
+  <div class="max-w-w6xl mx-auto px-4 text-center">
+    <p class="text-sm">&copy; {% now "Y" %} My Restaurant.All rights reserved. </p>
+  </div>
+</footer>
+
+RESULT:::
+> Dark background with white text.
+> Center-aligned content.
+> Links highlighted on hover.
+
