@@ -1,0 +1,47 @@
+Step 1 : Create the cart view
+#orders/views.py
+from django.shortcuts import render
+
+def view_cart(request):
+    # if you have cart logic, load it here
+    # For now, just render a placeholder template
+    return render(request, "order/cart.html")
+
+Step 2 : Add URL for the cart
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("cart/", views.view_cart, name="view_cart"),
+]
+
+from django.urls import path, include
+
+urlpatterns = [
+    path("", include("home.urls")), 
+    path("orders/", include("orders.urls")),
+]
+
+
+Step 3 : Create cart template
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+   <h1 class="text-2xl font-bold mb-4">Your Cart</h1>
+   <p>Cart items will appear here.<p>
+</div>
+{% endblock %}
+
+Step 4 : Add the "View Cart" link
+<a href="{% url 'view_cart' %}"
+   class="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+   View cart
+</a>
+
+
+Result::
+> URL /orders/cart displays the cart page.
+> Homepage/Menu page has a button linking to it.
+> When your cart system is ready , you can fill in the logic inside
+view.cart().
