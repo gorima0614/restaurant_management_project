@@ -1,0 +1,37 @@
+Step 1 : Create the template
+<div class="container" style="padding: 2rem">
+    <h1>Careers at Our Restaurant</h1>
+    <p>We're always looking for passionate, talented people to join our team.</p>
+
+    <h3>Why Work with us></h3>
+    <ul>
+        <li>Friendly and supportive environment</li>
+        <li>Opportunities for growth and learning</li>
+        <li>Delicious meals every day</li>
+    </ul>
+
+    <p>
+       Interested? Email your resume to
+       <a href="mailto:caareers@reataurant.com">careers@restaurant.com</a>.
+    </p>
+</div>
+
+Step 2 : Create the view
+from django.shortcuts import render
+
+def careers(request):
+    return render(request, 'careers.html')
+
+Step 3 : Add URL Route
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    #..other paths
+    path('careers/', views.careers, nme='careers'),
+]
+
+Step 4 : Link it in navvigation
+<li><a href="{% url 'careers' %}">Careers</a></li>
+
+http://127.0.0.1:8000/careers/
