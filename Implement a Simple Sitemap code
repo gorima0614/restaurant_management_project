@@ -1,0 +1,50 @@
+Step 1 : Create the sitemap view
+from django.http import HttpResponse
+from django.urls import reverse
+
+def sitemap_view(request):
+    pages = [
+        reverse('home'),
+        reverse('menu'),
+        reverse('contact'),
+        reverse('about'),
+        reverse('cart'),
+    ]
+
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_content += '<urlset xmlns="http://ww.sitemaps.org/schemas/sitemap/0.9">\n'
+    for page in pages:
+        xml_content += f" <url>\n  <loc>{request.build_absolute_uri(page)}</loc>\n  </url>\n"
+    xml_content += '</urlset>'
+
+    return HttpResponse(xml_content, content_type="application/xml")
+
+Step 2 : Add URL for sitemap
+from django.urls import path
+fom . import views
+
+urlpatterns = [
+    path('sitemap.xml', views.sitemap_view, name='sitemap'),
+]
+
+Step 3 : Ensure URL Names Exist
+path('', views.home_view, name='home'),
+path('menu/', views.menu_view, name='menu'),
+path('contact/', views.contact_view, name='contact'),
+path('about/', views.about_view, name='about'),
+path('cart', views.cart_view, name='cart'),
+
+
+Step 4 : Test it 
+http://localhost:8000/sitemap.xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+   <url>
+     <loc>http://127.0.0.1:8000/</loc>
+   </url>
+   <url> 
+      <loc>http://127.0.0.1:8000/menu/</loc>
+   </url>
+   ...
+</urlset>
