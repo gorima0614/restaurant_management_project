@@ -1,0 +1,30 @@
+Step 1 : Add Email to the Model
+from django.db import models 
+
+class Restaurant(models.Model):
+     name = models.CharField(max_length=255)
+     address = models.TextField()
+     email = models.EmailField()
+
+     def __str__(self):
+        return self.name
+
+python manage.py makemigrations
+python manage.py migrate
+
+Step 2 : Update the contact view
+from django.shortcuts import render
+from .models import Restaurant
+
+def contact_view(request):
+    restaurant = Restaurant.objects.first()
+    return render(request, 'contact.html', {'restaurant': restaurant})
+
+Step 3 : Display email on contact us page
+<h1>Contact Us</h1>
+<p><strong>Email:</strong>
+    <a href="mailto:{{ restaurant.email }}">{{ restaurant.email }}</a>
+</p>
+
+<form method="post" action="{% url 'contact; %}">
+</form>
