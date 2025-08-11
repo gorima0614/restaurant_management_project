@@ -1,0 +1,37 @@
+Step 1 : pdate homepage template
+<h1>Welcome to {{ restaurant.name }}</h1>
+<p><strong>Address:</strong> {{ restaurant.address }}</p>
+
+<hr>
+<section id="menu-section">
+     <h2>Our Menu</h2>
+     <p>Our menu is currently under construction. PLease check back soon for delicious updates!</p>
+</section>
+
+Step 2 : Styling
+<style>
+#menu-section {
+    pasdding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    margin-top: 20px;
+    text-align: cenrer;
+}
+#menu-section h2 {
+    margin-bottom: 10px;
+}
+#menu-section p {
+    font-size: 16px;
+    color: #666;
+}
+</style>
+
+Step 3 : Make sure view passes data
+from django.shortcuts import render
+from .models import restaurant
+
+def home_view(request):
+    restaurant = Restaurant.objects.first()
+    return render(request, 'home.html', {'restaurant': restaurant})
+
+    
