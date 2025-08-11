@@ -1,0 +1,77 @@
+Step 1 : Create the cart view
+from django.shortcuts import render
+
+def cart_view(request):
+    cart = request.session.get('cart', {})
+    tottal_price = sum(item['price'] * item['quantity'] for item in cart.values())
+
+    return render(request, 'cart.html', {
+        'cart': cart,
+        'total_price': total_price
+    })
+
+
+Step 2 : Add URL for the cart
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('cart/', views.cart_view, name='cart'),
+]
+
+Step 3 : Create the cart template
+<html>
+<head>
+   <title>Your Cart</title>
+   <style>
+      table {
+        width: 60%;
+        margin: auto;
+        border-collapse: collapse;
+      }
+      th, td {
+          padding: 10px;
+          border-bottom: 1px solid #ddd;
+          text-align: center;
+      }
+      th {
+        background-color: #f8f8f8;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .total {
+         text-align: right;
+         margin-right: 20%;
+         font-size: 18px;
+         font-weight: bold;
+      }
+    </style>
+</head>
+<body>
+ 
+<h1>Your Shopping Cart</h1>
+
+<table>
+     <tr>
+        <th>ITem</th>
+        <th>Price Rs</th>
+        <th>Quantity</th>
+        <th>Subtotal Rs</th>
+    </tr>
+    <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.price }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.price|floatformat:2|add:item.quantity|floatformat:2 }}</td>
+    </tr>
+</table>
+<p class="total">Total: Rs{{ total_price|floatformat:2 }}</p>
+<p style="text-align:center;">Your cart is empty.</p>
+</body>
+</html>
+
+Step 4 : Link to cart
+<a href="{% url 'cart' %}">View Cart</a>
+
