@@ -1,0 +1,55 @@
+Step 1 : Update the Model
+from django.db import models
+
+class MenuItem(models.Model):
+     name = models.CharField(max_length=200)
+     description = models.TextField(blank=True)
+     price = models.DecimalField(max_digits=6, decimal_places=2)
+
+     def __str__(self):
+        return self.name
+
+
+Step 2 : Make Migrations
+python manage.py makemigrations
+python manage.py migrate
+
+
+Step 3 : Update view
+from django.shortcuts import render
+from .models import MenuItem
+
+def menu_view(request):
+    items = MenuItem.objects.all()
+    return render(request, 'menu.html', {'itema': items})
+
+
+Step 4 : Update the template
+<html>
+<head>
+    <title>Menu</title>
+    <style>
+        .menu-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .item-name {
+            font-weight: bold;
+        }
+        .item-price {
+            color: green;
+            font-weight: bold;
+        }
+    <style>
+</head>
+<body>
+
+<h1>Our Menu</h1>
+<div class="menu-item">
+   <span class="item-name">{{ item.name }}</span>
+   <span class=:item-price">Rs{{ item.price }}</span>
+</div>
+</body>
+</html>
