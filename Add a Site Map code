@@ -1,0 +1,49 @@
+Step 1 : Create a view for sitemap
+from django.urls import get_resolver
+from django.shortcuts import render
+
+def sitemap_view(request):
+    url_patterns = get_resolver().reverse.dict.keys()
+
+    #filter only strings
+    url_lis = [pattern for pattern in url_patterns if isinstance(pattern, str)]
+
+    return render(request, 'sitemap.html', {'url_list': url_list})
+
+
+Step 2 : Add a URL Pattern for sitemap
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('sitemap/', views.sitemap_view, name='sitemap'),
+]
+
+Step 3 : Create the template
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Site Map</title>
+    <style>
+        body { font-family: Arial. sans-serif; margi: 20px; }
+        h1 { margin-bottom: 10px; }
+        ul { list-syle: none; padding: 0; }
+        li { margin: 5px 0; }
+        a { color" blue; text-decoration: none; }
+        a:hover { text-decoration: underline; } 
+    </style>
+</head>
+<body>
+    <h1>Site Map</h1>
+    <ul>
+        <li>
+           <a href="{% url url_name %}">{{ url_name|title }}</a>
+        </li>
+    </ul>
+</body>
+</html>
+
+Step 4 : Add sitemap link to footer
+<footer> 
+    <p><a href="{% url 'sitmap' %}">Sitemap</a></p>
+</footer>
