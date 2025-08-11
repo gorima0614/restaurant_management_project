@@ -1,0 +1,32 @@
+Step 1 : Update the Model
+from django.db import models
+
+class Restaurant(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+
+    def __str__(self):
+       return self.name
+
+Step 2 : Make migrations
+python manage.py makemigrations
+python manage.py migrate
+
+Step 3 : Aadd to Admin
+from django.contrib import Admin
+from .models import Restaurant
+
+admin.site.register(Restaurant)
+
+Step 4 : Pass Address to Homepage
+from django.shortcuts import render
+from .models import Restaurant
+
+def home_view(request):
+    restaurant = Restaurant.objects.first()
+    return render(request, 'home.html', {'restaurant': restaurant})
+
+
+Step 5 : Display on Homepage
+<h1>Welcome to {{ restaurant.name }}</h1>
+<p><strong>Address:</strong> {{ restaurant.address }}</p>
