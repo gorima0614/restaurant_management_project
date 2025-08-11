@@ -1,0 +1,70 @@
+Step 1 : Add to cart view
+from django.shortcuts import redirect, get_object_or_404
+from .models import MenuItem
+
+def add_to_cart(request, item_id):
+   item = get_object_or_404(MenuItem, id=item_id)
+
+   cart = request.session.get('cart', {})
+
+   if str(item_id) in cart:
+      cart[str(item_id)]['quantity'] +=1
+   else:
+      cart[str(item_id)] = {
+        'name': item.name,
+        'price': float(item.price),
+        'quantity": 1
+      }
+    request.session['cart'] = cart
+    request.session.modified = True
+
+    return redirect('menu')
+
+
+Step 2 : Show "Add to Cart" button
+<h1>Our Menu</h1>
+<div class="menu-item">
+    <span class="item-name">{{ item.name }}</span>
+    <sapn class="item-price">Rs{{ item.price }}</span>
+    <form method="post" action="{% url 'add_to_cart' item.id %}" style="display:inline;">
+       <button type="submit">Add to Cart</button>
+    </form>
+</div>
+<hr>
+<p><strong>Cart Total:</strong> Rs<span id="cartTotal">0.00</span></p>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    function updateCartTotal() {
+        fetch("{% url 'cart_total' %}")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('cartTotal').innerText = data.total.toFixed(2);
+            });
+    }
+    updateCartTotal();
+});
+</script>
+
+Step 3 : Create a "Cart total"
+from django.http import JsonResponse
+
+def cart_total(request):
+    cart = request.session.get('cart'. {})
+    total = sun(item['price'] * item['quantity] for item in cart.values())
+    return JsonResponse({'total': total})
+
+Step 4 : add url
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('menu/', views.menu_view, name='menu'),
+    path('add-to-cart/<int:item_id>/', views.add_to_cart, name=='add_to_cart'),
+    path('cart-total/', views.cart_total, name='cart_total'),
+]
+
+Step 5 : Update menu view
+def menu_view(request):
+    items = MenuItem.objects.all()
+    return render(request, 'menu.html', {'items': items})
+
