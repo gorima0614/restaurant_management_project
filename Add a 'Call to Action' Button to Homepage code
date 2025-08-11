@@ -1,0 +1,41 @@
+Step 1 : Edit yourhomepage template
+<html>
+<head>
+   <title>Restaurant Homepage</title>
+   <style
+      .cta-button {
+         display: inline-block;
+         background-color: #ff6600;
+         color: white;
+         font-size: 18px;
+         padding: 12px 24px;
+         font-weight: bold;
+         border: none;
+         border-radius: 6px;
+         cursor: pointer;
+         text-decoration: none;
+         transition: backgroung-color 0.3s ease;
+      }
+      .cta-button:hover {
+          background-color: #e65c00;
+      }
+      .cta-container {
+         text-align: center;
+         margin-top: 30px;
+      }
+    </style>
+</head>
+<body>
+     
+     <h1>Welcome to our Restaurant</h1>
+     <p>Delicious food, warm ambiance, and unforgettable experiences.</p>
+
+     <div class="cta-container">
+         <a href="{% url 'menu' %}" class="cta-button">View our Menu</a>
+    </div>
+</body>
+</html>
+
+
+Step 2: Ensure the URL exists
+path('menu/', views.menu_view, name='menu')
