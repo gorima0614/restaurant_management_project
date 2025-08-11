@@ -1,0 +1,28 @@
+Step 1 : Add URL for reservatio
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home_view, name='home'),
+    path('reservations/', views.reservation_view, name='reservations'),
+]
+
+Step 2: Create the views
+from django.shortcuts import render
+
+def reservation_view(request):
+    return render(request, 'reservations.html')
+
+Step 3 : Create the template
+<h1>Reservations</h1>
+<p>Online reservations will be available soon. Please check back later!</p>
+
+Step 4 : Add link to navigation bar
+<nav>
+    <ul>
+       <li><a href="{% url 'home' %}">Home</a></li>
+       <li><a href="{% url 'reservations' %}">Reservations</a></li>
+    </ul>
+</nav>
+
+
