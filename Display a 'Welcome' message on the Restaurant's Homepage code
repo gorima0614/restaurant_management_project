@@ -1,0 +1,41 @@
+Step 1 : Create the view
+from django.shortcuts import render
+
+def home_view(request):
+    welcome_messgae = "Welcome to Our Restaurant! We're glad to have you here."
+    return render(request, 'home.html', {'welcome_message': welcome_message})
+
+Step 2 : Add URL 
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home_view, name=='home'),
+]
+
+from django.urls import path, include
+
+urlpatterns = [
+    path('', include('home.urls')),
+]
+
+Step 3 : Create the template
+<html>
+<head>
+    <title>Restaurant Hompage</title>
+    <style>
+       .welcome {
+        text-align: center;
+        font-size: 1.8rem;
+        margin-top: 50px;
+        color: #333;
+        font-family: Arial, sans-serif;
+       }
+    </style>
+</head>
+<body>
+   <div class="welcome">
+      {{ welcome_message }}
+    </div>
+</body>
+</html>
