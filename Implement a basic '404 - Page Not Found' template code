@@ -1,0 +1,48 @@
+Step 1 : Create the template
+<html>
+<head>
+    <title>Page Not Found</title>
+    <style> 
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f8f8;
+            padding: 50px;
+        }
+        h1 {
+            font-size: 3rem;
+            color: #d9534f;
+        }
+        p {
+            font-size: 1.2rem;
+            color: #555;
+        }
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #0275d8;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        a:hover {
+            background-color: #025aa5;
+        }
+    </style>
+</head>
+<body>
+   <h1>404</h1>
+   <p>Oops! The page you're looking for doesn;t exist.</p>
+   <a href="/">Go Back Home</a>
+</body>
+</html>
+
+Step 2 : Django use
+DEBUG = False
+ALLOWED_HOSTS = ['*']
+
+Step 3: Test it
+python manage.py runserver
+
+http://127.0.0.1:8000/thispagedoesnotexist
