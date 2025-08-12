@@ -1,0 +1,50 @@
+Step 1 : Add the view
+from django.shortcuts import render
+from .models import Restaurant
+
+def restaurant_info_view(request):
+    restaurant = Restaurant.objects.first()
+    return render(request, 'home/restaurant_info.html', {'restaurant': restaurant})
+
+Step 2 : Create the template
+<html>
+<head>
+   <title>About Our Restaurant</title>
+</head>
+<body>
+    <h1>About Our Restaurant</h1>
+       <p><strong>Name:</stromg> {{ restaurant.name }}</p>
+       <p><strong>Address:</strong> {{ restaurant.address }}</p>
+          <p><strong>Phone:</strong> {{ restaurant.phone }}</p>
+          <p><strong>Email:</strong> <a href="mailto"{{ restaurant.email }}">{{ restaurant.email }}</a></p>
+          <p><strong>Opening Hours:</strong> {{ restaurant.opening_hours }}</p>
+        <p>We are delighted to serve you with the best meals in town. Come and experience our hospitality!</p>
+        <p>Restaurant information is not available.</p>
+</body>
+</html>
+
+Step 3 : Update the model
+class Restaurant(models.Model):
+    name = models.CharField(max_length=200)
+    address = models.TextField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    opening_hours = models.CharField(max_length=200, blank=True, null=True)
+
+    def __str__(self):
+       return self.name
+
+python manage.py makemigrations
+python manage.py migrate
+
+Step 4 : Add URL
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('restaurant-info/', views.restaurant_info_view, name='restaurant_info'),
+]
+
+Step 5 : Access the page
+http://127.0.0.1"8000/restaurant-info/
+
