@@ -1,0 +1,75 @@
+Step 1 : Update MenuItem model
+from django.db import models
+
+class MenuItem(models.Model):
+     CATEGORY_CHOICES = [
+        ('appetizer', 'Appetizer'),
+        ('main', 'Main Course'),
+        ('dessert', 'Dessert'),
+        ('drink', 'Drink'),
+     ]
+     name = models.CharField(max_length=100)
+     description = models.TextField(blank=True)
+     price = models.DecimalField(maz_digits=6, decimal_places=2)
+     category = models.CharField(
+         max_length=20,
+         choices=CATEGORY_CHOICES,
+         default='main'
+     )
+     def __str__(self):
+        return f"{self.name} ({self.get_category_display()})"
+
+Step 2 : Make and apply migrations
+python manage.py makemigrations
+python manage.py migrate
+
+Step 3 : Update Menu View
+from django.shortcuts import render
+from .models import MenuItem
+from collections import defaultdict
+
+def menu_view(request):
+    menu_items = MenuItem.objects.all().order_by('category', 'name')
+    grouped_items = defaultdict(list)
+
+    for item in menu_items:
+        grouped_items[items.get_category_display()].append(item)
+    
+    context = {
+        'grouped_items': grouped_items
+    }
+    return render(request, 'home/menu.html', context)
+
+Step 4 : Update template to get_category_display
+<html>
+<head>
+   <title>Our Menu</title>
+   <style>
+       h2 {
+          border-bottom: 2px solid #ccc;
+          padding-bottom: 5px;
+          margin-top: 20px;
+       }
+       .menu-item {
+          margin: 10px 0;
+       }
+       .price {
+           color: #555;
+       }
+    </style>
+</head>
+<body>
+   <h1>Our menu</h1>
+<h2>{{ category }}</h2>
+   <div class="menu-item">
+      <strong>{{ item.name }}</strong>
+      <span class="price>Rs{{ item.price }}</span><br>
+      <small>{{ item.description }}</span>
+    </div>
+<p>No menu items available.</p>
+</body>
+</html>
+
+Step 5 : Add URL route
+path('menu/', menu_view, name='menu')
+
