@@ -1,0 +1,39 @@
+Step 1 : Update the view
+from django.shortcuts import render
+from .models import Restaurant
+
+def homepage_view(Request):
+    restaurant = Restaurant.objects.first()
+
+    context = {
+        'restaurant': restaurant
+    }
+    return render(request, 'home/index.html', context)
+
+Step 2 : Update the template
+<html>
+<head>
+    <title>Restaurant Homepage</title>
+</head>
+<body>
+    <h1>Welcome to Our Restaurant!</h1>
+        <p><strong>Address:</strong> {{ restaurant.address }}</p>
+        <p>Address information is not available at the moment.</p>
+</body>
+</html>
+
+Step 3 : Make sure the model has address
+from django.db import models
+
+class Restaurant(models.Model):
+    name = models.CharField(max_length=200)
+    address = models.textField()
+
+    def __str__(self):
+       return self.name
+
+Step 4 : Add a restaurant in admin
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+
