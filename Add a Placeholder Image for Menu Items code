@@ -1,0 +1,29 @@
+Step 1 : Add a image field to MenuItem Model
+from django.db import models
+
+class MenuItem(models.Model):
+     name = models.CharField(max_length=100)
+     price models.DecimalField(max_digits=6, decimal_places=2)
+     image = models.ImageField(upload_to='menu_items/', blank=True, null=True)
+
+Step 2 : Add a placeholder image to static files
+i. Save your placeholder images as placeholder_menu_item.jpg
+ii. Place it in:
+   home/static/images/placeholder_menu_item.jpg
+
+Step 3 : Update the menu template
+<div class="menu-item">
+    <img src="{% if item.image %}{{ item.image.url }}{% else %}{% static 'images/placeholder_menu_item.jpg' %}{% endif %}"
+         alt="{{ item.name }}">
+    <h3>{{ item.name }}</h3>
+    <p>Rs{{ item.price }}</p>
+</div>
+
+Step 4 : Styling for consistent layout
+.menu-item img {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
