@@ -1,0 +1,49 @@
+Step 1 : Create the templte file
+<html>
+<head>
+   <title>About Us</title>
+   <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #fafafa;
+      }
+      h1 {
+          color: #333;
+          text-align: center;
+      }
+      p {
+         color: #555;
+         font-size: 1.1rem;
+      }
+    </style>
+</head>
+<body>
+   <h1>About Our Restaurant</h1>
+   <p>
+       Welcome to our Restaurant! We are passionate about serving delicious food amde with fresh ingredients. our mission is to provide a warm welcoming environment where everyone can enjoy a great meal.
+    </p>
+    <p>
+       This page is under construction - check back soon for our full story!
+    </p>
+</body>
+</html>
+
+Step 2 : Add a view in home/views.py
+from django.shortcuts import render
+
+def about(request):
+    return render(request, 'home/about.html')
+
+Step 3 : Add a URL route
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('about/', views.about, name='about'),
+]
+
+
