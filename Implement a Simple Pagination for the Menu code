@@ -1,0 +1,57 @@
+Step 1 : Update your menyu view for pagination
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from .models import MenuItem
+
+def menu_views(request):
+    menu_items = MenuItem.objects.all().order_by('category', 'name')
+    pginator = Paginator(menu_items, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj
+    }
+    return render(request, 'home/menu.html', context)
+
+Step 2 : Update your template
+<html>
+<head>
+    <title>Our menu</title>
+    <style>
+       .pagination {
+          display: flex;
+          gap: 5px;
+          margin-top: 20px;
+       }
+       .pagination a, .pagination span {
+           padding: 5px 10px;
+           border: 1px solid #ccc;
+           text-decoration: none;
+       }
+       .pagination .current {
+           background-color: #333;
+           color: white;
+       }
+    </style>
+</head>
+<body>
+   <h1>Our Menu</h1>
+      <div class="menu=item">
+          <strong>{{ item.name }}</strong> - Rs{{ item.price }}<br>
+          <small>{{ item.description }}</small>
+      </div>
+      <p>No menu items available.</p>
+    <div class="pagination">
+         <a href="?page=1">First</a>
+         <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+    <span class="current">Page {{ page_obj.number }}of {{page_obj.paginator.num_pages }}</span>
+         <a href="?page={{ page_obj.next_page_number }}">Next</a>
+         <a href="?page{{ page_obj.paginator.num_pages }}">Last</a>
+    </div>
+</body>
+</html>
+
+Step 3 : Add URL Route
+path('menu/', menu_view, name='menu')
+
