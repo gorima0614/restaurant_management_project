@@ -1,0 +1,21 @@
+Step 1 : Define the model
+from django.db import models
+
+class RestaurantContact(models.Model):
+    address = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=20)
+    email = models.EmailField()
+
+    def __str__(slef):
+       return f"Contact Info: {self.address}"
+
+
+Step 2 : Apply Migrations
+python manage.py makemigrations home
+python manage.py migrate
+
+Step 3 : Addto admin panel
+from django.contrib import admin
+from .models import RestaurantContact
+
+admin.site.register)(RestaurantContact)
