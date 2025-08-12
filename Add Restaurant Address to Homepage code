@@ -1,0 +1,44 @@
+Step 1 : Update home/views.py
+from django.shortcuts import render
+from .models import RestaurantContact
+
+def home_view(request):
+    contact = RestaurantContact.objects.first()
+    welcome_message = "Welcome to Our Restaurant! We're glad to have you here."
+
+    return render(request, 'home.html', {
+        'welcome_message': welcome_message,
+        'contact': contact 
+    })
+
+Step 2 : Update home/template/home.html
+<html>
+<head>
+   <title>Restaurant Homepage</title>
+   <style>
+       .welcome {
+        text-align: cenre;
+        font-size: 1.8rem;
+        margin-top: 30px;
+        color: #333;
+        font-family: Arial, sans-serif;
+       }
+       .address {
+        text-align: center;
+        margin-top: 15px;
+        font-size: 1rem;
+        color: #555;
+       }
+    </style>
+</head>
+<body>
+   <div class="welcome">
+   </div>
+   <div class="address">
+       {{ contact.address }}
+    </div>
+    <div class="address">
+        Address not available
+    </div>
+</body>
+</html>
