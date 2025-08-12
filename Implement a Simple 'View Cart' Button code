@@ -1,0 +1,28 @@
+Step 1 : Ensure Cart URL Exists
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home_view, name='home'),
+    path('cart/', views.cart_view, name='cart'),
+]
+
+Step 2 : Add the button in the homepage template
+<a href="{% url 'cart' %}" class="view-cart-btn">View Cart</a>
+
+Step 3 : Style the button
+.view-cart-btn {
+    display: inline-block;
+    backgroung-color: #ff6600;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: background 0.3s ease;
+}
+
+.view-cart-btn:hover {
+    background-color: #e65c00;
+}
+
