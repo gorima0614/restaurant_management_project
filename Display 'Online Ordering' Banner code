@@ -1,0 +1,49 @@
+Step 1 : Add the banner image to static files
+i. Place your banner image
+home/static/images/
+
+ii. Make sure Django static files are set up in settings.py
+STATIC_URL = '/static/'
+
+Step 2 : Update the Homepage template
+<div id="online-ordering-banner">
+    <img src="{% static 'images/online_ordering_banner.jpg' %}" alt="Online Ordering Available">
+    <div class="banner-text">
+        <h2>Order Your Favorites Online!</h2>
+        <p>Fast, fresh, and delivered to your door.</p>
+    </div>
+</div>
+
+Step 3 : Add Styling
+#online-ordering-banner {
+    position: relative;
+    text-margin: center;
+    margin: 20px 0;
+}
+
+#online-ordering-banner img {
+    width: 100%
+    height: auto;
+    border-radius: 8px;
+}
+
+#online-ordering-banner .banner-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    trnaform: translate(-50%, -50%);
+    color: white;
+    background: rgba(0,0,0,0.4);
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+#online-ordering-banner h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+#online-ordering-banner p {
+    margin: 5px 0 0;
+}
