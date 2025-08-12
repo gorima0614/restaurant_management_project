@@ -1,0 +1,46 @@
+Step 1 : Handle success redirect in the view
+from django.shortcuts import render, redirect
+from .forms import ContactForm
+
+def contact_view(request):
+    if request.method == "POST":
+       form = ContactForm(request.POST)
+       if form.is_valid():
+          form.save()
+          return redirect('contact_success')
+    else:
+        form = ContactForm()
+    return render(request, 'contact.html', {'form': form})
+
+def contact_success_view(request):
+    return render(request, 'contact_success.html')
+
+Step 2 : Add URL for success page
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('contact/', views.contact_view, name='contact'),
+    path('contact/success/', views.contact_success_view, name='contact_success'),
+]
+
+Step 3 : Create the success template
+<html>
+<head>
+    <title>Message Sent</title>
+    <style>
+        .success-message {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.5rem;
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-message">
+       Thank You for your message! Wel will get back to you soon.
+    </div>
+</body>
+</html>
