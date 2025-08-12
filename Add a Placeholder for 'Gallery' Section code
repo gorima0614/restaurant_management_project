@@ -1,0 +1,31 @@
+Step 1 : Create the gallery placeholder view
+from django.shortcuts import render
+def gallery_placeholder(request):
+    return render(request, 'home/gallery_placeholder.html')
+
+Step 2 : Create the gallery placeholder 
+<html>
+<head>
+    <title>Gallery - Coming Soon</title>
+</head>
+<body>  
+    <h1>Our Gallery</h1>
+    <p>We're curating some delicious visualsfor you!</p>
+    <p>Stay tuned - our gallery will be available soon.</p>
+</body>
+</html>
+
+Step 3 : Add URL for gallery
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('gallery/', views.gallery_placeholder, name='gallery_placeholder'),
+]
+
+Step 4 : Add a placeholder section
+<section id = "gallery-placeholder">
+     <h2>Gallery</h2>
+     <p>Our gallery is coming soon! You'll be able to see our best dishes here.</p>
+     <a href="{% url 'gallery_placeholder' %}">View Gallery</a>
+</section>
