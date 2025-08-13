@@ -1,0 +1,31 @@
+Step 1 : Create the cart page
+//views.py//
+from django.shortcuts import render
+
+def cart_view(request):
+    #for now, just render an empty cart
+    return render(request, 'cart.html')
+
+//urls.py//
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('cart/', views.cart_view, name='cart'),
+]
+
+//templates/cart.html//
+<h1>Your Cart</h1>
+<p>Your cart is currently empty.</p>
+
+Step 2 : Add view cart button to menu page
+//temapltes/menu.html//
+<a href="{% url 'cart' %}" class="btn btn-primary" style="margin="margin-top: 20px;">
+   View Cart
+</a>
+
+//TailwindCSS//
+<a href="{% url 'cart' %}"
+   class="bg-blue-500 hover:bg-blue-700 tet-white font-bold py-2 px-4 rounded">
+   View cart
+</a>
