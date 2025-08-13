@@ -1,0 +1,54 @@
+Step 1 : Create the cart view
+//views.py//
+from django.shortcuts import render
+def cart_view(request):
+   #Example: Retrieve cart data from session
+   cart = request.session.get('cart', [])
+
+   #Calculate total price
+   total =sum(item['price'] * item['quantity'] for item in cart)
+
+   return render(request, 'cart.html', {
+      'cart': cart,
+      'total': total
+   })
+
+Step 2 : Add Cart URL
+//urls.py//
+from django.urls import path
+from . import views
+
+urlspatterns = [
+    path('cart/', views.cart_view, name='cart'),
+]
+
+Step 3 : Create the template
+//templates/cart.html//
+<h1>Your shopping Cart</h1>
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Item</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Subtotal</th>
+    </tr>
+    <tr>
+        <td>{{ item.name }}</td>
+        <td>Rs{{ item.price }}</td>
+        <td>{{ item.qantity }}</td>
+        <td>Rs{{ item.price|floatformat:2|add:item.quantity }}</td>
+    </tr>
+</table>
+
+<h3>Total: Rs{{ total }}</h3>
+<p>Your cart is empty.</p>
+<a href="{% url 'menu' %}">Continue shopping</a>
+
+Step4 : Testing with dummy data
+def test_cart_data(request):
+    request.session['cart'] = [
+        {'name': 'Pizza', 'price': 250, 'quantity': 2},
+        {'name': 'Burger': 'price': 150, quantity': 1},
+    ]
+    return redirect('cart')
+    
