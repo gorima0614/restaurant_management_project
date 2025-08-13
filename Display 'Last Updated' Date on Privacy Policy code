@@ -1,0 +1,30 @@
+Step 1 : Get the last modified date of the template
+//views.py//
+import os
+from django.shortcuts import render
+from django.conf import settings
+from datetime import datetime
+
+def privacy_policy(request):
+    #Path to the template file
+    template_path = os.path.join(settings.BASE_DIR, 'templates', 'privacy_policy.html')
+
+    #Get last modified time of the file
+    last_updated_timestamp = os.path.gettime(template_path)
+    last_updated_date = datetime.fromtimestamp(last_updated_timestamp).strftime("%B %d. %Y")
+
+    return render(request, 'privacy_policy.html', {
+        'last_updated': last_updated_date
+    })
+
+    Step 2 : Update the template
+    //templates/privacy_policy.html//
+    <h1>Privacy Policy</h1>
+    <p> 
+        This is where your privacy policy text goes. You can update this with your actual privacy practices later.
+    </p>
+    <p style="font-size: 0.9rem; color: gray;">
+       Last updated: {{ last_updated }}
+    </p>
+    
+
