@@ -1,0 +1,40 @@
+Create the privacy policy page
+//views.py//
+from django.shortcuts import render
+
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html')
+
+//urls.py//
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('orivacy-policy/', views.privacy_policy, name='privacy_policy'),
+]
+
+//templates/privacy_policy.html//
+<h1>Privacy Policy</h1>
+<p> 
+    This is where your privacy policy text gores. You can update this with your actual privacy practices later.
+</p>
+
+Step 2 : Add link to footer
+//base.html//
+<footer style="text-align: center; padding: 20px; background-color: #f4f4f4;">
+   <p>
+       &copy; {{ current_year }} Your Restaurant Name |
+       <a href="{% url 'privacy_policy' %}" style="color: #3498db; text-decoration: none;">
+         Privacy Policy
+       </a>
+    </p>
+</footer>
+
+footer a {
+    color: #3498db;
+    text-decoration: none;
+}
+footer a:hover {
+    tex-decoration: underline;
+}
+
