@@ -1,0 +1,46 @@
+Step 1 : Update the homepage template
+<div style="
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1.2em;
+    color: #555;
+">
+  <h2>Customer Reviews</h2>
+  <p>Reviews  Coming Soon!</p>
+</div>
+
+Step 2 : Modular
+//templates/partial/reviews_placeholder.html//
+<div class="reviews-section" style="
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1.2em;
+    color: #555;
+">
+   <h2>Customer Reviews</h2>
+   <p>Reviews Coming Soon!</p>
+</div>
+
+Step 3 : Basic CSS 
+.review-section {
+    margin-top: 40px;
+    padding: 20px;
+    background-clor: #f8f8f8;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1.2em;
+    color: #555;
+}
+.review-section h2 {
+    margin-bottom: 10px;
+}
+//base.html//
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+
