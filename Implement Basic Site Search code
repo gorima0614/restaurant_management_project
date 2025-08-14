@@ -1,0 +1,44 @@
+Step 1 : Add search bar to homepage
+//templates/home.html//
+<h1>Our Menu</h1>
+<!--Search Bar-->
+<input
+    type="text"
+    id="menuSearch"
+    placeholder="Search menu items..."
+    style="padding: 8px; width: 300px; margin-bottom: 15px;"
+>
+
+<!--Menu Item-->
+<div id="menuItems">
+    <div class="menu-item">Pizza</div>
+    <div class="menu-item">Burger</div>
+    <div class="menu-item">Pasta</div>
+    <div class="menu-item">Salad</div>
+    <div class="menu-item">Soup</div>
+</div>
+
+Step 2 : Javascript Filtering Logic
+//home.html//
+<script>
+document.etElementById('menuSearch').addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let items = document.querySelectorAll('#menuItems .menu-item');
+
+    items.forEach(function(item) {
+        let text = item.textContent.toLowerCase();
+        item.style.display = text.includes(filter) ? '' : 'none';
+    });
+});
+</script>
+
+Step 3 : Basic CSS 
+.menu-item {
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+}
+.menu-item:hover {
+    background-color: #ececec;
+}
