@@ -1,0 +1,49 @@
+Step 1 : Create the view
+//views.py//
+from django.shortcuts import render
+
+def terms_of_service(request):
+    return render(request, 'terms_of_service.html')
+
+Step 2 : Add URL for the page
+//urls.py//
+from dajango.urls import path
+from . import views
+
+urlpatterns = [
+    path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
+]
+
+Step 3 : Create the template
+<h1>Terms of  Service</h1>
+<p>
+   Welcome to our website. By accessing or using our service, you agree to comply with and be bound by these terms.
+</p>
+<h3>1. Use of our Service<?h3>
+<p> 
+   You agree to use our service for lawful purposes only and not to violate any applicable laws or regulations.
+</p>
+<h3>2. Intellectual Property.</h3>
+<p>
+   All content on this site is the property of our company and may not be reproduced without permission.
+</p>
+<h3>3. Limitation of Liability</h3>
+<p>
+   We are not responsible for any damages resulting from the use or inability to use our service.
+</p>
+<h3>4. Changes to Terms.</h3>
+<p>
+   We reserve the right to update these terms at any time without notice.
+</p>
+<p style="font-size: 0.9rem; color: gray;">
+   Last updated: August 14, 2025
+</p>
+
+Step 4 : Add link to footer
+<footer style="text-align: center; padding: 20px; background-color: #f4f4f4;">
+   <p>
+      &copy; {{ current_year }}Your Restaurant Name |
+      <a href="{% url 'privacy+policy' %}">Privacy Policy</a> |
+      <a href="{% url 'terms_of_policy' %}">Terms of Service</a>
+    </p>
+</footer>
