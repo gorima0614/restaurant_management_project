@@ -1,0 +1,74 @@
+Step 1 : Prepare your image
+static/images/hero.jpg
+
+Step 2 : Homepage
+<!--Hero Image Section-->
+<div style="
+    position: relative;
+    width: 100%
+    height: 60vh;
+    overflow: hidden;
+">
+    <img src="{% static 'images/hero.jpg' %}"
+         alt="Delicious gourmet food served at our restaurant"
+         style="width: 100%; height: 100%; object-fit: cover;">
+
+    <!--Optional overlay text-->
+    <div style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+">
+    <h1 style="font-size: 3rem; margin-bottom: 10px;">Welcome to our Restaurant</h1>
+    <p style="font-size: 1.2rem;">Where taste meets elegance</p>
+    </div>
+</div>
+
+<!--Rest of the homepage-->
+
+
+Step 3 : Move Styling to CSS 
+//static/css/home.css//
+.hero {
+    position: relative;
+    width: 100%;
+    height: 60vh;
+    overflow: hidden;
+}
+.hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.hero-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    trnasform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    txt-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+.hero-text h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+.hero-text p {
+    font-size: 1.2rem;
+}
+
+<div class="hero">
+   <img src="{% static 'images/hero.jpg' %}" alt="Delicious gourmet food served at our restaurant">
+   <div class="hero-text">
+      <h1>Welcome to our Restaurant</h1>
+      <p>Where taste meets elegance</p>
+    </div>
+</div>
+
+
+
+
