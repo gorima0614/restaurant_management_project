@@ -1,0 +1,47 @@
+Step 1 : Define model for contact info
+//restaurat/models.py//
+from django.db import models
+
+class ContactInfo(models.Model):
+    phone_number = models.CharField(max_length=20)
+    email = models.EmailField()
+    address = models.CharField(max_length=255)
+
+    def __str__(self):
+       return f"contact Info - {self.phone_number}"
+
+Step 2 : Create a view to fetch contact info
+//restaurant/views.py//
+from django.shortcuts import render
+from .models import ContactInfo
+
+def contct_us(request):
+    contact = ContactInfo.objects.first()  #Fetch the first record
+    return render(request, "contact_us.html", "{contact": contact})
+
+Step 3 : Add URL Route
+//restaurant/urls.py//
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("contact/", views.contact_us, name="contact"),
+]
+
+Step 4 : Create the template
+<!--templates/contact_us.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <itle>Contact Us</title>
+</head>
+<body>
+   <h1>Contact Us</h1>
+     <p><strong>Phone:</strong> {{ contact.phone_number }}</p>
+     <p><strong>Email:</strong> {{ contact.email }}</p>
+     <p><strong>Address:</strong> {{ contact.address }}</p>
+     <p>Contact informtion is not available.</p>
+</body>
+</html>
+
