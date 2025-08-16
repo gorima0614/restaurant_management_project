@@ -1,0 +1,50 @@
+Step 1 : Update the model
+//restaurant/models.py//
+from django.db import models
+
+class MenuItem(models.Model):
+     name = models.CharField(max_length=100)
+     price = models.DecimalField(max_digits=6, decimal_places=2)
+     description = models.TextfIELD(bkank=True, null=True)
+
+     def __str__(self):
+        return self.name
+
+Step 2 : Make and apply migrations
+python manage.py makemigrations
+python manage.py migrate
+
+Step 3 : Detail view
+//restaurant/views.py//
+from django.shortcuts import render, get_object_or_404
+from .models import MenuItem
+
+def menu_item_detail(request, pk):
+   item = get_object_or_404(MenuItem, pk=pk)
+   return render(request, "menu_item_detail.html", {"item": item})
+
+Step 4 : Update URLs
+//restaurant/urls.py//
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("menu/<int:pk>/", views.menu_item_detail, name="menu_item_detail"),
+]
+
+Step 5 : Create/Update Temaplate
+//templates/menu_item_detail.html//
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>{{ item.name }}</title>
+</head>
+<body>
+   <h1>{{ item.name }}</h1>
+   <p><strong>Price:</strong> Rs{{ item.price }}</p>
+      <p><strong>Description:</srrong> {{ item.description }}</p>
+      <p><em>No description available.</em></p>
+      <a href="/menu/"> <- Back to Menu</a>
+</body>
+</html>
