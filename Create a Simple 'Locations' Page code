@@ -1,49 +1,46 @@
-Step 1 : Create the view
-from django.shortcuts import render
-from .models import RestaurantInfo
+Step 1 : HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="utf-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Our Location</title>
+   <style>
+     body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        line-height: 1.6;
+     }
+     h1 {
+        margin-bottom: 20px;
+     }
+     .location {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        max-width: 600px;
+     }
+     iframe {
+        width: 100%;
+        height: 300px;
+        border: none;
+        margin-top: 15px;
+        border-radius: 8px;
+     }
+    </style>
+</head>
+<body>
+  <h1>Our Location</h1>
+  <div class="location">
+    <p><strong>Restaurant Address:</strong></p>
+    <p>123 Main Street, Cityville, Country</p>
 
-def locations(request):
-    restaurant = RestaurantInfo.objects.first()
-    return render(request, "home/locations.html", {"restaurant": restaurant})
-
-
-Step 2 : Add URL Route
-from django.urls import path
-from home import views
-
-urlpatterns = [
-    path("locations/", views.locations, name="locations"),
-]
-
-Step 3 : Create the template
-{% extends "base.html" %}
-{% block title %}Our Location - {{ restaurant.name }}{% endblock %}
-
-{% block cntent %}
-<h1>Our Location</h1>
-<p><strong>{{ restaurant.name }}</strong></p>
-<p>{{ restaurant.address }}</p>
-
-<!--Embedded Google Map-->
-<div style="width: 100% height: 400px;">
-   <iframe
-       width="100%"
-       height="100%"
-       stle="border:0"
-       loading:"lazy"
-       allowfullscreen
-       referrerpolicy="no-referrer-when-downgrade"
-       src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MPAS_API_KEY&q={{ restaurant.address|urlencode }}">
+    <!--Google Maps Embed-->
+    <iframe
+      src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=123+Main+Street+Cityville"
+      allowfullscreen>
     </iframe>
 </div>
-{% endblock %}
-
-Step 4 : Add a link to navigation
-<li><a href="{% url 'locations' %}">Locations</a></li>
-
-
-Step 5 : Result
-1. /locations/ will now show
-  -Restaurant name
-  -Address from the database
-  -An embedded map pointing to that address.
+</body>
+</html>
