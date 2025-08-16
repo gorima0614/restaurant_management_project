@@ -1,0 +1,74 @@
+Step 1 : HTML
+<! DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charseet="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Privacy Policy</title>
+   <style>
+     body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        line-height: 1.6;
+     }
+     h1 {
+        margin-bottom: 20px;
+     }
+     section {
+        margin-bottom: 20px;
+     }
+    </style>
+</head>
+<body>
+   <h1>Privacy Policy</h1>
+   <p>
+     This Privacy Policy explains how we collect, use, and protect your personal information when you use our website.
+   </p>
+
+   <section>
+     <h2>Information We Collect</h2>
+     <p>
+        We may collect personal information such as your name, email address, and browsing data when you interact with our site.
+     </p>
+    </section>
+
+    <section>
+      <h2>How We Use Information</h2>
+      <p>
+         The information collected is used to imporove our services, provide customer support , and enhance your browsing experience.
+      </p>
+    </section>
+
+    <section>
+       <h2>Cookies</h2>
+       <p>
+          Our site mat use cookies to personalize content and analyze traffic. You can disable cookies in your browswe settings.
+       </p>
+    </section>
+
+    <section>
+        <h2>Third-Party Services</h2>
+        <p>
+           We may use third-part services(e.g. analytis, payment providers) that have their own privacy policies.
+        </p>
+    </section>
+
+    <section>
+       <h2>Your Rights</h2>
+       <p>
+          You have the right to access, update, or delete your personnel data. Please contact us if you have any concern.
+       </p>
+    </section>
+
+    <section>
+       <h2>Contact Us</h2>
+       <p>
+         If you have questions about this Privacy Policy, you can reach us at <a href="mailto:contact@example.com">contact@example.com</a>.
+       </p>
+    </section>
+</body>
+</html>
+    
+
+
+    
