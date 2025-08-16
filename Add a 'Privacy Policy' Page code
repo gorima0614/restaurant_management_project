@@ -1,46 +1,73 @@
-Step 1 : Create the view
-//views.py//
+Step 1 : Add a view for Privacy Policy
+//restaurant/views.py//
 from django.shortcuts import render
 
 def privacy_policy(request):
-    return render(request, 'privacy_policy.html')
+    return render(request, "privacy_policy.html")
 
-Step 2 : Add the URL
-//urls.py//
+Step 2 : Add a URL Route
+//restaurant/urls.py//
 from django.urls import path
 from . import views
 
-urlpatterns = [ 
-    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+urlspatterns = [
+    path("privacy_policy/", views.privacy_policy, name="privacy_policy"),
 ]
 
-Step 3 : Create the template
-<h1>Privacy Policy</h1>
-<p>
-   This is our Privacy Policy. We respect your privacy and are committed to protecting your personal information.
-   This is placeholder text-replace it with your actual privacy policy later.
-</p>
-<h3>Information We Collect</h3>
-<p>
-   Details about what kind of information is collected will be provided here.
-</p>
-<h3>How we use your Information</h3>
-<p>
-   Explanation of how collected information will be used.
-</p>
-<h3>Changes to this Policy</h3>
-<p> 
-   We may update our Privacy Policy from time to time. Please check back regularly.
-</p>
+Step 3 : Create the template file
+//templates/privacy_policy.html//
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>Privacy Policy</title>
+   <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        line-height: 1.6;
+      }
+      h1 {
+        margin-bottom: 20px;
+      }
+      section {
+        margin-bottom: 20px;
+      }
+    </style>
+</head>
+<body>
+  <h1>Privacy Policy</h1>
+  <p>
+    This Privacy Policy decsribes how our restaurant collects, uses, and protects your personal information.
+  </p>
 
-Step 4 : Link to footer
-//base.html//
-<footer style="text-align: cnetr; padding: 20px; background-color: #f4f4f4;">
-    <p>
-       &copy; {{ current_year }}Your Restaurant Name |
-       <a href="{% url 'privacy_policy' %}" style="color" #3498db; text-decoration: none;">
-          Privacy Policy
-       </a>
-    </p>
+  <section>
+     <h2>Information We Collect</h2>
+     <p>
+       We may collect information such as your name, email address, phone number, and order details when you details when you interact with us.
+     </p>
+   </section>
+
+   <section>
+      <h2>How We Use Information</h2>
+      <p>
+        Information collected is used to improve our services, process orders, and provide customer support.
+      </p>
+    </section>
+
+    <section>
+       <h2>Contact Us</h2>
+       <p>
+         If you have questions about this Privacy Policy, please contact us at <a href="mailto"info@restaurant.com">info@restaurant.com</a>
+       </p>
+    </section>
+</body>
+</html>
+
+Step 4 : Add link in the footer
+<footer>
+   <p>&copy; 2025 My Restaurant</p>
+   <p><a href="{% url 'privacy_policy' %}">Privacy Policy</a></p>
 </footer>
+
 
