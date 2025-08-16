@@ -1,0 +1,57 @@
+Step 1 : HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width-device-width, initial-scale=1.0" />
+   <title>Terms of Service</title>
+   <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        line-height: 1.6;
+      }
+      h1 {
+        margin-bottom: 20px;
+      }
+      section {
+        margin-bottom: 20px;
+      }
+    </style>
+</head>
+<body>
+   <h1>Terms of Service</h1>
+   <p>
+      These Terms of Service ("Terms") govern your use of our websiteand services. By accessing our using our website, you agree to comply with these terms.
+   </p>
+
+   <section>
+      <h2>Use of our Service</h2>
+      <p>
+          You agree to use services only for lawful purpose and in accordance with these Terms. Youm may not use our services to engage in any harmful or illegal activity.
+      </p>
+    </section>
+
+    <section>
+       <h2>Accounts</h2>
+       <p>
+          If you create an account on our site, you are responsible for maintaining the security of your account and for all activities that occur under your account.
+       </p>
+    </section>
+
+     <section>
+        <h2>Changes of Terms</h2>
+        <p> 
+           We may update these terms for time to time. Continued use of the website after changes means you accept the revised terms.
+        </p>
+    </section>
+
+    <section>
+       <h2>Contact Us</h2>
+       <p>
+         If you have any questions about these terms, please contact us at <a href="mailto:contact@example.com"<contact@example.com</a>
+       </p>
+    </section>
+</body>
+</html>
+ 
