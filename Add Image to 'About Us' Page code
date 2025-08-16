@@ -1,0 +1,38 @@
+Step 1 : about_us.html template
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>About us</title>
+   <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        line-height: 1.6;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        margin: 20px 0;
+      }
+    </style>
+</head>
+<body>
+  <div class="about-container">
+     <h1>About Us</h1>
+     <p>
+       Welcome to our restaurant! We are passioante about serving delicious food made with fresh ingredients, Our mission is to provide a warm and welcoming dining experience for all our guests.
+    </p>
+
+    <!--Pplaceholder-->
+    <img src="https://via.placeholder.com/800x400.png?text=Our+Restautrant" alt="About our restaurant">
+
+    <p>
+       Since our founding, we have strived to bring people together through food and community. Thank you for being part of our journey!
+    </p>
+</div>
+</body>
+</html>
+ 
+
