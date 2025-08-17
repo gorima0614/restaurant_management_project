@@ -1,0 +1,36 @@
+Step 1 : base.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+   <title>{% block title %}Default Title{% endblock %}</title>
+   <meta name="description" content="{% block meta_description %}Default description for the site.{% endblock %}">
+</head>
+<body>
+</body>
+</html>
+
+Step 2 : menu.html
+{% block title %}Our Menu - {{ restaurant.name }}{% endblock %}
+{% block meta_description %}
+   View our delicious menu featuring {{ cuisine_type }} dishes prepared with fresh ingredients.
+<h1>Our Menu</h1>
+   <p class="text-gray-600 text-sm mb-4">
+      Last Updated: {{ last_updated.updated_at|date:"F j, Y" }}
+    </p>
+<ul>
+   <li>
+      <strong>{{ item.name }}</strong> - {{ item.description }} (Rs{{ item.price }})
+    </li>
+</ul>
+
+
+
+
+
+
+
+
+
