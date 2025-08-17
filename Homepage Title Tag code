@@ -1,0 +1,22 @@
+Step 1 : homepage.html
+{% extends "base.html" %}
+{% block title %}
+   {{ restaurant.name }} - Fine Dining in {{ restaurant.city }}
+{% endblock %}
+{% block content %}
+<h1>Welcome to {{ restaurant.name }}</h1>
+<p>Experience fine dining in {{ restaurant.city }}.</p>
+{% endblock %}
+
+Base.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Defualt Restaurant Title{% endblock %}</title>
+</head>
+<body>
+    {% block content %}{% endblock %}
+</body>
+</html>
