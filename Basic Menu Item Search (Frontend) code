@@ -1,0 +1,33 @@
+Step 1 : menu.html
+{% extends "base.html" %}
+{% block content %}
+<h1>Our Menu</h1>
+
+<!--Search bar-->
+<input type="text" id="menuSearch" placeholder="Search menu items..." class="p-2 border rounded w-1/2 mb-4">
+
+<!--Menu items list-->
+<ul id="menuList">
+   {% for item in menu_items %}
+     <li class="menu-item mb-2">
+        <strong>{{ item.name }}</strong> - {{ item.description }}
+    </li>
+    {% endfor %}
+</ul>
+
+<!--Simple Javascript to filter items-->
+<script>
+document.getElementById("menuSearh").addEventListener("keyup", function() {
+    let searchValue = this.value.toLowerCase();
+    let items = document.querySelectorAll("#menuList .menu-items");
+
+    items.forEach(function(item) {
+        let text = item.textContent.toLowerCase();
+        if (text.includes(searchValue)) {
+            item.style.display = "";
+        } else {
+            item.style.display = "none";
+        }
+    });
+});
+</script>
