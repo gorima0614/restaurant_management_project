@@ -1,0 +1,65 @@
+Step 1 : Create the model
+//models.py//
+from django.db import models
+
+class NewsletterSubscriber(models.Model):
+    email = models.EmailField(unique=True)
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+       return self.email
+
+Step 2 : Create a from
+//forms.py//
+from django import forms
+from .models import NewsletterSubscriber
+
+class NewsletterForm(forms.ModelForm):
+    class Meta:
+        model = NewsletterSubscriber
+        fields = ['email']
+        widgets = {
+            'email': forms.EmailInput(attrs={
+                'class': 'p-2 border rounded w-full',
+                'placeholder': 'Enter your email'
+            }),
+        }
+
+Step 3 : Create a View
+//views.py//
+from django.shortcuts import render, redirect
+from .forms import NewsletterForm
+
+def homepage(request):
+    if request.method == "POST":
+       form = NewsletterForm(request.POST)
+       if form.is_valid():
+          form.save()
+          return redirect('homepage')
+    else: 
+        form  = NewsletterForm()
+    return render(request, "homepage.html", {"form": form})
+
+Step 4 : Homepage template
+<h1>Welcome to {{ restaurant.name }}</h1>
+<p>Experience fine dining in {{ restaurant.city }}.</p>
+
+<!--Newsletter Subscription-->
+<div class="mt-6 p-4 border rounded bg-gray-50">
+    <h2 class="text-lg font-semibold mb-2">Subscribe to our Newsletter</h2>
+    <form method="post">
+       {{ form.as_p }}
+       <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
+           Subscribe 
+       </button>
+    </form>
+</div>
+
+Step 5 : Add URL
+//urls.py//
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', viws.homepage, name='homepage'),
+]
