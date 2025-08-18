@@ -1,0 +1,49 @@
+Step 1 : Create a template for 500 error
+<!--templates/500.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Server Error</title>
+    <style>
+       body {
+           font-family: Arial, sans-serif;
+           text-align: center;
+           padding: 50px;
+           bockground-color: #f9f9f9;
+       }
+       .error-box {
+           display: inline-block;
+           background: #fff;
+           padding: 30px;
+           border-radius: 10px;
+           box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+       }
+       h1 {
+           color: #e74c3c;
+       }
+       p {
+           color: #555;
+       }
+    </style>
+</head>
+<body>
+   <div class="error-box">
+      <h1>Oops! Something went wrong.</h1>
+      <p>We're experiencing some technical issues on our server.</p>
+      <p>Please try again later or contact us at
+         <a href="mailto:support@example.com">support@example.com</a>
+      </p>
+    </div>
+</body>
+</html>
+
+Step 2 :  Configure Django to use it
+DEBUG = False
+ALLOWED_HOSTS = ['*']
+
+Step 3 : Test your custom 500 page
+def test_error(request):
+    raise Expectation("Test 500 error")
+
+    
