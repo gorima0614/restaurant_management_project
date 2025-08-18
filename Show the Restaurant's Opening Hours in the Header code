@@ -1,0 +1,28 @@
+Step 1 : Your base.html
+<!--templates/base.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>My Restaurant</title>
+</head>
+<body>
+   <header style="background:#333; color:#fff; padding:10px; text-align:center;">
+      <h1>My Restaurant</h1>
+      <p style="margin:5px 0;">Opening Hours: Mon - Fri: 11am - 9pm</p>
+   </header>
+   <footer style="text-align:center; margin-top: 30px; padding: 10px; background: #f9f9f9;">
+      <p>&copy; My Restaurant. All rights reserved.</p>
+   </footer>
+</body>
+</html>
+
+Step 2 : Make it dynamic
+RESTAURANT_HOURS = "Mon - Fri: 11am - 9pm"
+
+<p style="margin:5px 0;">Opening Hours: {{ restaurant_hours }}</p>
+
+from django.conf import settings
+
+def restaurant_hours(request):
+    return {"restaurant_hours": getattr(settings, "RESTAURANT_HOURS", "")}
