@@ -1,0 +1,14 @@
+Step 1 : Edit your base.html
+<!--templates/base.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>My Website</title>
+</head>
+<body>
+   <footer style="text-align:center; margin-top: 30px; padding: 10px; background: #f9f9f9;">
+      <p>&copy; My Website. All rights reserved.</p>
+   </footer>
+</body>
+</html> 
