@@ -1,73 +1,41 @@
-Step 1 : Add a view for Privacy Policy
-//restaurant/views.py//
-from django.shortcuts import render
-
-def privacy_policy(request):
-    return render(request, "privacy_policy.html")
-
-Step 2 : Add a URL Route
-//restaurant/urls.py//
-from django.urls import path
-from . import views
-
-urlspatterns = [
-    path("privacy_policy/", views.privacy_policy, name="privacy_policy"),
-]
-
-Step 3 : Create the template file
-//templates/privacy_policy.html//
-<!DOCTYPE html>
+Step 1 : Create the template
+<!--templates/privacy_policy.html-->
+<!DOCTYPE html-->
 <html lang="en">
 <head>
    <meta charset="UTF-8">
    <title>Privacy Policy</title>
    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 40px;
-        line-height: 1.6;
-      }
-      h1 {
-        margin-bottom: 20px;
-      }
-      section {
-        margin-bottom: 20px;
-      }
+      body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6;}
+      h1 {color: #333; }
+      p { color: #555; }
     </style>
 </head>
 <body>
-  <h1>Privacy Policy</h1>
-  <p>
-    This Privacy Policy decsribes how our restaurant collects, uses, and protects your personal information.
-  </p>
-
-  <section>
-     <h2>Information We Collect</h2>
-     <p>
-       We may collect information such as your name, email address, phone number, and order details when you details when you interact with us.
-     </p>
-   </section>
-
-   <section>
-      <h2>How We Use Information</h2>
-      <p>
-        Information collected is used to improve our services, process orders, and provide customer support.
-      </p>
-    </section>
-
-    <section>
-       <h2>Contact Us</h2>
-       <p>
-         If you have questions about this Privacy Policy, please contact us at <a href="mailto"info@restaurant.com">info@restaurant.com</a>
-       </p>
-    </section>
+   <h1>Privacy Policy</h1>
+   <p>At My Restaurant, we respect your privacy and are committed to protecting your personal information.</p>
+   <h2>Information We Collected</h2>
+   <p>We may collect basic information such as your name, email address, and order details when you use our services.</p>
+   <h2>How we use your information</h2>
+   <p>Your information is used only to improve our services, process orders, and provide cutomer support. We do ot sell your data to third parties.</p>
+   <h2>Cookies</h2>
+   <p>If you hav eany questions, please contact us at 
+      <a href="mailto:support@example.com">support@example.com</a>
+    </p>
 </body>
 </html>
 
-Step 4 : Add link in the footer
-<footer>
-   <p>&copy; 2025 My Restaurant</p>
-   <p><a href="{% url 'privacy_policy' %}">Privacy Policy</a></p>
+Step 2 : Add a URL Route
+from django.urls import path
+from django.views.generic import TemplateView
+
+urlpatterns = [
+    path("privacy-policy/", TemplateView.as_view(template_name="privacy_policy.html"), name="privacy_policy"),
+]
+
+Step 4 : Link it in the footer
+<footer style="text-align: center; margin-top:30px; padding: 10px; background:#f9f9f9;">
+    <p>&copy; My Restaurant. All rights reserved. |
+       <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
+    </p>
 </footer>
-
-
