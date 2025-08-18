@@ -1,0 +1,44 @@
+Step 1 : Create the template
+<!--templates/404.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>Page Under Construction</title>
+   <style>
+      body {
+          font-family: Arial, sans-serif;
+          background-color: #fafafa;
+          text-align: center;
+          padding: 50px;
+      }
+      .box {
+          display: inline-block;
+          background: #fff;
+          padding: 40px;
+          border-radius: 12px;
+          box-shadow: 0 2p 10px rgba(0,0,0,0.1);
+      }
+      h1 {
+          color: #e67e22;
+      }
+      p {
+         color: #555;
+         font-size: 18px;
+      }
+    </style>
+</head>
+<body>
+   <div class="box">
+      <h1>Page Under Cnstruction</h1>
+      <p>We're working hard to bring you this section soon.</p>
+      <p>Expected Launch Date: <strong>October 1, 2025</strong></p>
+      <p><a href="/">Go back to Home</a></p>
+   </div>
+</body>
+</html>
+
+Step 2 : Configure Django
+DEBUG = False
+ALLOWED_HOSTS = ['*']
+
