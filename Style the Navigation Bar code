@@ -1,0 +1,57 @@
+Step 1 : HTML
+<nav>
+   <ul>
+      <li><a href="/">Home/</a></li>
+      <li><a href="/menu"</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/contact">Contact</a></li>
+      <li><a href="/privacy-policy">Privacy Policy</a></li>
+    </ul>
+</nav>
+
+Step 2 : Add CSS styling
+/*static/css/styles.css */
+nav {
+    background-color: #333;
+    padding: 10px 20px;
+}
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+nav ul li {
+    margin: 0 15px;
+}
+navul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+nav ul li a:hover {
+    color: #ffcc00;
+}
+
+Step 3 : Link CSS in template
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>Our Restaurant</title>
+   <link rel="stylesheet" href="{% static 'css/style.css' %}
+</head>
+<body>
+    <nav>
+       <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/menu">Menu</a></li>
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact></li>
+          <li><a href="/privacy-policy">Privacy Policy</a></li>
+       </ul>
+    </nav>
+</body>
+</html>
