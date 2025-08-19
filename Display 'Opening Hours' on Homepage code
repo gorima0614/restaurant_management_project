@@ -1,0 +1,25 @@
+Step 1 : Add opening hours section
+<!DOCTYPE html>
+<html lang="en">
+<head>  
+   <meta charset="UTF-8">
+   <title>Welcome to Our Restaurant</title>
+</head>
+<body>
+   <h1>Welcome to Our Restaurant</h1>
+   <h2>Opening Hours</h2>
+   <ul>
+     <li>Monday - Friday: 10:00 AM - 10:00 PM</li>
+     <li>Saturday: 11:00 PM - 9:00 PM</li>
+     <li>Sunday: 12:00 PM - 9:00 PM</li>
+   </ul>
+</body>
+</html>
+
+Step 2 : base.html
+<div class="opening-hours">
+    <h2>Opening Hours</h2>
+    <p>Mon - Fri: 10:00 AM - 10:00 PM</p>
+    <p>Sat: 11:00 AM - 11:00 PM</p>
+    <p>Sun: 12:00 PM - 9:00 PM</p>
+</div>
