@@ -1,0 +1,16 @@
+Step 1 : <title> tag
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Restaurant</title>
+</head>
+<body>
+   <h1>Welcome to Our Restaurant</h1>
+</body>
+</html>
+
+Step 2 : Update the title
+<title>Delicious Eats | Fresh & Flavourful Dining Expereince</title>
+
+<title>Tandoori Treats | Authentic Flavours & Fresh Dining</title>
