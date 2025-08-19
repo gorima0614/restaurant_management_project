@@ -1,0 +1,37 @@
+Step 1 : Create a Template
+//thank_you.html//
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>Thank You | Our Restaurant</title>
+</head>
+<body>
+    <h1>Thnak you for your Order!</h2>
+    <p>Your order has been received successfully. We'll start preparing it right away.</p>
+    <p>We'll notify you once it's ready for pickup or delivery.</p>
+
+    <a href="/">Return to Home</a>
+</body>
+</html>
+
+Step 2 : Create a view
+from django.shortcuts import render
+
+def thank_you(request):
+    return render(request, "thank_you.html")
+
+Step 3 : Add a URL Route
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("than-you/", views.thank_you, name="thank_you"),
+]
+
+Step 4 : Redirect After Order Submission
+from django.shortcuts import redirect
+
+def submit_order(request):
+    if request.method == "POST":
+       return redirect("thank_you")
