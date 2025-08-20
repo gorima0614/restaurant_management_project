@@ -1,0 +1,14 @@
+Step 1 : Add current year to your template
+//views.py//
+from datetime import datetime
+
+def some_view(request):
+    context = {
+        "year": datetime.now().year,
+    }
+    return render(request, "your_template.html", context)
+
+Step 2 : Add it directly inside template
+<footer class="text-center py-3">
+    <p>&copy; Your Restaurant Naame. All rights reserved.</p>
+</footer>
