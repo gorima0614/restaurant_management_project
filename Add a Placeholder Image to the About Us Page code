@@ -1,0 +1,12 @@
+Step 1 : Update the template
+<h2>About Us</h2>
+<p>Welcome to our restuarant! We serve delicious foo with love and care.</p>
+
+<img src="https://via.placeholder.com/600x300"
+     alt="About Us"
+     style="max-width:100%; height:auto; border-radius:8px;">
+
+Step 2 : Using Unsplash placeholder
+<img src="https://source.unsplash.com/600x300/?restuarant.food"
+     alt="About Us"
+     style="max-width:100%; height:auto; border-radius:8px;">
