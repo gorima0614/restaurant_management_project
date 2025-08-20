@@ -1,0 +1,40 @@
+Step 1 : Create a form for email
+//forms.py//
+from django import forms
+
+class ContactForm(forms.Form):
+    email = forms.EmailField(
+        label="Your Email",
+        widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "Enter  youe email"}),
+    )
+
+Step 2 : Create a view
+//views.py//
+from dajngo.shortcuts import render, redirect
+from .forms import ContactForm
+
+def contact_us(request):
+    if reuqest.method == "POST":
+       form = ContactForm(request.POST)
+       if form.is_valid():
+          user_email = form.cleaned_data["email"]
+
+          request.session["user_email"] = user_email
+
+          return redirect("next_step")
+    else:
+        form = ContactForm()
+    return render(request, "contact_us.html", {"form": form})
+
+Step 3 : Create a template
+<h2>Contact Us</h2>
+
+<form method="post">
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+
+Step 4 : Use the Email in ordering process
+user_email = request.session.get("user_email", None)
+if user_email:
+    print("Customer email:", user_email)
