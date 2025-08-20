@@ -1,0 +1,20 @@
+Step 1 : Make sure we have a Privacy Policy
+//urls.py//
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("privacy/", views.privacy_policy, name="privacy_policy"),
+]
+
+def privacy_policy(request):
+    return render(request, "privacy_policy.html")
+
+Step 2 : Add the link in our footer
+<footer class="text-center py-3">
+    <p>&copy; Your Restaurant Nma. All rights reserved.</p>
+    <nav>
+       <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
+    </nav>
+</footer>
+
