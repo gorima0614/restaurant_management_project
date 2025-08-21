@@ -1,0 +1,56 @@
+Step 1 : Create the template
+{% extends "base.html" %}
+{% block title %}Privacy Policy{% endblock %}
+
+{% block content %}
+<section class="container" style="max-width: 800px; margin: 2rem auto; line-height: 1.7;">
+   <h1>Privacy Policy</h1>
+   <p><em>Last updated: {{ now|date:"F j, Y" }}</em></p>
+
+   <p>
+      This is placeholder content. Describe what data you collect, how you use it, 
+      and user's choices. Replace this text with your actual policy.
+   </p>
+
+   <h2>Information We Collect</h2>
+   <p>Examples: contact info, order details, and technical data (IP, browser).</p>
+
+   <h2>How we use information</h2>
+   <ul>
+     <li>To process orders and provide service</li>
+     <li>To improve our website and offering</li>
+     <li>To communicate updated and support</li>
+   </ul>
+
+   <h2>Cookies</h2>
+   <p>We use cookies for basic functionally and analytics.</p>
+
+   <h2>Contact Us</h2>
+   <p>If you have questions, email us at <a href="mailto:info@example.com">info@example.com</a></p>
+</section>
+{% endblock %}
+
+Step 2 : Add a view
+//views.py//
+from django.views.generic import TemplateView
+
+class PrivacyPolicyView(TemplateView):
+    template_name = "privacy_policy.html"
+
+Step 3 : Add the URL Pattern
+//urls.py//
+from django,urls import path
+from .views import PrivacyPolicyView
+
+urlpatterns = [
+    path("privacy/", PrivacyPolicyView.as_view(), name="privacy_policy"),
+]
+
+Step 4 : Link it in your navigation
+//templates/base.html//
+<nav>
+  <ul class="nav">
+    <li><a href={% url 'privacy_policy' %}">Privacy Policy</a></li>
+  </ul>
+</nav>
+
