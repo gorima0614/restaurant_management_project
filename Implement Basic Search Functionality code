@@ -1,0 +1,42 @@
+Step 1 : Update the homepage template
+//template/home.html//
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="container" style="max-width: 800px; argin: 2rem auto; text-align: center;">
+   <h1>Welcome to Our Restaurant</h1>
+   <p>Find your favourite dishes below</p>
+
+   <form method="get" action="" style="margin: 1.5rem 0;">
+     <input
+       type="text"
+       name="q"
+       placeholder="Search menu items..."
+       style="padding: 0.5rem; width: 60%; max-width: 400px; border: 1px solid #ccc;"
+     >
+     <button type="submit" style="padding: 0.5rem 1rem; borer: none; background: #333; color: white; border-radius: 6px;">
+        Search
+     </button>
+    </form>
+
+    <div style="margin-top: 1rem; background: #fafafa; padding: 1rem; border-radius: 8px;".
+      <p><strong>Showing results for:</strong> "{{ request.GET.q }}"</p>
+      <p><em>No real results yet - this is just a placeholder.</em></p>
+    </div>
+</section>
+
+Step 2 : View Logic
+from django.shortcuts import render
+
+def home(request):
+   return render(request, "home.html")
+
+Step 3 : URL
+//urls.py//
+from django.urls import path
+from .views import home
+
+urlpatterns = [
+    path("", home, name="home"),
+]
