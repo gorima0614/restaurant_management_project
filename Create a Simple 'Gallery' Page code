@@ -1,0 +1,55 @@
+Step 1 : Create the template
+<section class="container" style="max-width: 100px; margin: 2rem auto;">
+   <h1 style="text-align: center; margin-bottomL 1.5rem;">Gallery</h1>
+
+   <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+     
+     <div>
+       <img src="https://via.placeholder.com/300x200" alt="Gallery Image 1" style="width:100%; border-radius: 8px;">
+    </div>
+
+    <div>
+       <img src="https://via.placeholder.com/300x200" alt="Gallery Image 2"  style="width:100%; border-radius: 8px;">
+    </div>
+
+    <div>
+       <img src="https://via.placeholder.com/300x200" alt="Gallery Image 3" style="width:100%; border-radius: 8px;">
+    </div>
+
+    <div>
+       <img src="https://via.placeholder.com/300x200" alt="Gallery Image 4" style="width:100%; border-radius: 8px;".
+    </div>
+
+    <div>
+       <img src="https://via.placeholder.com/300x200" alt="Gallery Image 5" style="width:100%; border-radius: 8px;">
+    </div>
+
+    <div>
+       <img src="https://via.placeholder.com/300x200" alt="Gallery Image 6" style="width:100%; border-radius: 8px;">
+    </div>
+</div>
+</section>
+
+Step 2 : Add the view
+from django.views.generic import TemplateView
+
+class GalleryView(TemplateView)
+     template_name = "gallery.html"
+
+Step 3 : Add the URL
+from django.urls import path
+from .views import GalleryView
+
+urlpatterns = [
+    path("gallery/", GalleryView.as_view(), name="gallery"),
+]
+
+Step 4 : Add link to navigation
+//base.html//
+<nav>
+   <ul class="nav">
+     <li><a href="{% url 'gallery' %}">Gallery</a></li>
+   </ul>
+</nav>
+ 
+
