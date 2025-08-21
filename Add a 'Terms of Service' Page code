@@ -1,0 +1,65 @@
+Step 1 : Create the template
+//templates/terms_of_service.html//
+{% extends "base.html" %}
+{% block title %}Terms of Service{% endblock %}
+
+{% block content %}
+<section class="container" style="max-width: 800px; margin: 2rem auto; line-height: 1.7;">
+   <h1>Terms of Service</h1>
+   <p><em>Last updated: {{ now|date:"F j, Y" }}</em></p>
+
+   <p>
+      This is placeholder content. Replace with your actual terms and conditions.
+   </p> 
+
+   <h2>1. Acceptance of Terms</h2>
+   <p>
+     By accessing or using our services, you agree to these Terms of Service.
+   </p>
+
+   <h2>2.Use of Services</h2>
+   <p>
+      You agree to use our services only for lawful purposes and in compliance with all applicable laws.
+   </p>
+
+   <h2>3. Limitation of Liability</h2>
+   <p>
+      We are not responsible for damages or losses resulting from use fo our services.
+   </p>
+
+   <h2>4. Contact Us</h2>
+   <p>
+      If you have questions about these Terms, contact us at
+      <a href="mailto:info@example.com">info@example.com</a>
+   </p>
+</section>
+{% endblock %}
+
+Step 3 : Add the view
+//views.py//
+from dajngo.views.generic import TemplateView
+
+class TermsOfServiceView(TemplateView):
+     template_name = "terms_of_service.html"
+
+
+Step 3 : Add the URL
+//urls.py//
+from django.urls omport path
+from .views import TermsOfServiceView
+
+urlpatterns = [
+    path("terms/", TermsOfServiceView.as_view(), name="terms_of_service"),
+]
+
+Step 4 : Add link in the footer
+//base.html//
+<footer style="padding: 1rem; text-align: center; background: #f5f5f5;">
+  <p>&copy; {{ now|date: "Y" }}My Website</p>
+  <p>
+    <a hreg={% url 'privacy_policy' %}">Privacy Policy</a> |
+    <a href={% rl 'terms_of_service' %}">Terms of Service</a>
+  </p>
+</footer>
+
+
