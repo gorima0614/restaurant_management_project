@@ -1,0 +1,56 @@
+Step 1 : Create a model for contact message
+//models.py//
+from django.db import models
+class Contact(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+       return f"Message from {self.name} ({self.email})"
+
+Step 2 : Create a from
+//forms.py//
+from django import forms
+from .models import Contact
+
+class ContactForm(forms.ModelForm):
+    class Meta:
+       model = Contact
+       fields = ['name', 'email', 'meaasage']
+
+Step 3 : Create a view
+//views.py//
+from django.shortcuts import render, redirect
+from .forms import ContactForm
+
+def contact_view(request):
+    if request.method == "POST":
+       form = ContactForm(request.POST)
+       if form.is_valid():
+           form.save()
+           return redirect( 'thank_you')
+    else:
+        form = ContactForm()
+    return render(request, 'contact.html', {'form': form})
+
+Step 4 : Create a template
+//templates/contact.html//
+<h2>Contact Us</h2>
+<form method="post">
+    {{ form.as_p }}
+    <button type="submit">Send</button>
+</form>
+
+Step 5 : Configure URLs
+//urls.py//
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('contact/', views.contact_view, name='contact'),
+    path('thank-you/', views.thank_you, name='thank_you'),
+]
+
+
