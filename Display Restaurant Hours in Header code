@@ -1,0 +1,24 @@
+Step 1 : Base template
+//templates/base.html//
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Restaurant</title>
+    </head>
+    <body>
+       <header style="background:#333; color:#fff; padding:10px; text-align:center;">
+           <h1>My Restaurant</h1>
+           <p>Openng Hours: Mon - Sun | 10:00 AM - 10:00 PM</p>
+       </header>
+
+       <main>
+       </main>
+    </body>
+</html>
+
+Step 2 : Extend your page
+<h2>Contact Us</h2>
+<form method="post">
+    <button type="submit">Send</button>
+</form>
