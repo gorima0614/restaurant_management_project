@@ -1,0 +1,60 @@
+Step 1 : Create a 403 template
+//templates/403.html//
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>403 Forbidded</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: #f8f8f8;
+        }
+        .error-box {
+            display: inline-block;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #ccc;
+        }
+        h1 {
+            font-size: 3em;
+            color: #e74c3c;
+        }
+        p {
+            font-size: 1.2em;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-box">
+       <h1>403</h1>
+       <p>Ooops! You don't have permission to access this page.</p>
+       <p><a href="/">Return to Home</a></p>
+    </div>
+</body>
+</html>
+
+Step 2 : Tell Django to Use Custom Handler
+from django.conf.urls import handler403
+handler403 = "yourapp.views.custom_403"
+
+Step 3 : Create a view for 403
+//views.py//
+from django.shortcuts import render
+def custom_403(request, exception=None):
+    return render(request, "403.html", status=403)
+
+Step 4 : Trigger example
+from django.core.exceptions import PermissionDenied
+def secret_page(request):
+    raise PermissionDenied
+
+
+    
