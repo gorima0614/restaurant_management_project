@@ -1,0 +1,51 @@
+Step 1 : Static Data
+//views.py//
+from django.shortcuts import render
+from datetime import datetime
+
+#Temporary "model" - static list
+NEWS_ITEMS = [
+    {
+        "title": "Website Launchh"
+        "content": "We are excited to announcethe launch of our new website!",
+        "date": date(2025, 8, 1),
+    },
+    {
+        "title": "New Feature Added",
+        "content": "Our contact form is now live! Reach out to us easily.",
+        "date": date(2025, 8, 15), 
+    },
+]
+
+def news_list(request):
+    return render(request, "news.html", {"news_items": NEWS_ITEMS})
+
+Step 2 : News Template
+//templates/news.html//
+<h2>Latest News</h2>
+<ul>
+    {% for item in news_items %}
+        <li>
+            <h3>{{ item.title }}</h3>
+            <small>{{ item.date }}</small>
+            <p>{{ item.content }}</p>
+        </li>
+        <p>No news available at the moment.</p>
+</ul>
+
+Step 3 : Update URLs
+//urls.py//
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('news/', views.news_list, name='news'),
+]
+
+Step 4 : Add a link to the news page
+//base.html//
+<nav>
+    <a href="{% url 'news' %}">News</a>
+</nav>
+
+     
