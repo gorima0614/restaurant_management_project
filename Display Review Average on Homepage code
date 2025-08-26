@@ -1,0 +1,31 @@
+Step 2 : Update views.py
+from django.shortcuts import render
+from django.db.models import Q, Avg
+from .models import Review
+
+def homepage(request):
+    query = request.GET.get("q")
+    if query:
+       reviews = Review.objects.filter(
+           Q(comment__icontains=query) | Q(user__username__icontains=query)
+       ).order_by("-created_at")
+    else:
+        reviews = Review.objects.order_by("-created_at")
+    
+    # Calculate average rating
+    avg_rating = Review.objects.aggregate(avg=Avg("rating"))["avg"]
+    if avg_rating is not None:
+       avg_rating = round(avg_rating, 1)
+
+    # Get 3 most recent reviews
+    recent_reviews = reviews[:3]
+
+    return render(request, "homepage.html", {
+        "recent__reviews": recent_reviews,
+        "avg_rating": avg_rating,
+        "query": query,
+    })
+
+Step 2 : Update homepage.html
+<h2>Average Rating: {{ avg_rating }} </h2>
+<h2>No ratings yet</h2>
