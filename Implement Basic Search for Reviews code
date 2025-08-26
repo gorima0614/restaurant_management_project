@@ -1,0 +1,45 @@
+Step 1 : Update your views.py
+from django.shortcuts import render
+from django.db.models import Q
+from .models import Review
+
+def homepage(request):
+    query = request.GET.get("q")
+    if query:
+       reviews = Review.objects.filter(
+           Q(comment__icontains=query) | Q(user__username__icontains=query)
+       ).order_by("-created_at")
+    else:
+       reviews = Review.objects.order_by("-created_at")
+    
+    # average rating
+    avg_rating = Review.objects.all().aggregate(models.Avg("rating"))['rating_avg']
+
+    # show only 3 most recent
+    recent_reviews = reviews[:3]
+
+    return render(request, "homepage.html", {
+        "recent_reviews": recent_reviews,
+        "avg_rating": avg_rating,
+        "query": query,
+    })
+
+Step 2 : Update homepage.html
+<h2>Average Rating: {{ avg_rating|defaukt:"No ratings yet" }}</h2>
+
+<!-- Search bar -->
+<form method="GET" action=".">
+    <input type="text" name="q" placeholder="Search reviews..." value="{{ query|default:'' }}">
+    <button type="submit">Search</button>
+</form>
+
+<h3>Recent Reviews</h3>
+<ul>
+    <li>
+        <strong>{{ review.user.username }}</strong>
+        ({{ review.rating }}) <br>
+        {{ review.rating|linebreaks }}
+        <small>on {{ review.created_at|date:"M d, Y H:i" }}</small>
+    </li>
+</ul>
+<p>No reviews found.</p>
