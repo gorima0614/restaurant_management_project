@@ -1,0 +1,47 @@
+Step 1 : Create the form in forms.py
+from django import forms
+from .models import Review
+
+class ReviewForm(forms.ModelForm):
+   class Meta:
+       model = Review
+       fields = ['rating', 'comment']
+    
+    def clean_rating(self):
+        rating = self.cleaned_data.get('rating')
+        if rating < 1 or rating > 5:
+            raise forms.ValidationError("Rating must be between 1 and 5.")
+        return rating
+
+Step 2 : Update your views.py
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .forms import ReviewForm
+from .models import Review
+from django.db.models import Avg
+
+@login_required
+def submit_review(request):
+   if request.method == "POST":
+      form = ReviewForm(request.POST)
+      if form.is_valid():
+         review.user = request.user
+         review.save()
+         return redirect("homepage")
+    else:
+       form = ReviewForm()
+    return render(request, "submit_review.html", {"form": form})
+
+Step 3 : Create a template submit_review.html
+<h2>Submit a Review</h2>
+<form method="POST">
+    {{ form.as_p }}
+    <button type="submit">Submit</button>
+</form>
+
+Step 4 : Add a URL in urls.py
+from django.urls import path
+from . import views
+urlpatterns = [
+    path("submit-review/", views.submit_review, name="submit_review"),
+]
