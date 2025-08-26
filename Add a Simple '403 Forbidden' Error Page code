@@ -1,0 +1,32 @@
+Step 1 : Create a custom 403 template
+//403.html//
+<div style="text-align: center; margin-top: 50px;">
+   <h1 style="font-size: 48px; color: #d9534f;">403 - Forbidden</h1>
+   <p style="font-size: 20px; color: #555;">
+      Oops! You don't have permission to access thi spage.
+   </p>
+   <a href="{% url 'home' %}" style="text-decoration: none; color: #0275d8; font-size: 18px;">
+      <- Back to home
+   </a>
+</div>
+
+Step 2 : Configure Django to use it
+//settings.py//
+DEBUG = False
+ALLOWED_HOSTS = ['*']
+
+from django.conf.urls import handler403
+handler403 = 'restaurant.views.custom_permission_denied_view'
+
+Step 3 : Create the views
+//views.py//
+from django.shortcuts import render
+
+def custom_permission_denied_view(request, exception=None):
+    return render(Request, "403.html", status=403)
+
+Step 4 : Trigger a 403
+from django.core.exceptions import PermissionDenied 
+
+def secret_view(request):
+    raise PermissionDenied 
