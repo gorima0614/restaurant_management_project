@@ -1,0 +1,8 @@
+HTML (Homepage title)
+<!-- Our Team Section -->
+<section style="background-color:#f9f9f9; padding:50px 20px; text-align:center; margin-top:40px; border-radius:12px;">
+   <h2 style="font-size:2em; margin-bottom:15px; color:#333;">Our Team</h2>
+   <p style="font-size:1.2em; color:#555;">
+     Meet our fantastic team!
+   </p>
+</section> 
