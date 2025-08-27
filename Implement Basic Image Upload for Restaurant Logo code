@@ -1,0 +1,49 @@
+Step 1 : Update the model
+//models.py//
+from django.db import models
+
+class Restaurant(models.Model):
+   name = models.CharField(max_length=200)
+   logo = models.ImageField(upload_to='logos/', blank=True, null=True)
+
+   def __str__(self):
+      return self.name
+
+Step 2 : Configure media settings
+import os
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    #....your urls
+]
+
+if settngs.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+Step 3 : Register in Admin
+from django.contrib import admin
+from .models import Restaurant
+@admin.register(Restaurant)
+class RestaurantAdmin(admin.ModelAdmin):
+   list_display = ('name', 'logo')
+
+Step 4 : Display on Homepage
+<div styel="text-align:center; margin:20px 0;">
+  <img src="{{ restaurant.logo.url }}" alt="{{ restaurant.name }} Logo" style="max-width:200px; height:auto;">
+</div>
+
+Step 5 : Pass Restaurant to template
+from django.shortcuts import render
+from .models import Restaurant
+
+def home(request):
+    restaurant = Restaurant.objects.first()
+    return render(request, "home.html",{"restaurant": restaurant})
+    
+
