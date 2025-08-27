@@ -1,0 +1,31 @@
+Step 1 : Inline message
+<form method="post" action="/contact/">
+  <!-- Contact Form Fields -->
+  <inputm type="text" name="name" placeholder="Your Name" required>
+  <input type="email" name="email" placeholder="Your Email" required>
+  <textarea name="message" placeholder="Your Message" required></textarea>
+  <button type="submit">Send</button>
+</form>
+
+<!-- Thank You Message -->
+<p style="margin-top:20px; color:green; font-weight:bold;">
+  Thank you for your message!
+</p>
+
+Step 2 : Redirect
+//views.py//
+from django.shortcuts import render, redirect
+
+def contact(request): 
+    if request.method == "POST":
+       return redirect('thank_you')
+    return render(request, "contact.html")
+
+def thank_you(request):
+    return render(request, "thank_you.html")
+
+//thank_you.html//
+<section style="padding:0px; text-align:center;">
+  <h2 style="color:green;">Thank you for your message!</h2>
+  <p>We'ill get back to you soon.</p>
+</section>
