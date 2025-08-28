@@ -1,0 +1,23 @@
+Step 1 : Update urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("cart/", views.cart, name="cart"),
+    path("cart/clear/", views.clear_cart, name="clear_cart"),
+]
+
+Step 2 : Update views.py
+from django.shortcuts import redirect
+
+def clear_cart(request):
+    if "cart" in request.session:
+       del.session.modified = True
+    return redirect("cart")
+
+Step 3 : Add button in cart
+<form method="post" action="{% url 'clear_cart' %}">
+   <button type="submit" class="btn btn-danger">Clear Cart</button>
+</form>
+
+ 
