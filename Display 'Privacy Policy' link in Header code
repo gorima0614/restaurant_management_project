@@ -1,0 +1,29 @@
+Step 1 : Locate your header navigation 
+
+Step 2 : Add the link to the navigation bar
+<li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
+
+//Example//
+<nav>
+   <ul>
+      <li><a href="{% url 'home' %}">Home</a></li>
+      <li><a href="{% url 'menu' %}">Menu</a></li>
+      <li><a href="{% url 'contact' %}">Contact</a></li>
+      <li><a href="{% url 'privacy' %}">Privacy</a></li>
+    </ul>
+</nav>
+
+Step 3 : URL for the Privacy Policy
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('privacy/', views.privacy, name='privacy'),
+]
+
+Step 4 : Add the view
+from django.shortcuts import render
+
+def privacy(request):
+    return render(request, 'privacy.html')
+    
