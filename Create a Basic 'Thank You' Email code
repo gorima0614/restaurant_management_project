@@ -1,0 +1,40 @@
+Step 1 : Configure email settings
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "yourrestaurant@gmail.com.com"
+EMAIL_HOST_PASSWORD = "yourpassword"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+Step 2 : Uodate your contact form view
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from .forms import ContactForm
+
+def contact(request):
+    if request.method == "POST":
+       form = ContactForm(request.POST)
+       if form.is_valid():
+          form.save()
+
+          user_email = form.cleaned_data.get("email")
+          send_mail(
+            subject="Thank You for Contacting Us!",
+            message=(
+                "Hello,\n\n"
+                "Thank you for reaching out to us."
+                "We've received your message and will get back to you soon.\n\n"
+                "Best Regards.\n"
+                "Your Restaurant Team\n"
+                "+91-9876485120\n"
+                "123 Food Street, Mumbai"
+            ),
+            from_email=None,
+            receipient_list=[user_email],
+            fail_silently=False,
+          )
+          return redirect("thank_you")
+        else:
+            form = ContactForm()
+        return render(request, "contact.html", {"form": form})
