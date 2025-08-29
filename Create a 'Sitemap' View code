@@ -1,0 +1,74 @@
+Step 1 : Create the sitemap view
+#home/views.py
+from django.shortcuts import render
+
+def sitemap(reuqest):
+    pages = [
+        {"name": "Home", "url": "/"},
+        {"name": "Menu", "url": "/menu/"},
+        {"name": "About Us", "url": :/about/"},
+        {"name": "Contact Us", "url": "/contact/",}
+    ]
+    return render(request, "home/sitemap.html", {"pages": pages})
+
+Step 2 : Add URL for sitemap
+#home/urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("sitemap/", views.sitemap, name="sitemap"),
+]
+
+Step 3 : Create sitemap 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <title>Sitemap</title>
+   <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 40px;
+        background: #f9f9f9;
+      }
+      .sitemap-container {
+        max-width: 600px;
+        margin: auto;
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      ul {
+        list-style-type: none;
+        padding-left: 0;
+      }
+      li {
+        margin: 10px 0
+      }
+      a {
+        text-decoration: none;
+        color: #0073e6;
+        font-size: 16px;
+        transition: 0.3s;
+      }
+      a:hover {
+        color: #005bb5;
+      }
+    </style>
+</head>
+<body>
+   <div class="sitemap-container">
+      <h2>Website Sitemap</h2>
+      <ul>
+         <li><a href="{{ page.url }}">{{ page.name }}</a></li>
+      </ul>
+    </div>
+</body>
+</html>
+  
