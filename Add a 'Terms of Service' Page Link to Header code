@@ -1,0 +1,36 @@
+Step 1 : Create a terms of service page
+<h1>Terms of Service</h1>
+<p>Here you can put the Terms and Conditions of your website/app.....</p>
+
+Step 2 : Add URL for terms of service
+//urls.py//
+from django.urls import path
+from django.views.generic import TemplateView
+
+urlpatterns = [
+    path("terms/", TemplateView.as_view(template_name="terms_of_service.html"), name="terms"),
+]
+
+Step 3 : Update header navigation
+<nav>
+  <ul>
+    <li><a href="{% url 'privacy' %}">Privacy Policy</a></li>
+    <li><a href="{% url 'terms' %}">Terms of Service</a></li>
+  </ul>
+</nav>
+
+Step 4 : Style links
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+}
+nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+nav a:hover {
+    color: #007bff;
+}
+
