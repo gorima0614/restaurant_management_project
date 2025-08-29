@@ -1,0 +1,20 @@
+Step 1 : Put an image in your static folder
+home/static/home/images/about_us.jpg
+
+Step 2 : Load static in template
+<h1>About Us</h1>
+<p>
+   Welcome to our restaurant! We pride ourselves on servong delicious food with the best ingredients and friendly service.
+</p>
+
+<img src="{% static 'home/images/about_us.jpg' %}" alt="Our restaurant team" width="400">
+
+Step 3 : Settings.py
+STATIC_URL = '/static/'
+
+from django.conf import Settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+
+] + static(settings.STATIC_URL, documnet_root=settings.STATIC_ROOT)
