@@ -1,0 +1,31 @@
+Step 1 : Update home/models.py
+#home/models.py
+from django.db import models
+
+class Restaurant(models.Model):
+   name = models.CharField(max_length=200)
+   address = models.TextField()
+   opening_hours = models.CharField(max_length=200, blank=True, null=True)
+   cuisine = models.CharField(max_length=100, blank=True, null=True)
+
+   def __str__(self):
+      return self.name
+
+Step 2 : Make migrations
+python manage.py makemigrations
+python manage.py migrate
+
+Step 3 : Update home/views.py
+from django.shortcuts import render
+from .models import Restaurant
+
+def home(request):
+    restaurant = Restaurant.objects.first()
+    return render(request, 'home/index.htm', {'restaurant': restaurant})
+
+Step 4 : Update template home/templates/home/index.html
+<h1>{{ restaurant.name }}</h1>
+<p><strong>Address:</strong> {{ restaurant.address }}</p>
+<p><strong>Opening Hours:</strong> {{ restaurant.opening_hours }}</p>
+<p><strong>Cuisine:</strong> {{ restaurant.cuisine }}</p>
+
