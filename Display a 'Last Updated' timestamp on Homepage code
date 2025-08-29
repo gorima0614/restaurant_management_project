@@ -1,0 +1,49 @@
+Step 1 : Add a last_updated field
+#home/models.py
+from django.db import models
+
+class Page(models.Model):
+    title = models.CharField(max_length=200)
+    content= models.TextField()
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+       return self.title
+
+Step 2 : Update the view
+#home/views.py
+from django.shortcuts import render
+from .models import Page
+
+def homepage(request):
+   page = Page.objects.first()
+   return render(request, "home/homepage.html", {"page": page})
+
+Step 3 : Use a template
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Homepage</title>
+</head>
+<body>
+    <h1>{{ page.title }}</h1>
+    <p>{{ page.content }}</p>
+
+    <footer>
+        <small>Last Updated: {{ page.last_updated|date:"F j, Y, g:i a" }}</small>
+    </footer>
+</body>
+</html>
+
+Step 4 : Custom template
+#home/templatetags/custom_filters.py
+from django import template
+
+register = template.Library()
+
+@register.filter 
+def friendly_date(value):
+   return value.strftime("%B %d, %Y at %I:%M %p")
+
+<small>Last Updated" {{ page.last_updated|friendly_date }}</small>
