@@ -1,0 +1,28 @@
+Step 1 : Add Django logout view
+#urls.py
+from django.urls import path
+from django.contrib.auth imprt views as auth_views
+
+urlpatterns = [
+    path("logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
+]
+
+Step 2 : Add logout button in template
+<form action="{% url 'logout' %}" method="post" style="display:inline;">
+   <button type="submit">Logout</button>
+</form>
+
+Step 3 : Style the button
+button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #d32f2f;
+}
+
