@@ -1,0 +1,172 @@
+from django.db import models
+from django.contrib.auth.models import User
+
+
+class Rider(models.Model):
+    """
+    Rider model extending Django's built-in User.
+    Stores rider-specific details like payment preferences and saved locations.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="rider_profile")
+    phone_number = models.CharField(max_length=15, unique=True)
+    preferred_payment_method = models.CharField(
+        max_length=50,
+        choices=[
+            ('CASH', 'Cash'),
+            ('CARD', 'Card'),
+            ('UPI', 'UPI'),
+            ('WALLET', 'Wallet'),
+        ],
+        default='CASH',
+    )
+    default_pickup_location = models.CharField(max_length=255, blank=True, null=True)
+    profile_photo = models.ImageField(upload_to="rider_photos/", blank=True, null=True)
+
+    # Future-proofing for ride history, wallet, ratings, etc.
+    # ride_history = models.ManyToManyField("Ride", blank=True)
+    # wallet_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def __str__(self):
+        return f"Rider: {self.user.username}"
+
+
+class Driver(models.Model):
+    """
+    Driver model extending Django's built-in User.
+    Stores driver-specific details like vehicle info, license, and availability.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="driver_profile")
+    phone_number = models.CharField(max_length=15, unique=True)
+    vehicle_make = models.CharField(max_length=50)
+    vehicle_model = models.CharField(max_length=50)
+    number_plate = models.CharField(max_length=20, unique=True)
+    driver_license_number = models.CharField(max_length=50, unique=True)
+    is_available = models.BooleanField(default=True)
+    current_latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    current_longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    profile_photo = models.ImageField(upload_to="driver_photos/", blank=True, null=True)
+
+    # Future fields: driver_rating, last_ride, documents, earnings, etc.
+    # driver_rating = models.FloatField(default=5.0)
+
+    def __str__(self):
+        return f"Driver: {self.user.username} ({self.number_plate})"
+
+1️⃣ Serializers (serializers.py)
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from .models import Rider, Driver
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """Serializer for creating the Django User object."""
+    class Meta:
+        model = User
+        fields = ["username", "email", "password"]
+        extra_kwargs = {"password": {"write_only": True}}
+
+    def create(self, validated_data):
+        # Use Django's create_user method to handle password hashing
+        return User.objects.create_user(**validated_data)
+
+
+class RiderSerializer(serializers.ModelSerializer):
+    """Serializer for Rider creation + linked User object."""
+    user = UserSerializer()
+
+    class Meta:
+        model = Rider
+        fields = ["user", "phone_number", "preferred_payment_method", "default_pickup_location", "profile_photo"]
+
+    def create(self, validated_data):
+        user_data = validated_data.pop("user")
+        user = User.objects.create_user(**user_data)
+        rider = Rider.objects.create(user=user, **validated_data)
+        return rider
+
+
+class DriverSerializer(serializers.ModelSerializer):
+    """Serializer for Driver creation + linked User object."""
+    user = UserSerializer()
+
+    class Meta:
+        model = Driver
+        fields = [
+            "user", "phone_number", "vehicle_make", "vehicle_model", "number_plate",
+            "driver_license_number", "is_available", "current_latitude", "current_longitude", "profile_photo"
+        ]
+
+    def create(self, validated_data):
+        user_data = validated_data.pop("user")
+        user = User.objects.create_user(**user_data)
+        driver = Driver.objects.create(user=user, **validated_data)
+        return driver
+
+2️⃣ Views (views.py)
+from rest_framework import generics
+from .models import Rider, Driver
+from .serializers import RiderSerializer, DriverSerializer
+
+
+class RiderRegistrationView(generics.CreateAPIView):
+    """
+    POST /api/register/rider/
+    Registers a new Rider with a linked User account.
+    """
+    queryset = Rider.objects.all()
+    serializer_class = RiderSerializer
+
+
+class DriverRegistrationView(generics.CreateAPIView):
+    """
+    POST /api/register/driver/
+    Registers a new Driver with a linked User account.
+    """
+    queryset = Driver.objects.all()
+    serializer_class = DriverSerializer
+
+3️⃣ URLs (urls.py)
+from django.urls import path
+from .views import RiderRegistrationView, DriverRegistrationView
+
+urlpatterns = [
+    path("register/rider/", RiderRegistrationView.as_view(), name="register_rider"),
+    path("register/driver/", DriverRegistrationView.as_view(), name="register_driver"),
+]
+
+4️⃣ Example API Requests (via cURL / Postman)
+➤ Rider Registration
+POST /api/register/rider/
+Content-Type: application/json
+
+{
+  "user": {
+    "username": "john_rider",
+    "email": "john@example.com",
+    "password": "strongpassword123"
+  },
+  "phone_number": "+11234567890",
+  "preferred_payment_method": "CARD",
+  "default_pickup_location": "123 Main Street"
+}
+
+➤ Driver Registration
+POST /api/register/driver/
+Content-Type: application/json
+
+{
+  "user": {
+    "username": "jane_driver",
+    "email": "jane@example.com",
+    "password": "securepassword456"
+  },
+  "phone_number": "+11234567891",
+  "vehicle_make": "Toyota",
+  "vehicle_model": "Prius",
+  "number_plate": "ABC-1234",
+  "driver_license_number": "DL-123456",
+  "is_available": true,
+  "current_latitude": 37.7749,
+  "current_longitude": -122.4194
+}
+
