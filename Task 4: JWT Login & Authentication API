@@ -1,0 +1,95 @@
+1️⃣ Install & Configure djangorestframework-simplejwt
+pip install djangorestframework-simplejwt
+
+In your settings.py, configure DRF to use JWT for authentication:
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.AllowAny",  # Default: open access (we’ll secure specific views later)
+    ),
+}
+
+2️⃣ Add JWT Endpoints to urls.py
+from django.urls import path
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+from .views import RiderRegistrationView, DriverRegistrationView, ProtectedTestView
+
+urlpatterns = [
+    path("register/rider/", RiderRegistrationView.as_view(), name="register_rider"),
+    path("register/driver/", DriverRegistrationView.as_view(), name="register_driver"),
+
+    # 🔑 JWT Authentication Endpoints
+    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+
+    # 🔒 Example protected view
+    path("protected/", ProtectedTestView.as_view(), name="protected_view"),
+]
+
+3️⃣ Example Login Request
+After registering a Rider/Driver, you can log in with their username and password:
+POST /api/token/
+{
+  "username": "john123",
+  "password": "secret123"
+}
+Response
+{
+  "refresh": "eyJ0eXAiOiJKV1QiLCJhbGc... (long string)",
+  "access": "eyJ0eXAiOiJKV1QiLCJhbGc... (long string)"
+}
+
+4️⃣ Using JWT for Authenticated Requests
+For every subsequent API call that requires authentication, send the access token in the header:
+Authorization: Bearer <your_access_token_here>
+
+5️⃣ Refreshing Tokens
+When the access token expires, request a new one with the refresh token:
+POST /api/token/refresh/
+{
+  "refresh": "your_refresh_token_here"
+}
+
+Response:
+{
+  "access": "new_access_token_here"
+}
+
+6️⃣ Example Protected View 
+In views.py, create a view that is only accessible to authenticated users:
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+class ProtectedTestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "message": f"Hello {user.username}, you are authenticated!",
+            "user_id": user.id,
+            "email": user.email,
+        })
+
+7️⃣ Verify with Postman / cURL
+Register a Rider/Driver (use our earlier endpoints).
+Obtain Token with /api/token/.
+Call Protected View:
+
+curl -H "Authorization: Bearer <ACCESS_TOKEN>" http://127.0.0.1:8000/api/protected/
+You should see:
+
+{
+  "message": "Hello john123, you are authenticated!",
+  "user_id": 1,
+  "email": "john@example.com"
+}
+
+
+
