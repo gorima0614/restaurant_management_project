@@ -1,0 +1,102 @@
+##views.py##
+# your_app/views.py
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+
+from .models import Ride
+
+
+class CompleteRideView(APIView):
+    """
+    POST /api/ride/complete/<ride_id>/
+    Driver marks a ride as completed.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, ride_id, *args, **kwargs):
+        ride = get_object_or_404(Ride, pk=ride_id)
+
+        driver = getattr(request.user, "driver_profile", None)
+        if driver is None or ride.driver != driver:
+            return Response(
+                {"error": "Only the assigned driver can complete this ride."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if ride.status != Ride.STATUS_ONGOING:
+            return Response(
+                {"error": "Only ongoing rides can be completed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ride.status = Ride.STATUS_COMPLETED
+        ride.save(update_fields=["status"])
+
+        return Response({"message": "Ride marked as completed."}, status=status.HTTP_200_OK)
+
+
+class CancelRideView(APIView):
+    """
+    POST /api/ride/cancel/<ride_id>/
+    Rider cancels a ride before it is accepted.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, ride_id, *args, **kwargs):
+        ride = get_object_or_404(Ride, pk=ride_id)
+
+        rider = getattr(request.user, "rider", None)
+        if rider is None or ride.rider != rider:
+            return Response(
+                {"error": "Only the rider who booked this ride can cancel it."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if ride.status != Ride.STATUS_REQUESTED:
+            return Response(
+                {"error": "Cannot cancel a ride that is already ongoing or completed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ride.status = Ride.STATUS_CANCELLED
+        ride.save(update_fields=["status"])
+
+        return Response({"message": "Ride cancelled successfully."}, status=status.HTTP_200_OK)
+
+##urls.py##
+# your_app/urls.py
+from django.urls import path
+from .views import CompleteRideView, CancelRideView
+
+urlpatterns = [
+    path("api/ride/complete/<int:ride_id>/", CompleteRideView.as_view(), name="ride-complete"),
+    path("api/ride/cancel/<int:ride_id>/", CancelRideView.as_view(), name="ride-cancel"),
+]
+
+✅ Flow & Business Logic
+Complete Ride (Driver only)
+POST /api/ride/complete/42/
+✔ Allowed if:
+Logged-in user is the assigned driver
+Ride status is ONGOING
+
+Response
+{ "message": "Ride marked as completed." }
+
+Failure
+{ "error": "Only ongoing rides can be completed." }
+
+Cancel Ride (Rider only)
+POST /api/ride/cancel/42/
+✔ Allowed if:
+Logged-in user is the booking rider
+Ride status is REQUESTED
+
+Response
+{ "message": "Ride cancelled successfully." }
+
+Failure
+{ "error": "Cannot cancel a ride that is already ongoing or completed."}
