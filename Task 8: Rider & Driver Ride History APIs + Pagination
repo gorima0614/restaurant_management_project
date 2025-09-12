@@ -1,0 +1,104 @@
+##settings.py(Pagination Setup)##
+# settings.py
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+##serializers.py##
+# your_app/serializers.py
+from rest_framework import serializers
+from .models import Ride
+
+
+class RideHistorySerializer(serializers.ModelSerializer):
+    driver = serializers.CharField(source="driver.user.username", default=None, read_only=True)
+    rider = serializers.CharField(source="rider.user.username", default=None, read_only=True)
+
+    class Meta:
+        model = Ride
+        fields = ["pickup", "drop", "status", "requested_at", "driver", "rider"]
+
+
+##views.py##
+# your_app/views.py
+from rest_framework import generics, permissions
+from .models import Ride
+from .serializers import RideHistorySerializer
+
+
+class RiderHistoryView(generics.ListAPIView):
+    """
+    GET /api/rider/history/
+    Returns completed or canceled rides for the logged-in rider.
+    """
+    serializer_class = RideHistorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        rider = getattr(self.request.user, "rider", None)
+        return Ride.objects.filter(
+            rider=rider,
+            status__in=[Ride.STATUS_COMPLETED, Ride.STATUS_CANCELLED]
+        ).order_by("-requested_at")
+
+
+class DriverHistoryView(generics.ListAPIView):
+    """
+    GET /api/driver/history/
+    Returns completed or canceled rides for the logged-in driver.
+    """
+    serializer_class = RideHistorySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        driver = getattr(self.request.user, "driver_profile", None)
+        return Ride.objects.filter(
+            driver=driver,
+            status__in=[Ride.STATUS_COMPLETED, Ride.STATUS_CANCELLED]
+        ).order_by("-requested_at")
+
+
+##urls.py##
+# your_app/urls.py
+from django.urls import path
+from .views import RiderHistoryView, DriverHistoryView
+
+urlpatterns = [
+    path("api/rider/history/", RiderHistoryView.as_view(), name="rider-history"),
+    path("api/driver/history/", DriverHistoryView.as_view(), name="driver-history"),
+]
+
+✅ Example Response
+Request
+GET /api/rider/history/?page=1
+Authorization: Bearer <jwt_token>
+
+Response
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "pickup": "Koramangala",
+      "drop": "MG Road",
+      "status": "COMPLETED",
+      "requested_at": "2025-07-10T14:10:00Z",
+      "driver": "driver007",
+      "rider": "rider123"
+    },
+    {
+      "pickup": "Indiranagar",
+      "drop": "Whitefield",
+      "status": "CANCELLED",
+      "requested_at": "2025-07-08T19:05:00Z",
+      "driver": null,
+      "rider": "rider123"
+    }
+  ]
+}
+
