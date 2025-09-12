@@ -1,0 +1,124 @@
+##models.py (Driver with live coordinates)##
+# your_app/models.py
+from django.db import models
+from django.conf import settings
+
+class Driver(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="driver_profile")
+    current_latitude = models.FloatField(null=True, blank=True)
+    current_longitude = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Driver {self.user.username}"
+
+##serializers.py##
+# your_app/serializers.py
+from rest_framework import serializers
+from .models import Driver
+
+class DriverLocationUpdateSerializer(serializers.ModelSerializer):
+    latitude = serializers.FloatField(write_only=True)
+    longitude = serializers.FloatField(write_only=True)
+
+    class Meta:
+        model = Driver
+        fields = ("latitude", "longitude")
+
+    def update(self, instance, validated_data):
+        instance.current_latitude = validated_data["latitude"]
+        instance.current_longitude = validated_data["longitude"]
+        instance.save(update_fields=["current_latitude", "current_longitude"])
+        return instance
+
+
+##views.py##
+# your_app/views.py
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+
+from .models import Driver, Ride
+from .serializers import DriverLocationUpdateSerializer
+
+class DriverLocationUpdateView(APIView):
+    """
+    POST /api/ride/update-location/
+    Drivers send live GPS updates.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # Ensure the user is a driver
+        driver = getattr(request.user, "driver_profile", None)
+        if driver is None:
+            return Response({"error": "Only drivers can update location."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = DriverLocationUpdateSerializer(driver, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({"message": "Location updated successfully."}, status=status.HTTP_200_OK)
+
+
+class RideTrackingView(APIView):
+    """
+    GET /api/ride/track/<ride_id>/
+    Rider fetches driver's current location during ONGOING rides.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, ride_id, *args, **kwargs):
+        ride = get_object_or_404(Ride, pk=ride_id)
+
+        # Ensure ride is ONGOING
+        if ride.status != Ride.STATUS_ONGOING:
+            return Response({"error": "Tracking is only available for ongoing rides."},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Ensure requester is the rider (or driver themselves)
+        is_rider = request.user == getattr(ride.rider, "user", None)
+        is_driver = request.user == getattr(ride.driver.user, None) if ride.driver else False
+
+        if not (is_rider or is_driver):
+            return Response({"error": "You are not authorized to track this ride."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        driver = ride.driver
+        if not driver or driver.current_latitude is None or driver.current_longitude is None:
+            return Response({"error": "Driver location not available."}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({
+            "driver_latitude": driver.current_latitude,
+            "driver_longitude": driver.current_longitude
+        }, status=status.HTTP_200_OK)
+
+#urls.py##
+# your_app/urls.py
+from django.urls import path
+from .views import DriverLocationUpdateView, RideTrackingView
+
+urlpatterns = [
+    path("api/ride/update-location/", DriverLocationUpdateView.as_view(), name="driver-update-location"),
+    path("api/ride/track/<int:ride_id>/", RideTrackingView.as_view(), name="ride-tracking"),
+]
+
+✅ Flow
+Driver sends location updates
+POST /api/ride/update-location/
+{
+  "latitude": 12.9321,
+  "longitude": 77.6103
+}
+
+Response:
+{ "message": "Location updated successfully." }
+
+Rider tracks the driver
+GET /api/ride/track/42/
+{
+  "driver_latitude": 12.9321,
+  "driver_longitude": 77.6103
+}
+
