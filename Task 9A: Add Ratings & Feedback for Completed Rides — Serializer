@@ -1,0 +1,86 @@
+##models.py(Ride feedback model)##
+# your_app/models.py
+from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
+
+class RideFeedback(models.Model):
+    ride = models.ForeignKey("Ride", on_delete=models.CASCADE, related_name="feedbacks")
+    submitted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField(blank=True)
+    is_driver = models.BooleanField()  # True if feedback is from driver
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("ride", "submitted_by")  # prevent duplicate feedbacks
+
+    def __str__(self):
+        return f"Feedback for Ride {self.ride.id} by {self.submitted_by.username}"
+
+##serializer.py(Ride FeedbacK Serializer with validation)##
+# your_app/serializers.py
+from rest_framework import serializers
+from .models import RideFeedback, Ride
+
+
+class RideFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RideFeedback
+        fields = ["rating", "comment"]
+
+    def validate(self, data):
+        request = self.context["request"]
+        ride_id = self.context.get("ride_id")
+        user = request.user
+
+        # Ensure ride exists
+        try:
+            ride = Ride.objects.get(id=ride_id)
+        except Ride.DoesNotExist:
+            raise serializers.ValidationError({"error": "Ride does not exist."})
+
+        # Ensure ride is completed
+        if ride.status != Ride.STATUS_COMPLETED:
+            raise serializers.ValidationError({"error": "Ride is not completed yet."})
+
+        # Ensure user is rider or driver of this ride
+        is_driver = False
+        if hasattr(user, "driver_profile") and ride.driver == user.driver_profile:
+            is_driver = True
+        elif hasattr(user, "rider") and ride.rider == user.rider:
+            is_driver = False
+        else:
+            raise serializers.ValidationError({"error": "You are not part of this ride."})
+
+        # Ensure feedback not already submitted
+        if RideFeedback.objects.filter(ride=ride, submitted_by=user).exists():
+            raise serializers.ValidationError({"error": "Feedback already submitted."})
+
+        # Attach extra validated info
+        data["ride"] = ride
+        data["submitted_by"] = user
+        data["is_driver"] = is_driver
+        return data
+
+    def create(self, validated_data):
+        return RideFeedback.objects.create(**validated_data)
+
+✅ Sample Request
+POST /api/ride/feedback/42/
+Authorization: Bearer <jwt_token>
+{
+  "rating": 4,
+  "comment": "Rider was friendly"
+}
+
+On Success
+{
+  "rating": 4,
+  "comment": "Rider was friendly"
+}
+
+Error Example (Ride not completed)
+{
+  "error": "Ride is not completed yet."
+}
