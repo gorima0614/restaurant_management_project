@@ -1,0 +1,181 @@
+##models.py##
+# your_app/models.py
+from django.db import models
+from django.conf import settings
+
+class Ride(models.Model):
+    STATUS_REQUESTED = "REQUESTED"
+    STATUS_ONGOING = "ONGOING"
+    STATUS_COMPLETED = "COMPLETED"
+    STATUS_CANCELLED = "CANCELLED"
+
+    STATUS_CHOICES = [
+        (STATUS_REQUESTED, "Requested"),
+        (STATUS_ONGOING, "Ongoing"),
+        (STATUS_COMPLETED, "Completed"),
+        (STATUS_CANCELLED, "Cancelled"),
+    ]
+
+    # Assumes you have Rider and Driver models. If instead you attach to User with roles,
+    # replace these foreign keys with settings.AUTH_USER_MODEL and handle role checks in views.
+    rider = models.ForeignKey("your_app.Rider", on_delete=models.CASCADE, related_name="rides")
+    driver = models.ForeignKey("your_app.Driver", on_delete=models.SET_NULL, null=True, blank=True, related_name="rides")
+
+    pickup_address = models.CharField(max_length=512)
+    dropoff_address = models.CharField(max_length=512)
+
+    pickup_lat = models.DecimalField(max_digits=9, decimal_places=6)
+    pickup_lng = models.DecimalField(max_digits=9, decimal_places=6)
+    drop_lat = models.DecimalField(max_digits=9, decimal_places=6)
+    drop_lng = models.DecimalField(max_digits=9, decimal_places=6)
+
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_REQUESTED)
+
+    requested_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["status", "requested_at"]),
+        ]
+
+    def __str__(self):
+        return f"Ride {self.pk} by {self.rider} ({self.status})"
+
+##serializers.py##
+# your_app/serializers.py
+from rest_framework import serializers
+from .models import Ride
+
+class RideCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ride
+        # rider/driver/status are set by the view, not from client
+        fields = ("pickup_address", "dropoff_address", "pickup_lat", "pickup_lng", "drop_lat", "drop_lng")
+
+    def validate(self, attrs):
+        # Example validation: lat/lng bounds
+        for lat_field in ("pickup_lat", "drop_lat"):
+            if not (-90 <= float(attrs[lat_field]) <= 90):
+                raise serializers.ValidationError({lat_field: "Latitude must be between -90 and 90."})
+        for lng_field in ("pickup_lng", "drop_lng"):
+            if not (-180 <= float(attrs[lng_field]) <= 180):
+                raise serializers.ValidationError({lng_field: "Longitude must be between -180 and 180."})
+        return attrs
+
+class RideSerializer(serializers.ModelSerializer):
+    rider = serializers.StringRelatedField()
+    driver = serializers.StringRelatedField(allow_null=True)
+
+    class Meta:
+        model = Ride
+        fields = ("id", "rider", "driver", "pickup_address", "dropoff_address",
+                  "pickup_lat", "pickup_lng", "drop_lat", "drop_lng",
+                  "status", "requested_at", "updated_at")
+
+##views.py##
+# your_app/views.py
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from django.db import transaction, DatabaseError
+
+from .models import Ride
+from .serializers import RideCreateSerializer, RideSerializer
+
+# NOTE: adapt how you identify Rider/Driver from request.user.
+# Two common patterns:
+# 1) User has OneToOne fields: request.user.rider and request.user.driver (preferred)
+# 2) Separate Rider/Driver user model — update the code below accordingly.
+
+class RideRequestView(APIView):
+    """
+    POST /api/ride/request/
+    Rider requests a new ride.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+
+        # Resolve Rider object from request.user
+        rider = getattr(user, "rider", None)
+        if rider is None:
+            return Response({"error": "Only riders can request rides."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = RideCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        ride = serializer.save(rider=rider, status=Ride.STATUS_REQUESTED)
+
+        out = RideSerializer(ride, context={"request": request})
+        return Response(out.data, status=status.HTTP_201_CREATED)
+
+
+class AvailableRidesView(APIView):
+    """
+    GET /api/ride/available/
+    Drivers can fetch rides with status REQUESTED and no driver assigned.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        # Ensure requester is a driver
+        driver = getattr(user, "driver", None)
+        if driver is None:
+            return Response({"error": "Only drivers can view available rides."}, status=status.HTTP_403_FORBIDDEN)
+
+        rides = Ride.objects.filter(status=Ride.STATUS_REQUESTED, driver__isnull=True).order_by("requested_at")
+        serializer = RideSerializer(rides, many=True, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AcceptRideView(APIView):
+    """
+    POST /api/ride/accept/<ride_id>/
+    Driver accepts a ride. Only the first driver to accept will get assigned (transactional).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, ride_id, *args, **kwargs):
+        user = request.user
+        driver = getattr(user, "driver", None)
+        if driver is None:
+            return Response({"error": "Only drivers can accept rides."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Use a DB transaction and select_for_update to avoid race conditions.
+        try:
+            with transaction.atomic():
+                # lock the row for this ride
+                ride = get_object_or_404(Ride.objects.select_for_update(), pk=ride_id)
+
+                if ride.status != Ride.STATUS_REQUESTED or ride.driver is not None:
+                    return Response({"error": "Ride already accepted or not available."},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+                # assign driver and set status
+                ride.driver = driver
+                ride.status = Ride.STATUS_ONGOING
+                ride.save()
+
+                out = RideSerializer(ride, context={"request": request})
+                return Response(out.data, status=status.HTTP_200_OK)
+
+        except DatabaseError:
+            # Could happen if DB lock failed or similar race — treat as already accepted.
+            return Response({"error": "Ride already accepted."}, status=status.HTTP_400_BAD_REQUEST)
+
+##urls.py##
+# your_app/urls.py
+from django.urls import path
+from .views import RideRequestView, AvailableRidesView, AcceptRideView
+
+urlpatterns = [
+    path('api/ride/request/', RideRequestView.as_view(), name='ride-request'),
+    path('api/ride/available/', AvailableRidesView.as_view(), name='ride-available'),
+    path('api/ride/accept/<int:ride_id>/', AcceptRideView.as_view(), name='ride-accept'),
+]
+
