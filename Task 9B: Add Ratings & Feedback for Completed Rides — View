@@ -1,0 +1,92 @@
+# views.py
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+
+from django.db import IntegrityError
+
+# Replace these imports with your actual model & serializer names
+from your_app.models import Ride, RideFeedback  # or Feedback
+from your_app.serializers import RideFeedbackSerializer
+
+class RideFeedbackView(APIView):
+    """
+    POST /api/ride/feedback/<ride_id>/
+    Body: { "rating": 1-5, "comment": "optional text" }
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, ride_id, *args, **kwargs):
+        user = request.user
+
+        # 1) Validate ride exists
+        ride = get_object_or_404(Ride, pk=ride_id)
+
+        # 2) Ensure ride is COMPLETED
+        # Adjust check depending on how you store ride status (string vs choices enum)
+        ride_status = getattr(ride, "status", None)
+        # Accept either exact 'COMPLETED' or a status constant if your Ride model defines one
+        completed_values = {"COMPLETED"}
+        # If your model has a constant like Ride.STATUS_COMPLETED, include it:
+        if hasattr(Ride, "STATUS_COMPLETED"):
+            completed_values.add(getattr(Ride, "STATUS_COMPLETED"))
+
+        if str(ride_status) not in completed_values:
+            return Response(
+                {"error": "Feedback can only be submitted for completed rides."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 3) Ensure request.user is either rider or driver for that ride
+        is_rider = (user == getattr(ride, "rider", None))
+        is_driver = (user == getattr(ride, "driver", None))
+
+        if not (is_rider or is_driver):
+            return Response(
+                {"error": "You are not authorized to submit feedback for this ride."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 4) Check if feedback from this user already exists for this ride
+        already_submitted = RideFeedback.objects.filter(ride=ride, submitted_by=user).exists()
+        if already_submitted:
+            return Response(
+                {"error": "You have already submitted feedback for this ride."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 5) Validate & save through serializer, setting ride, submitted_by, is_driver
+        serializer = RideFeedbackSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            feedback = serializer.save(
+                ride=ride,
+                submitted_by=user,
+                is_driver=is_driver
+            )
+        except IntegrityError:
+            # In case your DB has unique constraints (race condition), handle gracefully
+            return Response(
+                {"error": "You have already submitted feedback for this ride."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return Response({"message": "Feedback submitted successfully."}, status=status.HTTP_201_CREATED)
+
+And add the URL route:
+
+# urls.py
+from django.urls import path
+from your_app.views import RideFeedbackView
+
+urlpatterns = [
+    path('api/ride/feedback/<int:ride_id>/', RideFeedbackView.as_view(), name='ride-feedback'),
+]
+
+class RideFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RideFeedback
+        fields = ('rating', 'comment')  # ride/submitted_by/is_driver set by view
