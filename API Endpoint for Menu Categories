@@ -1,0 +1,60 @@
+1. Install DRF
+Run this in your terminal (if not already installed):
+pip install djangorestframework
+
+2. Create a serializer for MenuCategory
+File: home/serializers.py
+from rest_framework import serializers
+from .models import MenuCategory
+
+class MenuCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuCategory
+        fields = ['id', 'name']  # include 'id' for unique keys in frontend
+
+3. Create the ListAPIView in home/views.py
+from rest_framework.generics import ListAPIView
+from .models import MenuCategory
+from .serializers import MenuCategorySerializer
+
+class MenuCategoryListView(ListAPIView):
+    queryset = MenuCategory.objects.all()
+    serializer_class = MenuCategorySerializer
+
+4. Add URL route in home/urls.py
+If you don’t already have urls.py inside home/, create one:
+
+from django.urls import path
+from .views import MenuCategoryListView
+
+urlpatterns = [
+    path('categories/', MenuCategoryListView.as_view(), name='menu-categories'),
+]
+
+5. Include home.urls in your project-level urls.py
+Project’s urls.py (e.g., mysite/urls.py):
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('home.urls')),  # prefix API routes
+]
+
+✅ Final Test
+Start your server:
+
+python manage.py runserver
+
+Visit:
+http://127.0.0.1:8000/api/categories/
+
+You should get JSON like:
+
+[
+  {"id": 1, "name": "Starters"},
+  {"id": 2, "name": "Main Course"},
+  {"id": 3, "name": "Desserts"}
+]
+
