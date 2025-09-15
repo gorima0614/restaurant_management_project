@@ -1,0 +1,53 @@
+1. Update orders/models.py
+Here’s an example assuming you already have an Order model:
+
+from django.db import models
+class OrderStatus(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = "Order Status"
+        verbose_name_plural = "Order Statuses"
+
+    def __str__(self):
+        return self.name
+
+class Order(models.Model):
+    customer_name = models.CharField(max_length=100)   # Example field
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    # New field: link Order → OrderStatus
+    status = models.ForeignKey(
+        OrderStatus,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders"
+    )
+
+    def __str__(self):
+        return f"Order #{self.id} - {self.customer_name}"
+
+2. Run migrations
+Generate and apply migrations:
+
+python manage.py makemigrations orders
+python manage.py migrate
+
+3. Example usage in Django shell
+python manage.py shell
+
+from orders.models import Order, OrderStatus
+
+# Fetch a status
+pending = OrderStatus.objects.get(name="Pending")
+
+# Create an order with status
+order = Order.objects.create(
+    customer_name="Alice",
+    total_amount=250.00,
+    status=pending
+)
+
+print(order.status.name)  # Output: "Pending"
