@@ -1,0 +1,45 @@
+1. Create file: orders/utils.py
+import string
+import secrets
+from .models import Coupon  # Assuming you have a Coupon model
+
+def generate_coupon_code(length=10):
+    """
+    Generate a unique alphanumeric coupon code.
+    :param length: Length of the coupon code (default=10)
+    :return: Unique alphanumeric string
+    """
+    characters = string.ascii_uppercase + string.digits  # A-Z and 0-9
+
+    while True:
+        # Generate a random string
+        code = ''.join(secrets.choice(characters) for _ in range(length))
+
+        # Check uniqueness against Coupon model
+        if not Coupon.objects.filter(code=code).exists():
+            return code
+
+2. Example usage inside your views/models
+If you have a Coupon model like this (example):
+
+# orders/models.py
+from django.db import models
+from .utils import generate_coupon_code
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=20, unique=True)
+    discount = models.DecimalField(max_digits=5, decimal_places=2)
+    active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:  # auto-generate code if not provided
+            self.code = generate_coupon_code()
+        super().save(*args, **kwargs)
+
+3. Example test (Django shell)
+Run:
+
+python manage.py shell
+from orders.utils import generate_coupon_code
+print(generate_coupon_code())       # Default length 10
+print(generate_coupon_code(15))    # Custom length 15
