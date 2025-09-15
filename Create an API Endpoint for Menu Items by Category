@@ -1,0 +1,80 @@
+1. Example MenuItem model in menu/models.py
+(assuming you already have MenuCategory created in home/models.py)
+
+from django.db import models
+from home.models import MenuCategory
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    category = models.ForeignKey(MenuCategory, on_delete=models.CASCADE, related_name="menu_items")
+
+    def __str__(self):
+        return self.name
+
+2. Create MenuItem serializer in menu/serializers.py
+from rest_framework import serializers
+from .models import MenuItem
+
+class MenuItemSerializer(serializers.ModelSerializer):
+    category = serializers.StringRelatedField()  # shows category name instead of ID
+
+    class Meta:
+        model = MenuItem
+        fields = ["id", "name", "description", "price", "category"]
+
+3. Create API view in menu/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import MenuItem
+from .serializers import MenuItemSerializer
+
+class MenuItemByCategoryView(APIView):
+    def get(self, request):
+        category_name = request.query_params.get("category")
+
+        if not category_name:
+            return Response({"error": "Category parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        items = MenuItem.objects.filter(category__name__iexact=category_name)
+        serializer = MenuItemSerializer(items, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+4. Add URL route in menu/urls.py
+from django.urls import path
+from .views import MenuItemByCategoryView
+
+urlpatterns = [
+    path("items-by-category/", MenuItemByCategoryView.as_view(), name="items-by-category"),
+]
+
+5. Project-level urls.py (ensure menu routes are included)
+from django.urls import path, include
+
+urlpatterns = [
+    path("api/menu/", include("menu.urls")),
+]
+
+✅ Example request
+GET http://127.0.0.1:8000/api/menu/items-by-category/?category=Desserts
+
+Response
+[
+  {
+    "id": 3,
+    "name": "Chocolate Cake",
+    "description": "Rich and moist cake with dark chocolate",
+    "price": "250.00",
+    "category": "Desserts"
+  },
+  {
+    "id": 4,
+    "name": "Ice Cream",
+    "description": "Vanilla scoop with toppings",
+    "price": "150.00",
+    "category": "Desserts"
+  }
+]
