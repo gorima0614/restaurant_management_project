@@ -1,0 +1,66 @@
+1. Create the model in orders/models.py
+from django.db import models
+
+class OrderStatus(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = "Order Status"
+        verbose_name_plural = "Order Statuses"
+
+    def __str__(self):
+        return self.name
+
+2. Add example statuses in orders/init.py
+We’ll define constants so they can be reused across your project:
+
+# orders/__init__.py
+
+PENDING = "Pending"
+PROCESSING = "Processing"
+COMPLETED = "Completed"
+CANCELLED = "Cancelled"
+
+ORDER_STATUS_CHOICES = [
+    PENDING,
+    PROCESSING,
+    COMPLETED,
+    CANCELLED,
+]
+
+3. Run migrations
+In terminal:
+
+python manage.py makemigrations orders
+python manage.py migrate
+
+4. (Optional) Pre-populate statuses
+If you want the statuses (Pending, Processing, etc.) to exist automatically in the database, you can create a data migration or override ready() in apps.py.
+Simple option → create a Django data migration:
+
+python manage.py makemigrations --empty orders
+
+Inside the new migration file:
+
+from django.db import migrations
+
+def create_order_statuses(apps, schema_editor):
+    OrderStatus = apps.get_model('orders', 'OrderStatus')
+    statuses = ["Pending", "Processing", "Completed", "Cancelled"]
+    for status in statuses:
+        OrderStatus.objects.get_or_create(name=status)
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('orders', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.RunPython(create_order_statuses),
+    ]
+
+
+Then run:
+
+python manage.py migrate
