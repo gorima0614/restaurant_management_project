@@ -1,0 +1,60 @@
+1. Update orders/models.py
+We’ll add a custom manager.
+
+from django.db import models
+from django.contrib.auth.models import User
+
+# Assuming you already have this from earlier tasks
+class OrderStatus(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = "Order Status"
+        verbose_name_plural = "Order Statuses"
+
+    def __str__(self):
+        return self.name
+
+
+class ActiveOrderManager(models.Manager):
+    def get_active_orders(self):
+        """
+        Return orders with status = 'Pending' or 'Processing'
+        """
+        return self.filter(status__name__in=["Pending", "Processing"])
+
+
+class Order(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.ForeignKey(OrderStatus, on_delete=models.SET_NULL, null=True, blank=True)
+
+    # Attach the custom manager
+    objects = ActiveOrderManager()
+
+    def __str__(self):
+        return f"Order #{self.id} - {self.user.username} ({self.status})"
+
+2. Run migrations (if needed)
+python manage.py makemigrations orders
+python manage.py migrate
+
+3. Test in Django shell
+python manage.py shell
+
+from orders.models import Order, OrderStatus
+
+# Example setup (only once)
+pending = OrderStatus.objects.get_or_create(name="Pending")[0]
+processing = OrderStatus.objects.get_or_create(name="Processing")[0]
+completed = OrderStatus.objects.get_or_create(name="Completed")[0]
+
+# Create some orders
+Order.objects.create(user_id=1, total_amount=250, status=pending)
+Order.objects.create(user_id=1, total_amount=500, status=processing)
+Order.objects.create(user_id=1, total_amount=750, status=completed)
+
+# Get only active orders
+active_orders = Order.objects.get_active_orders()
+print(active_orders)  # Should show only "Pending" and "Processing"
