@@ -1,0 +1,46 @@
+1. Update models.py (e.g., restaurant/models.py)
+from django.db import models
+
+class Restaurant(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.TextField()
+    phone = models.CharField(max_length=20)
+    # New field for operating days
+    operating_days = models.CharField(
+        max_length=100,
+        help_text="Comma-separated list of operating days (e.g., Mon,Tue,Wed,Thu,Fri)"
+    )
+
+    def __str__(self):
+        return self.name
+
+    def get_operating_days_list(self):
+        """
+        Returns operating days as a Python list.
+        Example: 'Mon,Tue,Wed' -> ['Mon', 'Tue', 'Wed']
+        """
+        return [day.strip() for day in self.operating_days.split(",") if day.strip()]
+
+2. Run migrations
+
+Generate and apply migrations:
+
+python manage.py makemigrations
+python manage.py migrate
+
+3. Test in Django shell
+python manage.py shell
+
+from restaurant.models import Restaurant
+
+# Create a restaurant with operating days
+r = Restaurant.objects.create(
+    name="Pizza Palace",
+    address="123 Main Street",
+    phone="9876543210",
+    operating_days="Mon,Tue,Wed,Thu,Fri,Sat"
+)
+
+# Fetch and test
+print(r.operating_days)          # "Mon,Tue,Wed,Thu,Fri,Sat"
+print(r.get_operating_days_list())  # ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
