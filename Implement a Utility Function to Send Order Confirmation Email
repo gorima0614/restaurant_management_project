@@ -1,0 +1,80 @@
+1. Create utility file — orders/utils.py
+Add the following function (or extend your existing utils.py):
+
+from django.core.mail import send_mail, BadHeaderError
+from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
+
+def send_order_confirmation_email(order_id, customer_email, customer_name=None, total_price=None):
+    """
+    Sends an order confirmation email to the customer.
+    
+    Args:
+        order_id (int): The ID of the order
+        customer_email (str): Recipient's email address
+        customer_name (str, optional): Customer's name for personalization
+        total_price (float, optional): Total order price
+    Returns:
+        bool: True if email sent successfully, False otherwise
+    """
+    subject = f"Order Confirmation - Order #{order_id}"
+    
+    message = f"Hello {customer_name or 'Customer'},\n\n"
+    message += f"Thank you for your order!\nYour order ID is {order_id}.\n"
+    
+    if total_price is not None:
+        message += f"Total Price: ₹{total_price}\n"
+    
+    message += "\nWe are processing your order and will notify you once it’s on the way.\n\n"
+    message += "Best regards,\nThe Restaurant Team"
+    
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,  # sender from settings.py
+            [customer_email],
+            fail_silently=False,
+        )
+        return True
+    except BadHeaderError:
+        logger.error(f"Invalid header found when sending email for Order #{order_id}")
+    except Exception as e:
+        logger.error(f"Error sending email for Order #{order_id}: {e}")
+    
+    return False
+
+2. Configure email backend in settings.py
+For development, you can use Django’s console backend:
+
+# settings.py
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@myrestaurant.com"
+
+
+For real SMTP (e.g., Gmail, SendGrid, etc.), configure like this:
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "your_email@gmail.com"
+EMAIL_HOST_PASSWORD = "your_password_or_app_password"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+3. Example usage (e.g., in a view after order creation)
+from orders.utils import send_order_confirmation_email
+
+def confirm_order(request, order):
+    success = send_order_confirmation_email(
+        order_id=order.id,
+        customer_email=order.user.email,
+        customer_name=order.user.get_full_name(),
+        total_price=order.total_price,
+    )
+    if success:
+        print("Confirmation email sent successfully!")
+    else:
+        print("Failed to send confirmation email.")
