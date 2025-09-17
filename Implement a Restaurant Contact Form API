@@ -1,0 +1,73 @@
+1. Create the Model (home/models.py)
+from django.db import models
+
+class ContactFormSubmission(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.email})"
+
+2. Create the Serializer (home/serializers.py)
+from rest_framework import serializers
+from .models import ContactFormSubmission
+
+class ContactFormSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactFormSubmission
+        fields = ["id", "name", "email", "message", "submitted_at"]
+        read_only_fields = ["id", "submitted_at"]
+
+3. Create the API View (home/views.py)
+from rest_framework import generics, status
+from rest_framework.response import Response
+from .models import ContactFormSubmission
+from .serializers import ContactFormSubmissionSerializer
+
+class ContactFormSubmissionView(generics.CreateAPIView):
+    queryset = ContactFormSubmission.objects.all()
+    serializer_class = ContactFormSubmissionSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Contact form submitted successfully."},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+4. Add URL (home/urls.py)
+from django.urls import path
+from .views import ContactFormSubmissionView
+
+urlpatterns = [
+    path("contact/submit/", ContactFormSubmissionView.as_view(), name="contact-submit"),
+]
+
+
+✅ Usage Example
+POST /contact/submit/
+Request Body:
+
+{
+  "name": "Alice",
+  "email": "alice@example.com",
+  "message": "Hello, I’d like to know more about your services."
+}
+
+Response (201 Created):
+
+{
+  "message": "Contact form submitted successfully."
+}
+
+Error Example (invalid email):
+
+{
+  "email": ["Enter a valid email address."]
+}
