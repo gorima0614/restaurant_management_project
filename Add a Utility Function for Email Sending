@@ -1,0 +1,89 @@
+1. Create utils.py in your app (e.g., home/utils.py)
+from django.core.mail import send_mail, BadHeaderError
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.conf import settings
+
+def send_email_util(recipient_email, subject, message_body):
+    """
+    Reusable utility function to send emails.
+    Args:
+        recipient_email (str): The recipient's email address.
+        subject (str): Subject of the email.
+        message_body (str): Body content of the email.
+
+    Returns:
+        bool: True if sent successfully, False otherwise.
+    """
+    try:
+        # Validate recipient email
+        validate_email(recipient_email)
+
+        send_mail(
+            subject,
+            message_body,
+            settings.DEFAULT_FROM_EMAIL,  # must be set in settings.py
+            [recipient_email],
+            fail_silently=False,
+        )
+        return True
+    except ValidationError:
+        print(f"Invalid email address: {recipient_email}")
+    except BadHeaderError:
+        print("Invalid header found.")
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
+    return False
+
+2. Configure Email Settings in settings.py
+Example using console backend (for dev/testing):
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@example.com"
+
+For production (e.g., Gmail SMTP):
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "your_email@gmail.com"
+EMAIL_HOST_PASSWORD = "your_app_password"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+3. Use the Utility in a View (e.g., orders/views.py)
+from rest_framework.response import Response
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from .models import Order
+from .serializers import OrderSerializer
+from home.utils import send_email_util
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+    @action(detail=True, methods=["post"], url_path="notify")
+    def notify_customer(self, request, pk=None):
+        order = self.get_object()
+        recipient = request.data.get("email")
+
+        subject = f"Order Update - Order #{order.id}"
+        message = f"Dear {order.customer_name},\n\nYour order status is: {order.status}."
+
+        if send_email_util(recipient, subject, message):
+            return Response({"message": "Email sent successfully"}, status=status.HTTP_200_OK)
+        return Response({"error": "Failed to send email"}, status=status.HTTP_400_BAD_REQUEST)
+
+4. Example API Request
+POST /orders/1/notify/
+
+{
+  "email": "customer@example.com"
+}
+
+
+✅ Response:
+
+{"message": "Email sent successfully"}
