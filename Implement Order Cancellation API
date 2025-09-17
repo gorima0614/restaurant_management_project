@@ -1,0 +1,132 @@
+1. Update orders/models.py
+from django.db import models
+from decimal import Decimal
+from home.models import MenuItem
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Processing", "Processing"),
+        ("Cancelled", "Cancelled"),
+        ("Completed", "Completed"),
+    ]
+
+    customer_name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+
+    def calculate_total(self):
+        total = Decimal("0.00")
+        for item in self.order_items.all():
+            total += item.price * item.quantity
+        return total
+
+    def __str__(self):
+        return f"Order {self.id} - {self.customer_name} ({self.status})"
+
+2. Create View for Cancelling Orders (orders/views.py)
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import Order
+from .serializers import OrderSerializer
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+    @action(detail=True, methods=["delete"], url_path="cancel")
+    def cancel_order(self, request, pk=None):
+        try:
+            order = self.get_object()
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Example: check if the user is allowed to cancel (assuming customer_name)
+        customer_name = request.data.get("customer_name")
+        if customer_name and order.customer_name != customer_name:
+            return Response({"error": "You cannot cancel someone else's order."}, status=status.HTTP_403_FORBIDDEN)
+
+        if order.status == "Cancelled":
+            return Response({"message": "Order is already cancelled."}, status=status.HTTP_200_OK)
+
+        order.status = "Cancelled"
+        order.save()
+        return Response({"message": f"Order {order.id} cancelled successfully."}, status=status.HTTP_200_OK)
+
+3. Update orders/serializers.py
+from rest_framework import serializers
+from .models import Order, OrderItem
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ["id", "menu_item", "quantity", "price"]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    order_items = OrderItemSerializer(many=True, read_only=True)
+    total = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = ["id", "customer_name", "status", "created_at", "order_items", "total"]
+
+    def get_total(self, obj):
+        return obj.calculate_total()
+
+4. Update orders/urls.py
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import OrderViewSet
+
+router = DefaultRouter()
+router.register(r"orders", OrderViewSet, basename="order")
+
+urlpatterns = [
+    path("", include(router.urls)),
+]
+
+5. Test the Cancel API (orders/tests.py)
+from django.test import TestCase
+from rest_framework.test import APIClient
+from rest_framework import status
+from .models import Order
+
+
+class CancelOrderAPITest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.order = Order.objects.create(customer_name="John Doe")
+
+    def test_cancel_order_success(self):
+        url = f"/orders/{self.order.id}/cancel/"
+        response = self.client.delete(url, {"customer_name": "John Doe"}, format="json")
+        self.order.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.order.status, "Cancelled")
+
+    def test_cancel_order_not_owner(self):
+        url = f"/orders/{self.order.id}/cancel/"
+        response = self.client.delete(url, {"customer_name": "Jane"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_cancel_nonexistent_order(self):
+        url = "/orders/999/cancel/"
+        response = self.client.delete(url, {"customer_name": "John Doe"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+✅ Usage
+
+Endpoint: DELETE /orders/<order_id>/cancel/
+
+Body:
+
+{
+  "customer_name": "John Doe"
+}
+
+
+Response:
+
+{"message": "Order 1 cancelled successfully."}
