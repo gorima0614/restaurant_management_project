@@ -1,0 +1,62 @@
+1. Create Utility Function (orders/utils.py)
+import string
+import secrets
+from .models import Order
+
+def generate_unique_order_id(length=8):
+    """
+    Generate a unique alphanumeric ID for orders.
+    Ensures no collisions by checking against existing IDs.
+    """
+    alphabet = string.ascii_uppercase + string.digits  # A-Z + 0-9
+
+    while True:
+        # Generate random ID
+        new_id = ''.join(secrets.choice(alphabet) for _ in range(length))
+
+        # Check uniqueness in DB
+        if not Order.objects.filter(order_id=new_id).exists():
+            return new_id
+
+2. Update the Order Model (orders/models.py)
+Add a order_id field that uses the utility function automatically when creating new orders.
+
+from django.db import models
+from decimal import Decimal
+from home.models import MenuItem
+from .utils import generate_unique_order_id
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Processing", "Processing"),
+        ("Cancelled", "Cancelled"),
+        ("Completed", "Completed"),
+    ]
+
+    order_id = models.CharField(max_length=12, unique=True, editable=False)
+    customer_name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
+
+    def save(self, *args, **kwargs):
+        if not self.order_id:
+            self.order_id = generate_unique_order_id()
+        super().save(*args, **kwargs)
+
+    def calculate_total(self):
+        total = Decimal("0.00")
+        for item in self.order_items.all():
+            total += item.price * item.quantity
+        return total
+
+    def __str__(self):
+        return f"Order {self.order_id} - {self.customer_name} ({self.status})"
+
+3. Example Usage
+Whenever you create a new order:
+
+from orders.models import Order
+order = Order.objects.create(customer_name="John Doe")
+print(order.order_id)  
+# Example: "X3F9A2B7"
