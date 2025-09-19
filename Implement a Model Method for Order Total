@@ -1,0 +1,75 @@
+✅ orders/models.py
+from django.db import models
+from django.conf import settings
+from home.models import MenuItem
+from .utils import calculate_discount   # import your discount utility
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    customer = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def calculate_total(self):
+        """
+        Calculate the total cost of this order, applying discounts if available.
+        """
+        total = 0
+        items = self.items.all()  # reverse relation from OrderItem (related_name="items")
+
+        for item in items:
+            item_total = item.menu_item.price * item.quantity
+            # Apply discount using utility
+            discounted_total = calculate_discount(item_total, item)
+            total += discounted_total
+
+        return total
+
+    def __str__(self):
+        return f"Order #{self.id} - {self.status}"
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
+    menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.menu_item.name}"
+
+✅ Example calculate_discount utility (orders/utils.py)
+def calculate_discount(item_total, order_item):
+    """
+    Apply discounts to an order item.
+    For example: Buy 2 get 10% off, or custom logic.
+    """
+    # Example: flat 10% off if quantity >= 3
+    if order_item.quantity >= 3:
+        return item_total * 0.9
+    return item_total
+
+✅ Testing in Django shell
+python manage.py shell
+
+from home.models import MenuItem
+from orders.models import Order, OrderItem
+
+# Create menu items
+pizza = MenuItem.objects.create(name="Pizza", price=200)
+pasta = MenuItem.objects.create(name="Pasta", price=150)
+
+# Create an order
+order = Order.objects.create(customer="Alice")
+
+# Add items
+OrderItem.objects.create(order=order, menu_item=pizza, quantity=2)
+OrderItem.objects.create(order=order, menu_item=pasta, quantity=3)  # gets discount
+
+# Calculate total
+print(order.calculate_total())  
+# Expected: (200*2) + (150*3 * 0.9) = 400 + 405 = 805
