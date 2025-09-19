@@ -1,0 +1,73 @@
+✅ 1. Update the MenuItem model (home/models.py)
+from django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    is_daily_special = models.BooleanField(default=False)  # NEW FIELD
+
+    def __str__(self):
+        return self.name
+
+✅ 2. Create a serializer (home/serializers.py)
+from rest_framework import serializers
+from .models import MenuItem
+
+class MenuItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuItem
+        fields = ["id", "name", "description", "price", "is_daily_special"]
+
+✅ 3. Create the view (home/views.py)
+from rest_framework import generics
+from .models import MenuItem
+from .serializers import MenuItemSerializer
+
+class DailySpecialsListView(generics.ListAPIView):
+    """
+    API endpoint that returns a list of daily specials.
+    """
+    serializer_class = MenuItemSerializer
+
+    def get_queryset(self):
+        return MenuItem.objects.filter(is_daily_special=True)
+
+✅ 4. Add the URL (home/urls.py)
+from django.urls import path
+from .views import DailySpecialsListView
+
+urlpatterns = [
+    path("daily-specials/", DailySpecialsListView.as_view(), name="daily-specials"),
+]
+
+✅ 5. Example API Response
+
+If you create some menu items in Django admin or shell:
+
+from home.models import MenuItem
+MenuItem.objects.create(name="Pasta", price=250, is_daily_special=True)
+MenuItem.objects.create(name="Burger", price=150, is_daily_special=False)
+MenuItem.objects.create(name="Soup", price=100, is_daily_special=True)
+
+Request:
+GET /home/daily-specials/
+
+Response:
+
+[
+    {
+        "id": 1,
+        "name": "Pasta",
+        "description": "",
+        "price": "250.00",
+        "is_daily_special": true
+    },
+    {
+        "id": 3,
+        "name": "Soup",
+        "description": "",
+        "price": "100.00",
+        "is_daily_special": true
+    }
+]
