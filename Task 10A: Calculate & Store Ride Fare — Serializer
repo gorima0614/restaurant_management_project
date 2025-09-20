@@ -1,0 +1,113 @@
+✅ 1. Update Ride Model (rides/models.py)
+from django.db import models
+from django.conf import settings
+
+class Ride(models.Model):
+    STATUS_CHOICES = [
+        ("REQUESTED", "Requested"),
+        ("ONGOING", "Ongoing"),
+        ("COMPLETED", "Completed"),
+        ("CANCELLED", "Cancelled"),
+    ]
+
+    rider = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="rides", on_delete=models.CASCADE)
+    driver = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="drives", on_delete=models.CASCADE)
+
+    pickup_lat = models.FloatField()
+    pickup_lng = models.FloatField()
+    drop_lat = models.FloatField()
+    drop_lng = models.FloatField()
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="REQUESTED")
+    fare = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Ride #{self.id} - {self.status}"
+
+✅ 2. Distance Calculation Utility (rides/utils.py)
+import math
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """
+    Haversine formula to calculate great-circle distance between two points in km.
+    """
+    R = 6371  # Earth radius in km
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    return R * c  # distance in km
+
+✅ 3. Serializer for Fare Calculation (rides/serializers.py)
+from rest_framework import serializers
+from decimal import Decimal
+from django.utils import timezone
+from .models import Ride
+from .utils import calculate_distance
+
+
+class RideFareSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ride
+        fields = ["id", "status", "fare"]
+
+    def calculate_fare(self, ride, surge_multiplier=1.0):
+        """
+        Calculate fare using:
+        fare = base_fare + (distance_km * per_km_rate) * surge_multiplier
+        """
+        base_fare = Decimal("50.00")
+        per_km_rate = Decimal("10.00")
+
+        distance_km = calculate_distance(
+            ride.pickup_lat,
+            ride.pickup_lng,
+            ride.drop_lat,
+            ride.drop_lng,
+        )
+
+        fare = base_fare + (Decimal(distance_km) * per_km_rate * Decimal(str(surge_multiplier)))
+        return fare.quantize(Decimal("0.01"))  # round to 2 decimals
+
+    def save(self, **kwargs):
+        ride = self.instance
+
+        # Edge Case 1: ride not completed
+        if ride.status != "COMPLETED":
+            raise serializers.ValidationError("Fare can only be calculated for completed rides.")
+
+        # Edge Case 2: fare already set
+        if ride.fare is not None:
+            raise serializers.ValidationError("Fare has already been calculated.")
+
+        # Surge multiplier (default 1.0, can be passed via context if needed)
+        surge_multiplier = self.context.get("surge_multiplier", 1.0)
+
+        ride.fare = self.calculate_fare(ride, surge_multiplier=surge_multiplier)
+        ride.save()
+        return ride
+
+✅ 4. Example Usage in Django Shell
+python manage.py shell
+
+from rides.models import Ride
+from rides.serializers import RideFareSerializer
+
+# Create a completed ride
+ride = Ride.objects.create(
+    rider_id=1, driver_id=2,
+    pickup_lat=28.7041, pickup_lng=77.1025,   # Delhi
+    drop_lat=28.5355, drop_lng=77.3910,       # Noida
+    status="COMPLETED"
+)
+
+# Calculate fare
+serializer = RideFareSerializer(instance=ride, context={"surge_multiplier": 1.5})
+ride = serializer.save()
+
+print(ride.fare)  # Example: 162.45
