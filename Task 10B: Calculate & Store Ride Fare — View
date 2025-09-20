@@ -1,0 +1,143 @@
+✅ 1. Ride Model (rides/models.py)
+(If you already have this, just ensure it has fare and status fields.)
+
+from django.db import models
+from django.conf import settings
+
+class Ride(models.Model):
+    STATUS_CHOICES = [
+        ('REQUESTED', 'Requested'),
+        ('ONGOING', 'Ongoing'),
+        ('COMPLETED', 'Completed'),
+        ('CANCELLED', 'Cancelled'),
+    ]
+
+    rider = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="rides", on_delete=models.CASCADE)
+    driver = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="drives", on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="REQUESTED")
+    fare = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Ride #{self.id} - {self.status}"
+
+✅ 2. Serializer (rides/serializers.py)
+This serializer contains the fare calculation logic.
+
+from rest_framework import serializers
+from decimal import Decimal
+from .models import Ride
+
+
+class RideFareSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ride
+        fields = ["id", "fare", "status"]
+
+    def calculate_fare(self, ride):
+        """
+        Business logic for calculating fare.
+        This could use distance, time, surge pricing, etc.
+        For demo: flat base fare + per km * 10
+        """
+        # Placeholder calculation
+        base_fare = Decimal("50.00")
+        distance_km = 10  # replace with actual ride distance
+        per_km_rate = Decimal("11.25")
+        return base_fare + (distance_km * per_km_rate)
+
+    def save(self, **kwargs):
+        ride = self.instance
+        if ride.fare is not None:
+            raise serializers.ValidationError("Fare already set.")
+        if ride.status != "COMPLETED":
+            raise serializers.ValidationError("Ride must be completed before fare calculation.")
+
+        ride.fare = self.calculate_fare(ride)
+        ride.save()
+        return ride
+
+✅ 3. Permissions (rides/permissions.py)
+
+Custom permission: only rider, driver, or admin can calculate fare.
+
+from rest_framework.permissions import BasePermission
+
+
+class IsRideParticipantOrAdmin(BasePermission):
+    """
+    Allow access if the user is the ride's rider, driver, or an admin.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            obj.rider == request.user
+            or obj.driver == request.user
+            or request.user.is_staff
+        )
+
+✅ 4. API View (rides/views.py)
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from django.shortcuts import get_object_or_404
+from .models import Ride
+from .serializers import RideFareSerializer
+from .permissions import IsRideParticipantOrAdmin
+
+
+class CalculateFareView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsRideParticipantOrAdmin]
+
+    def post(self, request, ride_id):
+        ride = get_object_or_404(Ride, id=ride_id)
+
+        # Check if user has permission
+        self.check_object_permissions(request, ride)
+
+        serializer = RideFareSerializer(instance=ride, context={"request": request})
+
+        try:
+            ride = serializer.save()
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+            {"fare": ride.fare, "message": "Fare calculated and saved."},
+            status=status.HTTP_200_OK,
+        )
+
+✅ 5. URL (rides/urls.py)
+from django.urls import path
+from .views import CalculateFareView
+
+urlpatterns = [
+    path("ride/calculate-fare/<int:ride_id>/", CalculateFareView.as_view(), name="calculate-fare"),
+]
+
+✅ 6. Example Usage
+Request
+POST /api/ride/calculate-fare/12/
+Authorization: Bearer <your-jwt-token>
+
+Success Response
+{
+  "fare": "162.50",
+  "message": "Fare calculated and saved."
+}
+
+Error (Ride not found → 404)
+{
+  "detail": "Not found."
+}
+
+Error (Ride not completed → 400)
+{
+  "message": "Ride must be completed before fare calculation."
+}
+
+Error (Fare already exists → 400)
+{
+  "message": "Fare already set."
+}
