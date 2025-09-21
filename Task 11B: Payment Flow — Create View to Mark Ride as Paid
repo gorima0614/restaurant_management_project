@@ -1,0 +1,94 @@
+serializers.py
+from rest_framework import serializers
+from .models import Ride
+
+class RidePaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ride
+        fields = ["payment_method", "payment_status"]
+
+    def validate(self, attrs):
+        ride = self.instance
+
+        # Rule 1: Ride must be completed
+        if ride.status != "COMPLETED":
+            raise serializers.ValidationError("Ride is not completed yet.")
+
+        # Rule 2: Prevent updating if already PAID
+        if ride.payment_status == "PAID":
+            raise serializers.ValidationError("Ride is already marked as PAID.")
+
+        # Rule 3: Only allow PAID as payment_status
+        if attrs.get("payment_status") != "PAID":
+            raise serializers.ValidationError("Invalid payment status. Only 'PAID' allowed.")
+
+        return attrs
+
+views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+
+from .models import Ride
+from .serializers import RidePaymentSerializer
+
+class RidePaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, ride_id):
+        ride = get_object_or_404(Ride, id=ride_id)
+
+        # Ownership check (must be rider or driver)
+        if request.user not in [ride.rider, ride.driver]:
+            return Response({"error": "You do not have permission to update this ride."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        serializer = RidePaymentSerializer(ride, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Payment marked as complete.",
+                "status": serializer.data["payment_status"],
+                "method": serializer.data["payment_method"]
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+urls.py
+from django.urls import path
+from .views import RidePaymentView
+
+urlpatterns = [
+    path("ride/payment/<int:ride_id>/", RidePaymentView.as_view(), name="ride-payment"),
+]
+
+Example Flow
+
+✅ Request
+
+POST /api/ride/payment/12/
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "payment_method": "CASH",
+  "payment_status": "PAID"
+}
+
+
+✅ Response (Success)
+
+{
+  "message": "Payment marked as complete.",
+  "status": "PAID",
+  "method": "CASH"
+}
+
+
+❌ Response (Failure: Ride not completed)
+
+{
+  "error": "Ride is not completed yet."
+}
