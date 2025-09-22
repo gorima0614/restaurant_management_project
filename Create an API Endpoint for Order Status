@@ -1,0 +1,54 @@
+1. orders/views.py
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Order
+
+@api_view(['GET'])
+def get_order_status(request, order_id):
+    """
+    Retrieve the current status of an order by ID.
+    """
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        return Response(
+            {"error": f"Order with ID {order_id} not found."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    return Response(
+        {
+            "order_id": order.id,
+            "status": order.status
+        },
+        status=status.HTTP_200_OK
+    )
+
+2. orders/urls.py
+from django.urls import path
+from .views import get_order_status
+
+urlpatterns = [
+    path('orders/<int:order_id>/status/', get_order_status, name='get-order-status'),
+]
+
+3. Example Response
+Request:
+GET /api/orders/5/status/
+
+Response (if order exists):
+{
+  "order_id": 5,
+  "status": "completed"
+}
+
+Response (if order not found):
+{
+  "error": "Order with ID 5 not found."
+}
+
+
+✅ Now you can test with Postman, curl, or browser:
+
+curl http://127.0.0.1:8000/api/orders/5/status/
