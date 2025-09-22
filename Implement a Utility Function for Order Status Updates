@@ -1,0 +1,79 @@
+1. orders/utils.py
+We’ll build update_order_status with error handling and logging.
+
+import logging
+from django.core.exceptions import ObjectDoesNotExist
+from .models import Order   # adjust if your Order model is in a different app
+
+# Configure logger
+logger = logging.getLogger(__name__)
+
+def update_order_status(order_id, new_status):
+    """
+    Update the status of an order.
+    
+    Args:
+        order_id (int): The ID of the order to update.
+        new_status (str): The new status to set on the order.
+    
+    Returns:
+        tuple: (success: bool, message: str)
+    """
+    try:
+        order = Order.objects.get(id=order_id)
+    except ObjectDoesNotExist:
+        logger.error(f"Order with ID {order_id} not found.")
+        return False, f"Order with ID {order_id} not found."
+
+    old_status = order.status
+    order.status = new_status
+    order.save(update_fields=["status"])
+
+    logger.info(
+        f"Order {order.id} status updated from '{old_status}' to '{new_status}'."
+    )
+    return True, f"Order {order.id} status updated to '{new_status}'."
+
+2. Example Order Model (if you don’t already have one)
+Just for context (in orders/models.py):
+
+from django.db import models
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("processing", "Processing"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    customer_name = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order {self.id} - {self.status}"
+
+3. Example Usage (Anywhere in your code)
+from orders.utils import update_order_status
+
+# Update an order’s status
+success, message = update_order_status(order_id=5, new_status="completed")
+print(message)
+
+4. Logging Setup
+Make sure you configure logging in your Django project (settings.py):
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}
