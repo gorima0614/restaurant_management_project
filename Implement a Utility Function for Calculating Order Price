@@ -1,0 +1,51 @@
+Utility Function – utils.py
+from typing import List, Dict, Union
+
+def calculate_order_total(order_items: List[Dict[str, Union[int, float]]]) -> float:
+    """
+    Calculate the total cost of an order.
+
+    Args:
+        order_items (list of dict): A list where each item is a dictionary
+            containing:
+            - "quantity" (int): The number of units of the item
+            - "price" (float or int): The price per unit of the item
+
+            Example:
+            [
+                {"quantity": 2, "price": 10.5},
+                {"quantity": 1, "price": 5}
+            ]
+
+    Returns:
+        float: The total cost of the order. Returns 0.0 if the list is empty.
+
+    Notes:
+        - Ensures negative values are ignored (treats them as 0).
+        - Rounds result to 2 decimal places for currency-like values.
+    """
+
+    if not order_items:  # Edge case: empty list
+        return 0.0
+
+    total = 0.0
+    for item in order_items:
+        # Safely extract quantity and price with defaults
+        quantity = max(0, int(item.get("quantity", 0)))  
+        price = max(0.0, float(item.get("price", 0.0)))
+
+        total += quantity * price
+
+    return round(total, 2)
+
+Example Usage
+if __name__ == "__main__":
+    # Sample order
+    order = [
+        {"quantity": 2, "price": 10.5},   # 2 × 10.5 = 21.0
+        {"quantity": 1, "price": 5},      # 1 × 5.0 = 5.0
+        {"quantity": 3, "price": 7.25}    # 3 × 7.25 = 21.75
+    ]
+
+    total_cost = calculate_order_total(order)
+    print(f"Total Order Cost: ${total_cost}")  # Output: 47.75
