@@ -1,0 +1,85 @@
+1. Model – home/models.py
+from django.db import models
+
+class MenuCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+2. Serializer – home/serializers.py
+from rest_framework import serializers
+from .models import MenuCategory
+
+class MenuCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuCategory
+        fields = ['id', 'name', 'description']
+
+3. ViewSet – home/views.py
+from rest_framework import viewsets
+from .models import MenuCategory
+from .serializers import MenuCategorySerializer
+
+class MenuCategoryViewSet(viewsets.ModelViewSet):
+    queryset = MenuCategory.objects.all()
+    serializer_class = MenuCategorySerializer
+
+4. URLs – home/urls.py
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import MenuCategoryViewSet
+
+router = DefaultRouter()
+router.register(r'menu-categories', MenuCategoryViewSet, basename='menu-category')
+
+urlpatterns = [
+    path('', include(router.urls)),
+]
+
+5. Project-level urls.py (if not already included)
+
+Make sure your main project/urls.py includes home.urls:
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('home.urls')),  # API routes under /api/
+]
+
+6. Testing with Postman / curl
+
+List all categories
+
+GET http://127.0.0.1:8000/api/menu-categories/
+
+Retrieve category by ID
+
+GET http://127.0.0.1:8000/api/menu-categories/1/
+
+Create new category
+
+POST http://127.0.0.1:8000/api/menu-categories/
+Content-Type: application/json
+
+{
+  "name": "Starters",
+  "description": "Light dishes to start your meal"
+}
+
+Update category
+
+PUT http://127.0.0.1:8000/api/menu-categories/1/
+Content-Type: application/json
+
+{
+  "name": "Appetizers",
+  "description": "Updated description"
+}
+
+Delete category
+
+DELETE http://127.0.0.1:8000/api/menu-categories/1/
