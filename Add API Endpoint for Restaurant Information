@@ -1,0 +1,283 @@
+home/models.py
+from django.db import models
+
+# Try to use the native JSONField if available (Django 3.1+). Otherwise try postgres JSONField.
+try:
+    from django.db.models import JSONField  # Django >= 3.1
+except Exception:
+    try:
+        from django.contrib.postgres.fields import JSONField  # older Django + PostgreSQL
+    except Exception:
+        JSONField = None  # fallback below to TextField
+
+class Restaurant(models.Model):
+    """
+    Model to store canonical restaurant information used by the API.
+    You can create multiple Restaurant entries; set is_primary=True for the one
+    you want returned by the special "restaurant/info/" endpoint.
+    """
+
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    # Address fields (keeps things atomic and searchable)
+    street_address = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=30, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+
+    # Contact / web
+    phone = models.CharField(max_length=50, blank=True, help_text="Public phone number")
+    email = models.EmailField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+
+    # Opening hours: prefer JSONField where available. Example shape:
+    # {
+    #   "monday": "09:00-21:00",
+    #   "tuesday": "09:00-21:00",
+    #   ...
+    # }
+    if JSONField:
+        opening_hours = JSONField(blank=True, null=True)
+    else:
+        opening_hours = models.TextField(
+            blank=True, null=True,
+            help_text='JSON string for opening hours (use JSONField if available)'
+        )
+
+    # Mark one restaurant as the primary one for single-site use cases
+    is_primary = models.BooleanField(default=False)
+
+    # Optional logo or image field - uncomment if you use MEDIA settings and Pillow
+    # logo = models.ImageField(upload_to='restaurant_logos/', blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-is_primary', 'name']
+        verbose_name = 'Restaurant'
+        verbose_name_plural = 'Restaurants'
+
+    def __str__(self):
+        return self.name or "Unnamed restaurant"
+
+    def save(self, *args, **kwargs):
+        """
+        If this restaurant is marked primary, ensure all others are unset to keep
+        a single primary record. This is helpful for a canonical 'site info' endpoint.
+        """
+        if self.is_primary:
+            # unset is_primary for other restaurants in a single DB query
+            Restaurant.objects.filter(is_primary=True).exclude(pk=self.pk).update(is_primary=False)
+        super().save(*args, **kwargs)
+
+home/serializers.py
+from rest_framework import serializers
+from .models import Restaurant
+
+class RestaurantSerializer(serializers.ModelSerializer):
+    """
+    Serializer that returns all relevant restaurant fields.
+    - If opening_hours is TextField (fallback), it will pass the string through.
+    - We add full_address convenience field.
+    """
+    full_address = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Restaurant
+        fields = [
+            'id',
+            'name',
+            'description',
+            'street_address',
+            'city',
+            'state',
+            'postal_code',
+            'country',
+            'full_address',
+            'phone',
+            'email',
+            'website',
+            'opening_hours',
+            'is_primary',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+    def get_full_address(self, obj):
+        # Build a nice single-line address for display
+        parts = [
+            obj.street_address,
+            obj.city,
+            obj.state,
+            obj.postal_code,
+            obj.country
+        ]
+        return ', '.join([p for p in parts if p])
+
+home/views.py
+from rest_framework import viewsets, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+
+from .models import Restaurant
+from .serializers import RestaurantSerializer
+
+class RestaurantViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only ViewSet for Restaurant.
+    Provides:
+      - GET /api/restaurants/        -> list all restaurants
+      - GET /api/restaurants/{id}/   -> retrieve a specific restaurant
+    Use ReadOnlyModelViewSet because the request in this task is only GET; if you
+    want create/update/delete later, switch to ModelViewSet or add endpoints.
+    """
+    queryset = Restaurant.objects.all()
+    serializer_class = RestaurantSerializer
+
+
+class RestaurantInfoAPIView(APIView):
+    """
+    A simple GET endpoint that returns the *primary* restaurant info if one exists,
+    otherwise returns the first restaurant. If there are no Restaurant objects,
+    returns a 404 with a helpful message.
+
+    Endpoint: GET /api/restaurant/info/
+    """
+    def get(self, request, format=None):
+        # Prefer the primary restaurant
+        restaurant = Restaurant.objects.filter(is_primary=True).first()
+        if not restaurant:
+            # fallback to the first available restaurant
+            restaurant = Restaurant.objects.order_by('created_at').first()
+
+        if not restaurant:
+            return Response(
+                {"detail": "No restaurant information found. Add one via admin or API."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = RestaurantSerializer(restaurant, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+home/urls.py
+
+If you already have a router and routes (you mentioned menu categories earlier), extend the same router. Example file:
+
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import RestaurantViewSet, RestaurantInfoAPIView, MenuCategoryViewSet  # your existing viewsets
+
+router = DefaultRouter()
+# existing registrations (keep them)
+router.register(r'menu-categories', MenuCategoryViewSet, basename='menu-category')
+
+# Register restaurants read-only
+router.register(r'restaurants', RestaurantViewSet, basename='restaurant')
+
+urlpatterns = [
+    path('', include(router.urls)),
+
+    # Helpful single endpoint returning the canonical/primary restaurant info
+    path('restaurant/info/', RestaurantInfoAPIView.as_view(), name='restaurant-info'),
+]
+
+
+Add this home.urls to your project-level urls.py (if not already done):
+
+project/urls.py (snippet)
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('home.urls')),  # all API endpoints under /api/
+]
+
+Optional: admin registration (home/admin.py)
+from django.contrib import admin
+from .models import Restaurant
+
+@admin.register(Restaurant)
+class RestaurantAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_primary', 'phone', 'email', 'website')
+    list_filter = ('is_primary',)
+    search_fields = ('name', 'city', 'state', 'phone')
+
+Usage & testing
+
+Create and apply migrations:
+
+python manage.py makemigrations home
+python manage.py migrate
+
+
+Create a superuser and add a Restaurant via Django admin (or use shell/fixtures):
+
+python manage.py createsuperuser
+
+
+Example opening_hours (JSON):
+
+{
+  "monday": "09:00-21:00",
+  "tuesday": "09:00-21:00",
+  "wednesday": "09:00-21:00",
+  "thursday": "09:00-21:00",
+  "friday": "09:00-23:00",
+  "saturday": "10:00-23:00",
+  "sunday": "10:00-20:00"
+}
+
+
+Test with curl (replace host/port as needed):
+
+Get the canonical restaurant info:
+
+curl -X GET http://127.0.0.1:8000/api/restaurant/info/ -H "Accept: application/json"
+
+
+List all restaurants:
+
+curl -X GET http://127.0.0.1:8000/api/restaurants/ -H "Accept: application/json"
+
+
+Retrieve a specific restaurant by id (e.g., id=1):
+
+curl -X GET http://127.0.0.1:8000/api/restaurants/1/ -H "Accept: application/json"
+
+
+Example success response from /api/restaurant/info/:
+
+{
+  "id": 1,
+  "name": "The Tasty Corner",
+  "description": "Neighborhood bistro serving seasonal plates.",
+  "street_address": "12 Food Lane",
+  "city": "Mumbai",
+  "state": "Maharashtra",
+  "postal_code": "400001",
+  "country": "India",
+  "full_address": "12 Food Lane, Mumbai, Maharashtra, 400001, India",
+  "phone": "+91-22-12345678",
+  "email": "info@tastycorner.example",
+  "website": "https://tastycorner.example",
+  "opening_hours": {
+    "monday": "09:00-21:00",
+    "tuesday": "09:00-21:00"
+  },
+  "is_primary": true,
+  "created_at": "2025-09-23T11:00:00Z",
+  "updated_at": "2025-09-23T11:00:00Z"
+}
+
+
+If no restaurant exists:
+
+HTTP 404
+{
+  "detail": "No restaurant information found. Add one via admin or API."
+}
