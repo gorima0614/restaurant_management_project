@@ -1,0 +1,56 @@
+1. Create utils.py in your home app
+# home/utils.py
+
+def calculate_discount(original_price, discount_percentage):
+    """
+    Calculate the discounted price for a menu item.
+    
+    Args:
+        original_price (float or int): The original price of the item.
+        discount_percentage (float or int): The discount percentage (0–100).
+    
+    Returns:
+        float: Discounted price rounded to 2 decimals.
+        None: If inputs are invalid.
+    """
+    try:
+        # Convert inputs to float for calculation
+        original_price = float(original_price)
+        discount_percentage = float(discount_percentage)
+
+        # Validate inputs
+        if original_price < 0:
+            raise ValueError("Original price cannot be negative.")
+        if discount_percentage < 0 or discount_percentage > 100:
+            raise ValueError("Discount percentage must be between 0 and 100.")
+
+        # Calculate discount
+        discount_amount = (original_price * discount_percentage) / 100
+        final_price = original_price - discount_amount
+
+        return round(final_price, 2)
+
+    except (ValueError, TypeError) as e:
+        print(f"Error: {e}")
+        return None
+
+2. Example Usage
+
+In views.py, models.py, or Django shell:
+
+from home.utils import calculate_discount
+
+print(calculate_discount(100, 10))   # ✅ 90.0
+print(calculate_discount(250, 20))  # ✅ 200.0
+print(calculate_discount(500, 0))   # ✅ 500.0
+print(calculate_discount(100, -5))  # ❌ None (invalid input)
+print(calculate_discount("abc", 10))  # ❌ None (invalid input)
+
+3. Output examples
+90.0
+200.0
+500.0
+Error: Discount percentage must be between 0 and 100.
+None
+Error: could not convert string to float: 'abc'
+None
