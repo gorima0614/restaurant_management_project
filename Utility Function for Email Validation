@@ -1,0 +1,43 @@
+1. Create a utils.py file
+
+Inside your app (e.g., home/utils.py):
+
+import re
+
+def is_valid_email(email: str) -> bool:
+    """
+    Validate an email address using regex.
+    Returns True if valid, False otherwise.
+    """
+    if not email or not isinstance(email, str):
+        return False
+
+    # Simple regex for validating email
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
+    return re.match(email_regex, email) is not None
+
+2. Example Usage
+
+In your views, serializers, or anywhere you need validation:
+
+from home.utils import is_valid_email
+
+print(is_valid_email("test@example.com"))   # ✅ True
+print(is_valid_email("invalid-email"))      # ❌ False
+print(is_valid_email("user@domain"))        # ❌ False
+print(is_valid_email("user.name@company.org"))  # ✅ True
+
+3. (Optional) Using Django’s Built-in Validator
+
+If you want stricter validation with Django’s own validator:
+
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+
+def is_valid_email(email: str) -> bool:
+    try:
+        validate_email(email)
+        return True
+    except ValidationError:
+        return False
