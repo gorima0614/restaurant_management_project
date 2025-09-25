@@ -1,0 +1,83 @@
+1. Create the MenuCategory model
+
+In models.py of your restaurant app:
+
+from django.db import models
+
+class MenuCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+Run migrations after creating the model:
+
+python manage.py makemigrations
+python manage.py migrate
+
+2. Create a serializer
+
+In serializers.py:
+
+from rest_framework import serializers
+from .models import MenuCategory
+
+class MenuCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuCategory
+        fields = ['name']  # Only return category names
+
+3. Create the API view
+
+In views.py:
+
+from rest_framework.generics import ListAPIView
+from .models import MenuCategory
+from .serializers import MenuCategorySerializer
+
+class MenuCategoryListView(ListAPIView):
+    queryset = MenuCategory.objects.all()
+    serializer_class = MenuCategorySerializer
+
+4. Add URL routing
+
+In your app’s urls.py:
+
+from django.urls import path
+from .views import MenuCategoryListView
+
+urlpatterns = [
+    path('menu-categories/', MenuCategoryListView.as_view(), name='menu-categories'),
+]
+
+And in your project-level urls.py, include the app URLs if not already:
+
+from django.urls import path, include
+
+urlpatterns = [
+    path('api/', include('restaurant.urls')),  # adjust "restaurant" to your app name
+]
+
+5. Test the API
+
+Run the server:
+
+python manage.py runserver
+
+Test with curl:
+
+curl http://127.0.0.1:8000/api/menu-categories/
+
+Or in Postman, send a GET request to:
+
+http://127.0.0.1:8000/api/menu-categories/
+
+✅ Sample JSON Response
+
+If you have categories like Drinks, Appetizers, Desserts:
+
+[
+  {"name": "Drinks"},
+  {"name": "Appetizers"},
+  {"name": "Desserts"}
+]
