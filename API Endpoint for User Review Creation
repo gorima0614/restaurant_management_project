@@ -1,0 +1,103 @@
+1. Create the Review model
+
+In home/models.py:
+
+from django.db import models
+from django.contrib.auth.models import User
+from .models import MenuItem   # Assuming reviews are for menu items
+
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
+    menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE, related_name="reviews")
+    rating = models.PositiveIntegerField()  # e.g., 1–5
+    text = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.menu_item.name} ({self.rating})"
+
+
+👉 Run migrations:
+
+python manage.py makemigrations
+python manage.py migrate
+
+2. Create a serializer
+
+In home/serializers.py:
+
+from rest_framework import serializers
+from .models import Review
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'user', 'menu_item', 'rating', 'text', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+    def validate_rating(self, value):
+        """Ensure rating is between 1 and 5."""
+        if value < 1 or value > 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5.")
+        return value
+
+3. Create the API view
+
+In home/views.py:
+
+from rest_framework.generics import CreateAPIView
+from rest_framework.permissions import IsAuthenticated
+from .models import Review
+from .serializers import ReviewSerializer
+
+class ReviewCreateView(CreateAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]  # Only logged-in users can create reviews
+
+    def perform_create(self, serializer):
+        # Automatically set the user to the logged-in user
+        serializer.save(user=self.request.user)
+
+4. Add URLs
+
+In home/urls.py:
+
+from django.urls import path
+from .views import ReviewCreateView
+
+urlpatterns = [
+    path('reviews/create/', ReviewCreateView.as_view(), name='review-create'),
+]
+
+
+And in project-level urls.py, include your app’s URLs if not already:
+
+from django.urls import path, include
+
+urlpatterns = [
+    path('api/', include('home.urls')),
+]
+
+5. Test with Postman or curl
+
+Send a POST request to:
+
+http://127.0.0.1:8000/api/reviews/create/
+
+Example request body:
+{
+  "menu_item": 1,
+  "rating": 5,
+  "text": "Delicious coffee! Will order again."
+}
+
+Example response (201 Created):
+{
+  "id": 1,
+  "user": 2,
+  "menu_item": 1,
+  "rating": 5,
+  "text": "Delicious coffee! Will order again.",
+  "created_at": "2025-09-25T10:30:45Z"
+}
