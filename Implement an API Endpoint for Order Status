@@ -1,0 +1,86 @@
+1. Ensure Order Model Exists (orders/models.py)
+
+Here’s an example of an Order model with a short unique ID and a status field:
+
+from django.db import models
+import uuid
+
+def generate_short_id():
+    # Example utility function that generates short unique IDs
+    return str(uuid.uuid4())[:8]
+
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    short_id = models.CharField(max_length=10, unique=True, default=generate_short_id, editable=False)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order {self.short_id} - {self.get_status_display()}"
+
+2. Create the Serializer (orders/serializers.py)
+from rest_framework import serializers
+from .models import Order
+
+class OrderStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['short_id', 'status']
+
+
+This will return only the order ID and status.
+
+3. Create the API View (orders/views.py)
+
+We’ll use RetrieveAPIView, but since we are retrieving by short_id instead of the default pk, we’ll override lookup_field:
+
+from rest_framework import generics
+from rest_framework.exceptions import NotFound
+from .models import Order
+from .serializers import OrderStatusSerializer
+
+class OrderStatusView(generics.RetrieveAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderStatusSerializer
+    lookup_field = 'short_id'   # Lookup using short_id instead of pk
+
+    def get_object(self):
+        try:
+            return Order.objects.get(short_id=self.kwargs['short_id'])
+        except Order.DoesNotExist:
+            raise NotFound(detail="Order not found")
+
+4. Add URL Pattern (orders/urls.py)
+from django.urls import path
+from .views import OrderStatusView
+
+urlpatterns = [
+    path('order/<str:short_id>/status/', OrderStatusView.as_view(), name='order-status'),
+]
+
+5. Example API Request/Response
+
+Request:
+
+GET /order/abc123/status/
+
+
+Response (if found):
+
+{
+  "short_id": "abc123",
+  "status": "processing"
+}
+
+
+Response (if not found):
+
+{
+  "detail": "Order not found"
+}
