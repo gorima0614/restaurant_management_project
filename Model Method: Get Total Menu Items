@@ -1,0 +1,42 @@
+1. Locate the Restaurant model (home/models.py)
+
+Assuming you already have a Restaurant model and a MenuItem model linked to it (via a ForeignKey or ManyToMany), the relationship might look something like this:
+
+from django.db import models
+
+class Restaurant(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+
+class MenuItem(models.Model):
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name="menu_items")
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+
+    def __str__(self):
+        return self.name
+
+2. Add Method to Restaurant Model
+
+Update the Restaurant model to include a method:
+
+class Restaurant(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+    def get_total_menu_items(self):
+        """Return the total number of menu items for this restaurant."""
+        return self.menu_items.count()
+
+3. Example Usage in Django Shell
+>>> from home.models import Restaurant
+>>> r = Restaurant.objects.first()
+>>> r.get_total_menu_items()
+12
