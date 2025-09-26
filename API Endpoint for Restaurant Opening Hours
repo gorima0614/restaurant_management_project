@@ -1,0 +1,69 @@
+1. Create the Model (home/models.py)
+
+If you don’t already have a model for opening hours, create one like this:
+
+from django.db import models
+
+class OpeningHour(models.Model):
+    DAYS_OF_WEEK = [
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
+    ]
+
+    day = models.CharField(max_length=10, choices=DAYS_OF_WEEK, unique=True)
+    opening_time = models.TimeField()
+    closing_time = models.TimeField()
+
+    class Meta:
+        ordering = ['day']
+
+    def __str__(self):
+        return f"{self.get_day_display()}: {self.opening_time} - {self.closing_time}"
+
+2. Create the Serializer (home/serializers.py)
+from rest_framework import serializers
+from .models import OpeningHour
+
+class OpeningHourSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OpeningHour
+        fields = ['day', 'opening_time', 'closing_time']
+
+3. Create the API View (home/views.py)
+from rest_framework import generics
+from .models import OpeningHour
+from .serializers import OpeningHourSerializer
+
+class OpeningHourListView(generics.ListAPIView):
+    queryset = OpeningHour.objects.all()
+    serializer_class = OpeningHourSerializer
+
+
+This will return a list of all opening hours.
+
+4. Add URL Pattern (home/urls.py)
+from django.urls import path
+from .views import OpeningHourListView
+
+urlpatterns = [
+    path('opening-hours/', OpeningHourListView.as_view(), name='opening-hours'),
+]
+
+5. Example API Response (GET /opening-hours/)
+[
+  {
+    "day": "monday",
+    "opening_time": "09:00:00",
+    "closing_time": "22:00:00"
+  },
+  {
+    "day": "tuesday",
+    "opening_time": "09:00:00",
+    "closing_time": "22:00:00"
+  }
+]
