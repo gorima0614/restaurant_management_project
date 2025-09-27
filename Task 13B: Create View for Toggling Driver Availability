@@ -1,0 +1,77 @@
+1. Permission Class (home/permissions.py)
+
+We’ll reuse the IsDriver permission pattern (similar to the earnings summary).
+
+from rest_framework.permissions import BasePermission
+
+class IsDriver(BasePermission):
+    """
+    Custom permission: only drivers can access.
+    """
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user and 
+            request.user.is_authenticated and 
+            hasattr(request.user, "driver_profile")
+        )
+
+2. API View (home/views.py)
+
+We’ll use APIView to keep full control.
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .serializers import DriverAvailabilitySerializer
+from .permissions import IsDriver
+
+
+class DriverAvailabilityView(APIView):
+    permission_classes = [IsAuthenticated, IsDriver]
+
+    def post(self, request):
+        driver = request.user.driver_profile
+        serializer = DriverAvailabilitySerializer(
+            driver, data=request.data, context={"request": request}, partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Availability updated successfully.",
+                "is_available": serializer.instance.is_available
+            }, status=200)
+
+        return Response(serializer.errors, status=400)
+
+3. URL Route (home/urls.py)
+from django.urls import path
+from .views import DriverAvailabilityView
+
+urlpatterns = [
+    path("driver/availability/", DriverAvailabilityView.as_view(), name="driver-availability"),
+]
+
+4. Example Request
+
+POST /api/driver/availability/
+
+{
+  "is_available": true
+}
+
+
+✅ Response
+
+{
+  "message": "Availability updated successfully.",
+  "is_available": true
+}
+
+
+❌ If a rider (non-driver) tries:
+
+{
+  "detail": "You do not have permission to perform this action."
+}
