@@ -1,0 +1,59 @@
+1. Permission Class (home/permissions.py)
+
+We’ll define a custom permission IsDriver.
+(Assuming your User model has a boolean field is_driver.)
+
+from rest_framework.permissions import BasePermission
+
+class IsDriver(BasePermission):
+    """
+    Custom permission to allow only drivers to access.
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated and getattr(request.user, "is_driver", False))
+
+2. API View (home/views.py)
+
+We’ll use a DRF APIView for more control.
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .serializers import DriverEarningsSerializer
+from .permissions import IsDriver
+
+
+class DriverEarningsSummaryView(APIView):
+    permission_classes = [IsAuthenticated, IsDriver]
+
+    def get(self, request):
+        driver = request.user
+        serializer = DriverEarningsSerializer(driver)
+        return Response(serializer.data)
+
+3. URL Route (home/urls.py)
+from django.urls import path
+from .views import DriverEarningsSummaryView
+
+urlpatterns = [
+    path("driver/earnings/", DriverEarningsSummaryView.as_view(), name="driver-earnings-summary"),
+]
+
+4. Example Request
+
+GET /api/driver/earnings/
+(with an authenticated driver’s token)
+
+Response:
+
+{
+  "total_rides": 14,
+  "total_earnings": 3860.00,
+  "payment_breakdown": {
+    "CASH": 5,
+    "UPI": 6,
+    "CARD": 3
+  },
+  "average_fare": 275.71
+}
