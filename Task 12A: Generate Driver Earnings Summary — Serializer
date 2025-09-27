@@ -1,0 +1,88 @@
+1. Ride Model (assumption for context)
+from django.db import models
+from django.conf import settings
+
+class Ride(models.Model):
+    STATUS_CHOICES = [
+        ("COMPLETED", "Completed"),
+        ("CANCELLED", "Cancelled"),
+    ]
+    PAYMENT_STATUS_CHOICES = [
+        ("PAID", "Paid"),
+        ("UNPAID", "Unpaid"),
+    ]
+    PAYMENT_METHOD_CHOICES = [
+        ("CASH", "Cash"),
+        ("UPI", "UPI"),
+        ("CARD", "Card"),
+    ]
+
+    driver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="rides")
+    fare = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+2. DriverEarningsSerializer (home/serializers.py)
+
+This serializer will accept a driver instance and compute the earnings summary.
+
+from rest_framework import serializers
+from django.utils import timezone
+from django.db.models import Sum, Count, Avg
+from datetime import timedelta
+from .models import Ride
+
+
+class DriverEarningsSerializer(serializers.Serializer):
+    total_rides = serializers.IntegerField(read_only=True)
+    total_earnings = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    payment_breakdown = serializers.DictField(child=serializers.IntegerField(), read_only=True)
+    average_fare = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+
+    def to_representation(self, driver):
+        now = timezone.now()
+        seven_days_ago = now - timedelta(days=7)
+
+        rides = Ride.objects.filter(
+            driver=driver,
+            status="COMPLETED",
+            payment_status="PAID",
+            completed_at__gte=seven_days_ago,
+        )
+
+        total_rides = rides.count()
+        total_earnings = rides.aggregate(total=Sum("fare"))["total"] or 0
+        average_fare = rides.aggregate(avg=Avg("fare"))["avg"] or 0
+
+        # Payment method breakdown
+        breakdown = (
+            rides.values("payment_method")
+            .annotate(count=Count("id"))
+            .order_by()
+        )
+
+        payment_breakdown = {entry["payment_method"]: entry["count"] for entry in breakdown}
+
+        return {
+            "total_rides": total_rides,
+            "total_earnings": round(total_earnings, 2),
+            "payment_breakdown": payment_breakdown,
+            "average_fare": round(average_fare, 2) if total_rides > 0 else 0,
+        }
+
+3. Example Output
+
+If a driver completed 18 rides in the last 7 days:
+
+{
+  "total_rides": 18,
+  "total_earnings": 4820.00,
+  "payment_breakdown": {
+    "CASH": 8,
+    "UPI": 6,
+    "CARD": 4
+  },
+  "average_fare": 267.77
+}
