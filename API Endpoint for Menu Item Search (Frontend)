@@ -1,0 +1,69 @@
+1. Update the Model (home/models.py)
+
+Make sure your MenuItem model exists and has at least name and image fields:
+
+from django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=255)
+    image = models.ImageField(upload_to="menu_images/", blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+2. Create Serializer (home/serializers.py)
+
+We only return essential details (name and image):
+
+from rest_framework import serializers
+from .models import MenuItem
+
+class MenuItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuItem
+        fields = ["name", "image"]
+
+3. Create API View (home/views.py)
+
+This will accept a GET request with a q parameter and return search results:
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import MenuItem
+from .serializers import MenuItemSerializer
+
+@api_view(["GET"])
+def search_menu_items(request):
+    query = request.GET.get("q", "")
+    if query:
+        items = MenuItem.objects.filter(name__icontains=query)
+    else:
+        items = MenuItem.objects.none()  # return empty if no query
+    
+    serializer = MenuItemSerializer(items, many=True, context={"request": request})
+    return Response(serializer.data)
+
+4. Add URL Route (home/urls.py)
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("menu/search/", views.search_menu_items, name="search_menu_items"),
+]
+
+✅ Example Request
+
+GET /api/menu/search/?q=pizza
+
+Response:
+
+[
+  {
+    "name": "Margherita Pizza",
+    "image": "http://127.0.0.1:8000/media/menu_images/margherita.jpg"
+  },
+  {
+    "name": "Pepperoni Pizza",
+    "image": "http://127.0.0.1:8000/media/menu_images/pepperoni.jpg"
+  }
+]
