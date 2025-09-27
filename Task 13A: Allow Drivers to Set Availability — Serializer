@@ -1,0 +1,89 @@
+1. Driver Model (example)
+
+(Assuming you extend User with a Driver profile.)
+
+from django.db import models
+from django.conf import settings
+
+class Driver(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="driver_profile")
+    is_available = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.username} - {'Available' if self.is_available else 'Offline'}"
+
+2. Serializer Logic (home/serializers.py)
+
+This serializer will:
+
+Accept only the is_available field
+
+Update the driver profile linked to the logged-in user
+
+Validate that the user has a driver profile
+
+from rest_framework import serializers
+from .models import Driver
+
+class DriverAvailabilitySerializer(serializers.Serializer):
+    is_available = serializers.BooleanField()
+
+    def validate(self, data):
+        user = self.context["request"].user
+        if not hasattr(user, "driver_profile"):
+            raise serializers.ValidationError("You do not have a driver profile.")
+        return data
+
+    def update(self, instance, validated_data):
+        instance.is_available = validated_data["is_available"]
+        instance.save()
+        return instance
+
+    def create(self, validated_data):
+        # Not used since we are only updating existing driver profiles
+        raise NotImplementedError("Use update() method instead.")
+
+3. Example Usage in a View
+
+Later in your views.py:
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .serializers import DriverAvailabilitySerializer
+
+class DriverAvailabilityView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        driver = getattr(request.user, "driver_profile", None)
+        if not driver:
+            return Response({"error": "Driver profile not found."}, status=400)
+
+        serializer = DriverAvailabilitySerializer(driver, data=request.data, context={"request": request}, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"is_available": serializer.instance.is_available})
+        return Response(serializer.errors, status=400)
+
+4. Example Request & Response
+
+POST /api/driver/availability/
+
+{
+  "is_available": true
+}
+
+
+✅ Response
+
+{
+  "is_available": true
+}
+
+
+If a non-driver user tries:
+
+{
+  "error": "Driver profile not found."
+}
