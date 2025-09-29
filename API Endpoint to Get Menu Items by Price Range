@@ -1,0 +1,116 @@
+1. Serializer (reuse existing one)
+# home/serializers.py
+from rest_framework import serializers
+from .models import MenuItem
+
+class MenuItemSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MenuItem
+        fields = ['id', 'name', 'description', 'price', 'image', 'is_available']
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        elif obj.image:
+            return obj.image.url
+        return None
+
+2. Create the DRF API View
+
+We’ll use ListAPIView since this endpoint returns multiple items.
+
+# home/views.py
+from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import MenuItem
+from .serializers import MenuItemSerializer
+
+class MenuItemByPriceRangeView(ListAPIView):
+    serializer_class = MenuItemSerializer
+
+    def get_queryset(self):
+        queryset = MenuItem.objects.all()
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+
+        try:
+            if min_price is not None:
+                min_price = float(min_price)
+                queryset = queryset.filter(price__gte=min_price)
+            if max_price is not None:
+                max_price = float(max_price)
+                queryset = queryset.filter(price__lte=max_price)
+        except ValueError:
+            # If conversion to float fails, return empty queryset
+            return MenuItem.objects.none()
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        min_price = request.query_params.get('min_price')
+        max_price = request.query_params.get('max_price')
+
+        # Validation: ensure values are numeric
+        if (min_price and not min_price.replace('.', '', 1).isdigit()) or \
+           (max_price and not max_price.replace('.', '', 1).isdigit()):
+            return Response(
+                {"error": "Invalid price values. Please provide numeric min_price and max_price."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+3. Add URL Routing
+# home/urls.py
+from django.urls import path
+from .views import MenuItemByPriceRangeView
+
+urlpatterns = [
+    path('menu/filter-by-price/', MenuItemByPriceRangeView.as_view(), name='menu-items-by-price'),
+]
+
+4. Example Usage
+
+Request:
+
+GET /menu/filter-by-price/?min_price=100&max_price=300
+
+
+Response:
+
+[
+  {
+    "id": 2,
+    "name": "Veg Burger",
+    "description": "Fresh veggie patty with lettuce and tomato",
+    "price": "150.00",
+    "image": "http://127.0.0.1:8000/media/menu_images/veg_burger.jpg",
+    "is_available": true
+  },
+  {
+    "id": 5,
+    "name": "Margherita Pizza",
+    "description": "Classic pizza with fresh mozzarella and basil.",
+    "price": "250.00",
+    "image": "http://127.0.0.1:8000/media/menu_images/margherita.jpg",
+    "is_available": true
+  }
+]
+
+
+Error Example:
+
+GET /menu/filter-by-price/?min_price=abc&max_price=300
+
+
+Response:
+
+{
+  "error": "Invalid price values. Please provide numeric min_price and max_price."
+}
