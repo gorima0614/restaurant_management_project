@@ -1,0 +1,42 @@
+1. Create Utility File
+
+Create a file: orders/utils.py
+
+2. Implement the Function
+# orders/utils.py
+
+def calculate_discount(order_total, discount_percentage):
+    """
+    Calculate the discount amount based on the order total and discount percentage.
+
+    Args:
+        order_total (float | int): The total amount of the order.
+        discount_percentage (float | int): The discount percentage to apply (e.g., 10 for 10%).
+
+    Returns:
+        float: The discount amount. Returns 0.0 if inputs are invalid or percentage <= 0.
+
+    Example:
+        >>> calculate_discount(1000, 10)
+        100.0
+        >>> calculate_discount(500, 0)
+        0.0
+    """
+    try:
+        order_total = float(order_total)
+        discount_percentage = float(discount_percentage)
+
+        if discount_percentage <= 0:
+            return 0.0
+
+        return order_total * (discount_percentage / 100)
+
+    except (ValueError, TypeError):
+        return 0.0
+
+3. Usage Example
+from orders.utils import calculate_discount
+
+# Example: 15% discount on ₹2000 order
+discount = calculate_discount(2000, 15)
+print(discount)  # Output: 300.0
