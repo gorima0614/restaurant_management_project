@@ -1,0 +1,62 @@
+1. Update Restaurant Model (home/models.py)
+
+If your Restaurant model doesn’t already exist, create it. Otherwise, just add the opening_hours field:
+
+# home/models.py
+from django.db import models
+
+class Restaurant(models.Model):
+    name = models.CharField(max_length=200)
+    opening_hours = models.CharField(max_length=100, help_text="e.g. 11:00 AM - 11:00 PM (EST)")
+
+    def __str__(self):
+        return self.name
+
+
+👉 After editing, run:
+
+python manage.py makemigrations
+python manage.py migrate
+
+2. Create DRF API View (home/views.py)
+# home/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Restaurant
+
+class RestaurantOpeningHoursView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            restaurant = Restaurant.objects.first()  # assuming one restaurant
+            if not restaurant:
+                return Response({"error": "Restaurant not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            return Response(
+                {"opening_hours": restaurant.opening_hours},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+3. Add URL Route (home/urls.py)
+# home/urls.py
+from django.urls import path
+from .views import RestaurantOpeningHoursView
+
+urlpatterns = [
+    path("restaurant/opening-hours/", RestaurantOpeningHoursView.as_view(), name="restaurant-opening-hours"),
+]
+
+4. Example Response
+
+Request:
+
+GET /restaurant/opening-hours/
+
+
+Response:
+
+{
+  "opening_hours": "11:00 AM - 11:00 PM (EST)"
+}
