@@ -1,0 +1,83 @@
+1. Update MenuItem model
+
+Ensure your model has an available field:
+
+# menu/models.py
+from django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+    cuisine_type = models.CharField(max_length=50)
+    available = models.BooleanField(default=True)  # availability flag
+
+    def __str__(self):
+        return self.name
+
+2. Serializer (optional)
+
+Since we’re only returning availability, a custom response is enough. We don’t need a full serializer here.
+
+3. API View
+
+We’ll use a RetrieveAPIView-like approach but override get for custom response.
+
+# menu/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import MenuItem
+
+class MenuItemAvailabilityAPIView(APIView):
+    """
+    Check if a MenuItem is available by its ID.
+    """
+
+    def get(self, request, pk):
+        try:
+            menu_item = MenuItem.objects.get(pk=pk)
+            return Response({"available": menu_item.available}, status=status.HTTP_200_OK)
+        except MenuItem.DoesNotExist:
+            return Response(
+                {"error": "Menu item not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+4. URL Configuration
+# menu/urls.py
+from django.urls import path
+from .views import MenuItemAvailabilityAPIView
+
+urlpatterns = [
+    path("menu/<int:pk>/availability/", MenuItemAvailabilityAPIView.as_view(), name="menuitem-availability"),
+]
+
+Include in your project urls.py:
+
+urlpatterns = [
+    path("api/", include("menu.urls")),
+]
+
+5. Test the Endpoint
+
+Run server:
+
+python manage.py runserver
+
+Check availability with curl:
+
+curl http://127.0.0.1:8000/api/menu/1/availability/
+
+
+✅ If the item exists:
+
+{
+  "available": true
+}
+
+
+❌ If not found:
+
+{
+  "error": "Menu item not found."
+}
