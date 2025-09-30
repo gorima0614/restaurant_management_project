@@ -1,0 +1,41 @@
+1. Utility Function
+Create a file orders/utils.py (if it doesn’t exist already):
+
+# orders/utils.py
+from django.db.models import Avg
+def calculate_average_rating(reviews_queryset):
+    """
+    Calculate the average rating from a queryset of Review objects.
+    Returns a float rounded to 2 decimal places or 0.0 if no reviews exist.
+    """
+    if not reviews_queryset.exists():
+        return 0.0
+    
+    avg = reviews_queryset.aggregate(avg_rating=Avg("rating"))["avg_rating"]
+    return round(avg or 0.0, 2)
+
+2. Explanation
+reviews_queryset.aggregate(Avg("rating")) uses Django ORM’s aggregation to efficiently calculate the average rating in the database layer (better than looping in Python).
+If the queryset is empty → reviews_queryset.exists() avoids division by zero.
+Rounds to 2 decimal places for consistency.
+Returns 0.0 when there are no reviews.
+
+3. Testing in Django shell
+python manage.py shell
+from reviews.models import Review
+from orders.utils import calculate_average_rating
+
+# Create some reviews
+Review.objects.create(review_text="Great food!", rating=5)
+Review.objects.create(review_text="Okayish", rating=3)
+Review.objects.create(review_text="Not good", rating=2)
+
+# Get all reviews
+reviews = Review.objects.all()
+
+# Calculate average
+print(calculate_average_rating(reviews))  # Output: 3.33
+
+# Test with empty queryset
+empty_qs = Review.objects.none()
+print(calculate_average_rating(empty_qs))  # Output: 0.0
