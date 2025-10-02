@@ -1,0 +1,53 @@
+1. home/serializers.py
+
+If you don’t already have this file, create it.
+
+from rest_framework import serializers
+from .models import Table
+
+class TableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table
+        fields = ["table_number", "capacity", "is_available"]
+
+2. home/views.py
+
+We’ll implement a ListAPIView to fetch only available tables.
+
+from rest_framework import generics
+from .models import Table
+from .serializers import TableSerializer
+
+class AvailableTablesAPIView(generics.ListAPIView):
+    serializer_class = TableSerializer
+
+    def get_queryset(self):
+        return Table.objects.filter(is_available=True)
+
+3. home/urls.py
+
+Add a URL path for this new API:
+
+from django.urls import path
+from .views import AvailableTablesAPIView
+
+urlpatterns = [
+    path('api/tables/available/', AvailableTablesAPIView.as_view(), name='available_tables_api'),
+]
+
+4. Example Response
+
+If you GET /api/tables/available/, the JSON might look like this:
+
+[
+  {
+    "table_number": 1,
+    "capacity": 4,
+    "is_available": true
+  },
+  {
+    "table_number": 3,
+    "capacity": 2,
+    "is_available": true
+  }
+]
