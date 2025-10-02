@@ -1,0 +1,51 @@
+1. home/views.py
+
+We’ll add a RetrieveAPIView alongside the available tables view:
+
+from rest_framework import generics
+from .models import Table
+from .serializers import TableSerializer
+
+# Existing list of available tables
+class AvailableTablesAPIView(generics.ListAPIView):
+    serializer_class = TableSerializer
+
+    def get_queryset(self):
+        return Table.objects.filter(is_available=True)
+
+# New: Retrieve single table by ID
+class TableDetailAPIView(generics.RetrieveAPIView):
+    queryset = Table.objects.all()
+    serializer_class = TableSerializer
+    lookup_field = "pk"   # default, so optional
+
+2. home/urls.py
+
+Add a new URL pattern for single table retrieval:
+
+from django.urls import path
+from .views import AvailableTablesAPIView, TableDetailAPIView
+
+urlpatterns = [
+    path('api/tables/available/', AvailableTablesAPIView.as_view(), name='available_tables_api'),
+    path('api/tables/<int:pk>/', TableDetailAPIView.as_view(), name='table_detail_api'),
+]
+
+3. Example Request & Response
+
+Request:
+GET http://127.0.0.1:8000/api/tables/1/
+
+Response (if table with ID=1 exists):
+
+{
+  "table_number": 1,
+  "capacity": 4,
+  "is_available": true
+}
+
+Response (if not found):
+
+{
+  "detail": "Not found."
+}
