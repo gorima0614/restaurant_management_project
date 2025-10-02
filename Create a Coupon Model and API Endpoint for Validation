@@ -1,0 +1,91 @@
+1. orders/models.py
+from django.db import models
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=50, unique=True)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2)  # e.g., 10.00 for 10%
+    is_active = models.BooleanField(default=True)
+    valid_from = models.DateField()
+    valid_until = models.DateField()
+
+    def __str__(self):
+        return f"{self.code} ({self.discount_percentage}% off)"
+
+2. orders/serializers.py
+
+We’ll create a simple serializer to validate input and return coupon details.
+
+from rest_framework import serializers
+from .models import Coupon
+
+class CouponValidationSerializer(serializers.Serializer):
+    code = serializers.CharField()
+
+class CouponSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Coupon
+        fields = ["code", "discount_percentage"]
+
+3. orders/views.py
+
+We’ll use APIView for custom logic.
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils.timezone import now
+from .models import Coupon
+from .serializers import CouponValidationSerializer, CouponSerializer
+
+class CouponValidationView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = CouponValidationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        code = serializer.validated_data.get("code")
+
+        try:
+            coupon = Coupon.objects.get(code=code, is_active=True)
+        except Coupon.DoesNotExist:
+            return Response({"error": "Invalid or inactive coupon."}, status=status.HTTP_400_BAD_REQUEST)
+
+        today = now().date()
+        if not (coupon.valid_from <= today <= coupon.valid_until):
+            return Response({"error": "This coupon is not valid at this time."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # If valid, return discount details
+        coupon_data = CouponSerializer(coupon).data
+        return Response({"success": True, "coupon": coupon_data}, status=status.HTTP_200_OK)
+
+4. orders/urls.py
+from django.urls import path
+from .views import CouponValidationView
+
+urlpatterns = [
+    path('coupons/validate/', CouponValidationView.as_view(), name='coupon-validate'),
+]
+
+5. Example Request & Response
+
+Request (POST to /coupons/validate/):
+
+{
+  "code": "WELCOME10"
+}
+
+
+Response (valid coupon):
+
+{
+  "success": true,
+  "coupon": {
+    "code": "WELCOME10",
+    "discount_percentage": "10.00"
+  }
+}
+
+
+Response (invalid coupon):
+
+{
+  "error": "Invalid or inactive coupon."
+}
