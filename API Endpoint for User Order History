@@ -1,0 +1,88 @@
+1. Authentication Setup
+
+We assume you already have DRF authentication configured (e.g., SessionAuthentication, TokenAuthentication, or JWT).
+Your settings.py should have something like:
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,  # default page size
+}
+
+2. orders/serializers.py
+
+We’ll serialize the Order model.
+(Assuming you already have an Order model with fields like created_at, status, total_price, and related OrderItems.)
+
+from rest_framework import serializers
+from .models import Order, OrderItem
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ["menu_item", "quantity", "price"]
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True, source="orderitem_set")
+
+    class Meta:
+        model = Order
+        fields = ["id", "created_at", "status", "total_price", "items"]
+
+3. orders/views.py
+
+Create a paginated API view for authenticated users’ order history:
+
+from rest_framework import generics, permissions
+from .models import Order
+from .serializers import OrderSerializer
+
+class UserOrderHistoryAPIView(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user).order_by("-created_at")
+
+
+This ensures only the logged-in user sees their own orders.
+
+4. Pagination
+
+Since we defined pagination globally in settings.py, the API will return results like:
+
+{
+    "count": 25,
+    "next": "http://127.0.0.1:8000/api/orders/history/?page=2",
+    "previous": null,
+    "results": [
+        {
+            "id": 10,
+            "created_at": "2025-10-02T12:30:00Z",
+            "status": "Completed",
+            "total_price": "450.00",
+            "items": [
+                {"menu_item": 1, "quantity": 2, "price": "200.00"},
+                {"menu_item": 3, "quantity": 1, "price": "50.00"}
+            ]
+        },
+        ...
+    ]
+}
+
+5. orders/urls.py
+
+Add a route for this API:
+
+from django.urls import path
+from .views import UserOrderHistoryAPIView
+
+urlpatterns = [
+    path("api/orders/history/", UserOrderHistoryAPIView.as_view(), name="user_order_history"),
+]
