@@ -1,0 +1,73 @@
+Step 1: Create the FAQ model → home/models.py
+from django.db import models
+
+class FAQ(models.Model):
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+
+    def __str__(self):
+        return self.question
+
+Run migrations after adding this model:
+
+python manage.py makemigrations
+python manage.py migrate
+
+Step 2: Create the serializer → home/serializers.py
+from rest_framework import serializers
+from .models import FAQ
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = ["id", "question", "answer"]
+
+Step 3: Create the API view → home/views.py
+
+We’ll use a ListAPIView with pagination support.
+
+from rest_framework import generics
+from .models import FAQ
+from .serializers import FAQSerializer
+
+class FAQListAPIView(generics.ListAPIView):
+    queryset = FAQ.objects.all().order_by("id")
+    serializer_class = FAQSerializer
+
+
+This automatically supports pagination if you’ve enabled it in settings.py:
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10
+}
+
+Step 4: Add the URL route → home/urls.py
+from django.urls import path
+from .views import FAQListAPIView
+
+urlpatterns = [
+    path("api/faqs/", FAQListAPIView.as_view(), name="faq_list_api"),
+]
+
+✅ Example Response
+
+GET http://127.0.0.1:8000/api/faqs/
+
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "question": "What are your opening hours?",
+      "answer": "We are open from 9 AM to 10 PM, Monday to Sunday."
+    },
+    {
+      "id": 2,
+      "question": "Do you offer home delivery?",
+      "answer": "Yes, we provide home delivery within a 5 km radius."
+    }
+  ]
+}
