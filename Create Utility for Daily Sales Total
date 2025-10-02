@@ -1,0 +1,34 @@
+1. Create orders/utils.py
+from django.db.models import Sum
+from .models import Order
+
+def get_daily_sales_total(date):
+    """
+    Calculate the total sales for a given date.
+    :param date: A datetime.date object (e.g., date(2025, 10, 2))
+    :return: Decimal total sales for that day, or 0 if no sales
+    """
+    sales_data = Order.objects.filter(created_at__date=date).aggregate(
+        total_sum=Sum("total_price")
+    )
+    return sales_data["total_sum"] or 0
+
+2. Example Usage in Django Shell
+python manage.py shell
+
+from datetime import date
+from orders.utils import get_daily_sales_total
+
+today = date.today()
+total_sales = get_daily_sales_total(today)
+print(f"Total sales for {today}: {total_sales}")
+
+3. Example Output
+
+If total sales are ₹12,500.00, it will print:
+
+Total sales for 2025-10-02: 12500.00
+
+If no orders exist that day:
+
+Total sales for 2025-10-02: 0
