@@ -1,0 +1,40 @@
+1. Create home/utils.py
+
+Inside your home app, make (or edit) a utils.py file and add this function:
+
+from datetime import datetime, time
+
+def is_restaurant_open():
+    """
+    Check if the restaurant is currently open based on operating hours.
+    Returns True if open, False otherwise.
+    """
+
+    # Get current datetime
+    now = datetime.now()
+    current_day = now.weekday()  # Monday=0, Sunday=6
+    current_time = now.time()
+
+    # Example operating hours:
+    # Weekdays (Mon-Fri): 9 AM - 10 PM
+    # Weekends (Sat-Sun): 10 AM - 11 PM
+    if current_day < 5:  # Mon-Fri
+        opening_time = time(9, 0)   # 9:00 AM
+        closing_time = time(22, 0)  # 10:00 PM
+    else:  # Sat-Sun
+        opening_time = time(10, 0)  # 10:00 AM
+        closing_time = time(23, 0)  # 11:00 PM
+
+    # Check if current time falls within operating hours
+    return opening_time <= current_time <= closing_time
+
+2. Test in Django shell
+
+Run:
+
+python manage.py shell
+
+Then:
+
+from home.utils import is_restaurant_open
+is_restaurant_open()
