@@ -1,0 +1,80 @@
+Step 1: Modify MenuItem model in home/models.py
+
+Add a boolean field available to indicate if the menu item is available.
+
+# home/models.py
+from django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    description = models.TextField(blank=True, null=True)
+    available = models.BooleanField(default=True)  # ✅ New field
+
+    def __str__(self):
+        return self.name
+
+👉 Run migrations after editing the model:
+
+python manage.py makemigrations
+python manage.py migrate
+
+Step 2: Create Serializer in home/serializers.py
+# home/serializers.py
+from rest_framework import serializers
+from .models import MenuItem
+
+class MenuItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuItem
+        fields = ['id', 'name', 'price', 'description', 'available']
+
+Step 3: Create API View in home/views.py
+
+We’ll make a ListAPIView that filters only available items.
+
+# home/views.py
+from rest_framework import generics
+from .models import MenuItem
+from .serializers import MenuItemSerializer
+
+class AvailableMenuItemsView(generics.ListAPIView):
+    serializer_class = MenuItemSerializer
+
+    def get_queryset(self):
+        return MenuItem.objects.filter(available=True)
+
+Step 4: Add URL route in home/urls.py
+# home/urls.py
+from django.urls import path
+from .views import AvailableMenuItemsView
+
+urlpatterns = [
+    path('menu-items/available/', AvailableMenuItemsView.as_view(), name='available-menu-items'),
+]
+
+✅ Final Result
+
+Endpoint:
+
+GET /menu-items/available/
+
+
+Response (example):
+
+[
+  {
+    "id": 1,
+    "name": "Margherita Pizza",
+    "price": "299.00",
+    "description": "Classic cheese pizza",
+    "available": true
+  },
+  {
+    "id": 3,
+    "name": "Pasta Alfredo",
+    "price": "350.00",
+    "description": "Creamy white sauce pasta",
+    "available": true
+  }
+]
