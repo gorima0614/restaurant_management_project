@@ -1,0 +1,85 @@
+Step 1: Create a utils.py file
+
+You can create this file either inside your app (e.g., home/utils.py) or in a dedicated utils folder at the project level.
+Let’s assume you put it inside your existing home app:
+
+home/
+   ├── models.py
+   ├── views.py
+   ├── serializers.py
+   ├── utils.py   👈 create this
+   └── ...
+
+Step 2: Define the function in utils.py
+
+We’ll format phone numbers into this style:
+
++91 (123) 456-7890
+
+(for India, but you can tweak it as needed).
+
+# home/utils.py
+import re
+
+def format_phone_number(phone_number: str, country_code: str = "+91") -> str:
+    """
+    Formats a phone number string into a standard format: +CC (XXX) XXX-XXXX
+    
+    Args:
+        phone_number (str): Raw phone number string
+        country_code (str): Default country code, e.g. +91
+    
+    Returns:
+        str: Formatted phone number or original input if invalid
+    """
+    try:
+        # Remove all non-digit characters
+        digits = re.sub(r"\D", "", phone_number)
+
+        # Check if we have at least 10 digits
+        if len(digits) < 10:
+            return phone_number  # return original if too short
+
+        # Use the last 10 digits as the actual phone number
+        core_number = digits[-10:]
+
+        # Split into parts
+        area_code = core_number[0:3]
+        prefix = core_number[3:6]
+        line_number = core_number[6:10]
+
+        # Format as: +91 (123) 456-7890
+        formatted = f"{country_code} ({area_code}) {prefix}-{line_number}"
+        return formatted
+
+    except Exception as e:
+        # If something goes wrong, return input unchanged
+        return phone_number
+
+Step 3: Error Handling
+
+Strips out unwanted characters (re.sub)
+
+Handles short/invalid input gracefully by returning the original string
+
+Wrapped in try-except to avoid runtime crashes
+
+Step 4: Test your function
+
+You can test it quickly in Django shell:
+
+python manage.py shell
+
+from home.utils import format_phone_number
+
+print(format_phone_number("9876543210"))      
+# Output: +91 (987) 654-3210
+
+print(format_phone_number("+91-98765-43210")) 
+# Output: +91 (987) 654-3210
+
+print(format_phone_number("12345"))           
+# Output: 12345 (invalid input returns unchanged)
+
+print(format_phone_number("9876543210", country_code="+1"))  
+# Output: +1 (987) 654-3210
