@@ -1,0 +1,56 @@
+-> utils.py Implementation
+# reviews/utils.py
+
+def calculate_average_rating(reviews_queryset):
+    """
+    Calculate the average rating from a queryset of reviews.
+    
+    Args:
+        reviews_queryset (QuerySet): A Django QuerySet of Review objects (must have a 'rating' field)
+    
+    Returns:
+        float: The average rating of all reviews, or 0.0 if no reviews exist.
+    """
+    try:
+        # Handle empty queryset
+        if not reviews_queryset.exists():
+            return 0.0
+        
+        # Sum up all ratings
+        total_ratings = sum(review.rating for review in reviews_queryset)
+        count = reviews_queryset.count()
+
+        # Compute average
+        average = total_ratings / count if count > 0 else 0.0
+
+        return round(average, 2)  # rounded to 2 decimal places for readability
+
+    except Exception as e:
+        # Gracefully handle unexpected errors
+        print(f"Error calculating average rating: {e}")
+        return 0.0
+
+-> Example Usage
+from reviews.models import Review
+from reviews.utils import calculate_average_rating
+
+reviews = Review.objects.filter(restaurant_id=1)
+avg_rating = calculate_average_rating(reviews)
+print(avg_rating)  # e.g., 4.25
+
+-> Optional (More Efficient Version Using ORM)
+
+If you prefer to avoid iterating in Python (for large datasets), you can use Django’s aggregation:
+
+from django.db.models import Avg
+
+def calculate_average_rating(reviews_queryset):
+    """
+    More efficient version using Django ORM aggregation.
+    """
+    try:
+        result = reviews_queryset.aggregate(avg_rating=Avg('rating'))
+        return round(result['avg_rating'] or 0.0, 2)
+    except Exception as e:
+        print(f"Error calculating average rating: {e}")
+        return 0.0
