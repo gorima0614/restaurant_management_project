@@ -1,0 +1,84 @@
+Step 1: Update the MenuItem Model
+
+In your menu/models.py, ensure you have a Boolean field to represent availability.
+
+# menu/models.py
+from django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    is_available = models.BooleanField(default=True)  # Field for availability
+
+    def __str__(self):
+        return self.name
+
+✅ Step 2: Create the API View
+
+In menu/views.py, create a DRF APIView to count available menu items.
+
+# menu/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import MenuItem
+
+class AvailableMenuItemCountView(APIView):
+    """
+    API endpoint to return the total number of currently available menu items.
+    """
+
+    def get(self, request):
+        try:
+            # Count menu items where is_available=True
+            total_available_items = MenuItem.objects.filter(is_available=True).count()
+
+            return Response(
+                {"total_menu_items": total_available_items},
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            # Graceful error handling
+            return Response(
+                {"error": f"An error occurred while fetching menu item count: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+✅ Step 3: Add the URL Route
+
+In menu/urls.py, register the endpoint.
+
+# menu/urls.py
+from django.urls import path
+from .views import AvailableMenuItemCountView
+
+urlpatterns = [
+    path('menu/available-count/', AvailableMenuItemCountView.as_view(), name='available-menu-count'),
+]
+
+✅ Step 4: Example API Response
+
+Endpoint:
+
+GET /api/menu/available-count/
+
+
+Response (JSON):
+
+{
+  "total_menu_items": 25
+}
+
+✅ Step 5: Optional Enhancements
+
+If you want to include both total and available counts:
+
+def get(self, request):
+    total_items = MenuItem.objects.count()
+    available_items = MenuItem.objects.filter(is_available=True).count()
+
+    return Response({
+        "total_menu_items": total_items,
+        "available_menu_items": available_items
+    })
