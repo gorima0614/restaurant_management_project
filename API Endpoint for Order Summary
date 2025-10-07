@@ -1,0 +1,32 @@
+from rest_framework import serializers
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem  # Replace with your actual OrderItem model name
+        fields = ['id', 'menu_item', 'quantity', 'price']
+
+class OrderSummarySerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, source='orderitem_set')
+    
+    class Meta:
+        model = Order  # Replace with your actual Order model name
+        fields = ['id', 'total_price', 'status', 'items']
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+
+class OrderSummaryView(APIView):
+    def get(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id)  # Replace with your Order model
+        serializer = OrderSummarySerializer(order)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+from django.urls import path
+from .views import OrderSummaryView
+
+urlpatterns = [
+    path('orders/<int:order_id>/summary/', OrderSummaryView.as_view(), name='order-summary'),
+]
+
