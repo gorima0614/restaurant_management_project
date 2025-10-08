@@ -1,0 +1,31 @@
+Step 1: Define the Model
+Open your file:
+home/models.py
+and add the following code:
+
+# home/models.py
+from django.db import models
+class Table(models.Model):
+    table_number = models.IntegerField(unique=True)
+    capacity = models.IntegerField()
+    is_available = models.BooleanField(default=True)
+    def __str__(self):
+        return f"Table {self.table_number} (Capacity: {self.capacity})"
+
+Step 2: Make Migrations
+After saving the file, run the following commands in your terminal:
+python manage.py makemigrations
+This creates a migration file for the new Table model.
+Then apply the migration to the database:
+
+python manage.py migrate
+
+ Step 3: (Optional) Register in Admin Panel
+If you want to manage tables from the Django Admin interface, open
+home/admin.py
+and add:
+from django.contrib import admin
+from .models import Table
+@admin.register(Table)
+class TableAdmin(admin.ModelAdmin):
+    list_display = ('table_number', 'capacity', 'is_available')
