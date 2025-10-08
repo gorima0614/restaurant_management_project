@@ -1,0 +1,100 @@
+Step 1: Create the Review model (if not already present)
+
+If your project already has a Review model, you can skip this step.
+
+# reviews/models.py
+
+from django.db import models
+from django.contrib.auth.models import User
+
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField()
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.rating}⭐"
+
+ Step 2: Create a serializer for the Review model
+
+This serializer defines how your model data will be converted to JSON.
+
+# reviews/serializers.py
+
+from rest_framework import serializers
+from .models import Review
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ['user_name', 'rating', 'comment']
+
+
+-> Here, user_name is a custom field that pulls the username from the related User model.
+
+ Step 3: Create the DRF API View
+
+We’ll use a ListAPIView to handle GET requests automatically.
+
+# reviews/views.py
+
+from rest_framework import generics
+from .models import Review
+from .serializers import ReviewSerializer
+
+class ReviewListAPIView(generics.ListAPIView):
+    queryset = Review.objects.all().order_by('-id')
+    serializer_class = ReviewSerializer
+
+This view retrieves all reviews, serializes them, and returns them in JSON format.
+
+Step 4: Define the URL route
+
+Add a new route to your app’s urls.py file.
+
+# reviews/urls.py
+
+from django.urls import path
+from .views import ReviewListAPIView
+
+urlpatterns = [
+    path('reviews/', ReviewListAPIView.as_view(), name='review-list'),
+]
+
+And include it in your main urls.py:
+
+# project/urls.py
+
+from django.urls import path, include
+
+urlpatterns = [
+    path('api/', include('reviews.urls')),
+]
+
+ Step 5: Test the Endpoint
+
+Start your Django development server:
+
+python manage.py runserver
+
+Then visit the URL in your browser or Postman:
+
+GET http://127.0.0.1:8000/api/reviews/
+
+
+-> Expected JSON Response
+[
+    {
+        "user_name": "john_doe",
+        "rating": 5,
+        "comment": "Amazing food and quick service!"
+    },
+    {
+        "user_name": "emma_smith",
+        "rating": 4,
+        "comment": "Great ambience, but a bit pricey."
+    }
+]
