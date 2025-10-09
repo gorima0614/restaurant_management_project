@@ -1,0 +1,99 @@
+Step 1: Create a signals.py file
+
+In your orders app directory (or wherever the Order model lives), create a file:
+orders/signals.py
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Order
+
+@receiver(post_save, sender=Order)
+def send_order_status_update_email(sender, instance, created, **kwargs):
+    """
+    Sends an email notification to the admin when an order's status changes.
+    """
+    # Only trigger if the order is being updated, not created
+    if not created:
+        try:
+            subject = f"Order #{instance.id} Status Update"
+            message = (
+                f"Hello Admin,\n\n"
+                f"The status of Order #{instance.id} has been updated to '{instance.status}'.\n\n"
+                f"Customer: {instance.customer}\n"
+                f"Total Amount: ₹{instance.total_amount}\n"
+                f"Order Date: {instance.created_at}\n\n"
+                f"Please log in to the admin panel for more details.\n\n"
+                f"Best Regards,\nRestaurant Order System"
+            )
+
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,  # Sender email
+                [settings.ADMIN_EMAIL],       # Admin recipient
+                fail_silently=False,
+            )
+        except Exception as e:
+            # You can log the error using Django's logging system
+            print(f"Error sending email: {e}")
+
+Step 2: Connect the signal
+
+In your orders/apps.py, connect the signal when the app is ready.
+
+from django.apps import AppConfig
+
+class OrdersConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'orders'
+
+    def ready(self):
+        import orders.signals  # noqa
+
+
+Make sure OrdersConfig is referenced correctly in your INSTALLED_APPS (inside settings.py):
+
+INSTALLED_APPS = [
+    # other apps...
+    'orders.apps.OrdersConfig',
+]
+
+ Step 3: Configure email settings in settings.py
+
+You can use a real SMTP server or Django’s console backend for testing.
+
+For development (prints emails in console):
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@restaurant.com'
+ADMIN_EMAIL = 'admin@restaurant.com'
+
+
+For production (example with Gmail SMTP):
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_email@gmail.com'
+EMAIL_HOST_PASSWORD = 'your_app_password'
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+ADMIN_EMAIL = 'admin@restaurant.com'
+
+ Step 4: Test the signal
+
+In Django shell:
+
+python manage.py shell
+
+from orders.models import Order
+
+# Create a test order
+order = Order.objects.create(customer="John Doe", total_amount=500, status="Pending")
+
+# Update status to trigger the email
+order.status = "Completed"
+order.save()  #  This triggers the signal
