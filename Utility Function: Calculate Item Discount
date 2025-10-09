@@ -1,0 +1,41 @@
+File: home/utils.py
+def calculate_discount(price, discount_percentage):
+    """
+    Calculate the discounted price for a given menu item.
+
+    Args:
+        price (float or int): Original price of the menu item.
+        discount_percentage (float or int): Discount percentage to apply (0–100).
+
+    Returns:
+        float: Discounted price after applying the discount.
+
+    Raises:
+        ValueError: If price or discount_percentage is negative or invalid.
+        TypeError: If input types are not numeric.
+    """
+    # Validate input types
+    if not isinstance(price, (int, float)) or not isinstance(discount_percentage, (int, float)):
+        raise TypeError("Both price and discount_percentage must be numbers.")
+
+    # Validate input values
+    if price < 0:
+        raise ValueError("Price cannot be negative.")
+    if not (0 <= discount_percentage <= 100):
+        raise ValueError("Discount percentage must be between 0 and 100.")
+
+    # Calculate discounted price
+    discounted_price = price * (1 - discount_percentage / 100)
+    return round(discounted_price, 2)
+
+✅ Example usage:
+from home.utils import calculate_discount
+
+# Example 1
+print(calculate_discount(200, 10))  # Output: 180.0
+
+# Example 2 (invalid inputs)
+try:
+    print(calculate_discount("100", 10))
+except Exception as e:
+    print(e)  # Output: Both price and discount_percentage must be numbers.
