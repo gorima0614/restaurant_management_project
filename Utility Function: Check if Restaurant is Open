@@ -1,0 +1,67 @@
+Step 1: Create the utility file
+Create a new file:
+
+home/utils.py
+
+Step 2: Define the is_restaurant_open function
+
+Add the following code inside home/utils.py:
+
+import datetime
+
+def is_restaurant_open():
+    """
+    Determines whether the restaurant is currently open based on hardcoded hours.
+    Returns True if open, False otherwise.
+    """
+
+    # Define operating hours (24-hour format)
+    # Monday = 0, Sunday = 6
+    operating_hours = {
+        0: (9, 22),   # Monday: 9 AM - 10 PM
+        1: (9, 22),   # Tuesday
+        2: (9, 22),   # Wednesday
+        3: (9, 22),   # Thursday
+        4: (9, 22),   # Friday
+        5: (10, 23),  # Saturday: 10 AM - 11 PM
+        6: None       # Sunday: Closed
+    }
+
+    now = datetime.datetime.now()
+    current_day = now.weekday()  # Monday=0, Sunday=6
+    current_hour = now.hour
+    current_minute = now.minute
+
+    # Get hours for today
+    hours = operating_hours.get(current_day)
+
+    # If closed today
+    if not hours:
+        return False
+
+    open_hour, close_hour = hours
+
+    # Check if current time is within open hours
+    if open_hour <= current_hour < close_hour:
+        return True
+    elif current_hour == close_hour and current_minute == 0:
+        # Exactly at closing time (10:00 PM) — consider open
+        return True
+    else:
+        return False
+
+ Step 3: Test the function
+
+Open your Django shell:
+
+python manage.py shell
+
+Then test it:
+
+from home.utils import is_restaurant_open
+is_restaurant_open()
+
+You’ll get either:
+True
+or
+False
