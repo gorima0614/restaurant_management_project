@@ -1,0 +1,28 @@
+Step 1: Define the model in home/models.py
+from django.db import models
+class MenuCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    class Meta:
+        verbose_name_plural = "Menu Categories"
+    def __str__(self):
+        return self.name
+
+
+-> Explanation:
+name: A CharField to store the category name (e.g., Appetizers, Main Courses).
+
+unique=True: Prevents duplicate category names.
+__str__: Returns the name for easier readability in the Django admin.
+
+verbose_name_plural: Makes the admin panel show “Menu Categories” instead of “Menu Categorys”.
+
+Step 2: Create migrations
+
+In your terminal, run:
+
+python manage.py makemigrations home
+
+ Step 3: Apply migrations
+
+Then run:
+python manage.py migrate
