@@ -1,0 +1,73 @@
+Step 1: Create the ViewSet in home/views.py
+# home/views.py
+
+from rest_framework import viewsets
+from rest_framework.response import Response
+from home.models import MenuCategory
+from home.serializers import MenuCategorySerializer
+
+class MenuCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    A simple ViewSet for viewing all menu categories.
+    """
+    queryset = MenuCategory.objects.all()
+    serializer_class = MenuCategorySerializer
+
+ Step 2: Create the Serializer in home/serializers.py
+
+If you don’t already have a serializers.py file, create one.
+
+# home/serializers.py
+
+from rest_framework import serializers
+from home.models import MenuCategory
+
+class MenuCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuCategory
+        fields = ['id', 'name']  # Adjust fields based on your model
+
+ Step 3: Register the ViewSet in home/urls.py
+
+If you are using a router (recommended):
+
+# home/urls.py
+
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from home.views import MenuCategoryViewSet
+
+router = DefaultRouter()
+router.register(r'categories', MenuCategoryViewSet, basename='category')
+
+urlpatterns = [
+    path('', include(router.urls)),
+]
+Now the endpoint /categories/ will list all menu categories.
+
+ Step 4: Test the Endpoint
+
+Start your development server:
+
+python manage.py runserver
+
+-> Then visit:
+
+http://127.0.0.1:8000/categories/
+
+You should see a JSON response like:
+
+[
+  {
+    "id": 1,
+    "name": "Starters"
+  },
+  {
+    "id": 2,
+    "name": "Main Course"
+  },
+  {
+    "id": 3,
+    "name": "Desserts"
+  }
+]
