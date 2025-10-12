@@ -1,0 +1,26 @@
+Step 1: Open home/admin.py
+Locate the admin.py file inside your home app directory:
+home/admin.py
+
+Step 2: Import the Table Model
+from django.contrib import admin
+from home.models import Table
+
+Step 3: Register the Model
+admin.site.register(Table)
+#Your final home/admin.py file should look like this:
+from django.contrib import admin
+from home.models import Table
+admin.site.register(Table)
+
+Step 4: Verify Registration
+Run your server:
+python manage.py runserver
+
+2. Log in to the admin interface:
+ http://127.0.0.1:8000/admin/
+3.You should now see a section labeled "Home" and within it, "Tables".
+4. You can now:
+  -> Add new tables 
+  -> Edit or delete existing tables
+  -> View table details easily
