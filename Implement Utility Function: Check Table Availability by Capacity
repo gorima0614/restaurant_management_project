@@ -1,0 +1,39 @@
+Step 1: Create or Open home/utils.py
+If the file doesn’t exist yet, create it inside your home app directory.
+Then, add the following code:
+
+from .models import Table
+def get_available_tables_by_capacity(num_guests):
+    """
+    Returns a queryset of available tables that can accommodate
+    the given number of guests.
+    Args:
+        num_guests (int): The number of guests requiring seating.
+    Returns:
+        QuerySet: Tables that are available and have sufficient capacity.
+    """
+    return Table.objects.filter(
+        is_available=True,
+        capacity__gte=num_guests
+    )
+
+Step 2: Example — Table Model (for reference)
+Make sure your Table model in home/models.py looks something like this:
+
+from django.db import models
+class Table(models.Model):
+    table_number = models.CharField(max_length=10, unique=True)
+    capacity = models.IntegerField()
+    is_available = models.BooleanField(default=True)
+    def __str__(self):
+        return f"Table {self.table_number} (Capacity: {self.capacity})"
+
+Step 3: Testing in Django Shell
+You can test the function by running:
+
+python manage.py shell
+Then inside the shell:
+
+from home.utils import get_available_tables_by_capacity
+tables = get_available_tables_by_capacity(4)
+print(tables)
