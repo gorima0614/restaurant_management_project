@@ -1,0 +1,28 @@
+Step 1: Create or Open home/admin.py
+If your home/admin.py file doesn’t exist yet, create it inside your home app directory.
+Then add the following code:
+
+from django.contrib import admin
+from .models import Table
+@admin.register(Table)
+class TableAdmin(admin.ModelAdmin):
+    """
+    Custom admin configuration for the Table model.
+    """
+    list_display = ('table_number', 'capacity', 'is_available')  # columns to display in admin list view
+    list_filter = ('is_available',)  # add sidebar filter for availability
+    search_fields = ('table_number',)  # enable search by table number
+    ordering = ('table_number',)  # sort tables by table number by default
+
+Step 2: Confirm Your Table Model (for reference)
+
+Your home/models.py should look something like this:
+
+from django.db import models
+class Table(models.Model):
+    table_number = models.CharField(max_length=10, unique=True)
+    capacity = models.IntegerField()
+    is_available = models.BooleanField(default=True)
+    def __str__(self):
+        return f"Table {self.table_number} (Capacity: {self.capacity})"
+
