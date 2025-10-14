@@ -1,0 +1,32 @@
+Step 1: Update home/models.py
+from django.db import models
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    category = models.CharField(max_length=50, blank=True, null=True)
+    is_available = models.BooleanField(default=True)
+
+    # New field for allergens
+    allergens = models.TextField(blank=True, null=True, help_text="Comma-separated list of allergens (e.g., 'gluten, nuts, dairy')")
+
+    def __str__(self):
+        # Optional: include allergens info for clarity
+        if self.allergens:
+            return f"{self.name} (Allergens: {self.allergens})"
+        return self.name
+
+Step 2: Run Migrations
+After saving the file, apply the database changes by running the following commands in your terminal:
+
+python manage.py makemigrations
+python manage.py migrate
+
+Step 3: Verify in Admin
+If you’ve already registered MenuItem in home/admin.py, you’ll now see the Allergens field when adding or editing menu items in the Django admin panel.
+If not, make sure you have:
+
+from django.contrib import admin
+from .models import MenuItem
+admin.site.register(MenuItem)
