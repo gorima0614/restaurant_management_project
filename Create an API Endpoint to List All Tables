@@ -1,0 +1,70 @@
+Step 1: Create home/serializers.py
+If it doesn’t exist, create this file in your home app directory.
+
+from rest_framework import serializers
+from .models import Table
+class TableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Table
+        fields = '__all__'  # Include all fields from the Table model
+
+Step 2: Create the API View in home/views.py
+
+Add the following code (or modify your existing file):
+
+from rest_framework import generics
+from .models import Table
+from .serializers import TableSerializer
+class TableListView(generics.ListAPIView):
+    """
+    API endpoint to retrieve a list of all tables.
+    """
+    queryset = Table.objects.all()
+    serializer_class = TableSerializer
+
+This view automatically handles GET requests and returns serialized data for all tables.
+
+ Step 3: Define URL Pattern in home/urls.py
+If home/urls.py doesn’t exist, create it. Then add:
+
+from django.urls import path
+from .views import TableListView
+
+urlpatterns = [
+    path('tables/', TableListView.as_view(), name='table-list'),
+]
+
+Step 4: Include the home URLs in the Main urls.py
+In your project’s main urls.py (likely located in the root project folder), include the home app’s URLs like this:
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('home.urls')),  # Include home app URLs
+]
+
+Step 5: Test the Endpoint
+Now, start your Django development server:
+
+python manage.py runserver
+
+Then open your browser or API client and visit:
+ http://127.0.0.1:8000/api/tables/
+
+You should see a JSON response like:
+[
+    {
+        "id": 1,
+        "table_number": "A1",
+        "capacity": 4,
+        "is_available": true
+    },
+    {
+        "id": 2,
+        "table_number": "B2",
+        "capacity": 6,
+        "is_available": false
+    }
+]
