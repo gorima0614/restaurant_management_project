@@ -1,0 +1,28 @@
+# home/models.py
+from django.db import models
+class Restaurant(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    capacity = models.IntegerField(default=0, blank=True, null=True)  # New field
+
+    def __str__(self):
+        return self.name
+
+# home/admin.py
+from django.contrib import admin
+from .models import Restaurant
+
+@admin.register(Restaurant)
+class RestaurantAdmin(admin.ModelAdmin):
+    list_display = ("name", "address", "phone_number", "capacity")
+    search_fields = ("name", "address")
+
+Next Steps (Run These Commands):
+python manage.py makemigrations home
+python manage.py migrate
+python manage.py runserver
+
+Then go to 👉 http://127.0.0.1:8000/admin/
+ 
