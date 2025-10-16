@@ -1,0 +1,53 @@
+Step 1: Create a Serializer
+from rest_framework import serializers
+from .models import Cuisine
+
+class CuisineSerializer(serializers.ModelSerializer):
+    """
+    Converts Cuisine model instances into JSON format for the API.
+    """
+    class Meta:
+        model = Cuisine
+        fields = ['id', 'name']
+
+Step 2: Create the API View
+from rest_framework import generics
+from .models import Cuisine
+from .serializers import CuisineSerializer
+
+class CuisineListView(generics.ListAPIView):
+    """
+    API endpoint to list all available cuisine types.
+    """
+    queryset = Cuisine.objects.all()
+    serializer_class = CuisineSerializer
+
+Step 3: Add URL for the API Endpoint
+from django.urls import path
+from .views import CuisineListView
+
+urlpatterns = [
+    path('api/cuisines/', CuisineListView.as_view(), name='cuisine-list'),
+]
+
+Step 4: Test the Endpoint
+python manage.py runserver
+
+Then open your browser or Postman and visit:
+ http://127.0.0.1:8000/api/cuisines/
+[
+    {
+        "id": 1,
+        "name": "Italian"
+    },
+    {
+        "id": 2,
+        "name": "Mexican"
+    },
+    {
+        "id": 3,
+        "name": "Japanese"
+    }
+]
+
+
