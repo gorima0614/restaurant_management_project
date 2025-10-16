@@ -1,0 +1,108 @@
+Step 1: Update home/models.py
+from django.db import models
+from django.contrib.auth.models import User
+
+class Cuisine(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class MenuItem(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+    cuisine = models.ForeignKey(
+        Cuisine,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='menu_items'
+    )
+
+    def __str__(self):
+        return self.name
+
+class UserReviews(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE, related_name='reviews')
+    rating = models.PositiveIntegerField()  # e.g., 1–5
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'menu_item')  # one review per user per item (optional)
+
+    def __str__(self):
+        return f"Review by {self.user.username} for {self.menu_item.name}"
+
+Then run:
+python manage.py makemigrations home
+python manage.py migrate
+
+Step 2: Create a Serializer — home/serializers.py
+from rest_framework import serializers
+from .models import UserReviews
+
+class UserReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserReviews
+        fields = ['id', 'menu_item', 'rating', 'comment', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+Step 3: Create the API View — home/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from django.shortcuts import get_object_or_404
+
+from .models import MenuItem, UserReviews
+from .serializers import UserReviewSerializer
+
+class MenuItemReviewCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        menu_item_id = request.data.get('menu_item_id')
+        rating = request.data.get('rating')
+        comment = request.data.get('comment', '')
+
+        # Validate menu_item_id
+        menu_item = get_object_or_404(MenuItem, id=menu_item_id)
+
+        # Validate rating
+        try:
+            rating = int(rating)
+            if rating < 1 or rating > 5:
+                return Response({'error': 'Rating must be between 1 and 5.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        except (TypeError, ValueError):
+            return Response({'error': 'Invalid rating value.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        # Create review
+        review = UserReviews.objects.create(
+            user=request.user,
+            menu_item=menu_item,
+            rating=rating,
+            comment=comment
+        )
+
+        serializer = UserReviewSerializer(review)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+Step 4: Add URL — home/urls.py
+from django.urls import path
+from .views import MenuItemReviewCreateView
+
+urlpatterns = [
+    path('menu-items/reviews/', MenuItemReviewCreateView.as_view(), name='menu-item-review-create'),
+]
+
+Step 5: Test the API
+Endpoint:
+POST /menu-items/reviews/
+Required Headers:
+Authorization: Token <your_token> (if using token authentication)
+Content-Type: application/json
